@@ -22,6 +22,17 @@ function upsertCanonical(href) {
   el.setAttribute('href', href);
 }
 
+function upsertHreflang(lang, href) {
+  let el = document.head.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', 'alternate');
+    el.setAttribute('hreflang', lang);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+}
+
 function upsertJsonLd(data) {
   const id = 'dentnow-jsonld';
   let el = document.getElementById(id);
@@ -61,6 +72,11 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
 
     // Canonical
     upsertCanonical(absoluteUrl);
+
+    // Hreflang annotations (Item 7)
+    upsertHreflang('ro-RO', absoluteUrl);
+    upsertHreflang('ro', absoluteUrl);
+    upsertHreflang('x-default', absoluteUrl);
 
     // Build default Breadcrumb schema
     const pathParts = path.split('/').filter(Boolean);

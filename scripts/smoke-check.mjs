@@ -1,6 +1,27 @@
 import { spawn } from 'node:child_process';
 
-const routes = ['/', '/tratamente', '/oferte', '/recenzii', '/scor-igiena', '/articole', '/ebook', '/locatii/dristor', '/locatii/baba-novac', '/locatii/prelungirea-ghencea'];
+const routes = [
+  '/',
+  '/tratamente',
+  '/oferte',
+  '/recenzii',
+  '/scor-igiena',
+  '/articole',
+  '/ebook',
+  '/locatii/dristor',
+  '/locatii/baba-novac',
+  '/locatii/prelungirea-ghencea',
+  '/stomatologie-dristor',
+  '/stomatologie-baba-novac',
+  '/stomatologie-prelungirea-ghencea',
+  '/implant-dentar-bucuresti',
+  '/aparat-dentar-dristor',
+  '/albire-dentara-laser',
+  '/protetica-zirconiu',
+  '/urgente-dentare-bucuresti',
+  '/decontat-cas',
+  '/recenzie'
+];
 const port = 4174;
 
 function run(command, args) {

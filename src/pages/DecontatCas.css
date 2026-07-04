@@ -1,0 +1,117 @@
+.cas-sec {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.cas-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .cas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cas-main h2 {
+  font-family: var(--fd);
+  font-size: 1.8rem;
+  margin: 32px 0 16px;
+}
+
+.cas-main h2:first-of-type {
+  margin-top: 0;
+}
+
+.cas-main p {
+  color: var(--gray);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.cas-benefits-list {
+  list-style: none;
+  margin-bottom: 32px;
+}
+
+.cas-benefits-list li {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+  color: var(--black);
+}
+
+.cas-services-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.cas-card {
+  background: var(--white);
+  border: 1px solid var(--light2);
+  border-radius: var(--rs);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.cas-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.cas-card p {
+  font-size: 0.92rem;
+  margin-bottom: 0;
+}
+
+.cas-docs-list {
+  margin-left: 20px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+.cas-docs-list li {
+  margin-bottom: 12px;
+}
+
+.cas-cta-card {
+  background: var(--white);
+  border: 1px solid var(--light2);
+  border-radius: var(--r);
+  padding: 32px;
+  box-shadow: var(--shadow);
+}
+
+.cas-cta-card h3 {
+  font-family: var(--fd);
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+}
+
+.cas-cta-card p {
+  color: var(--gray);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+.cas-contact-info {
+  margin-top: 24px;
+  border-top: 1px solid var(--light2);
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--gray);
+}
+
+.cas-contact-info div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

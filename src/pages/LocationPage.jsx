@@ -1,4 +1,4 @@
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, useLocation, Navigate } from 'react-router-dom';
 import config from '../config';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
@@ -81,8 +81,17 @@ const locationDetails = {
 
 export default function LocationPage() {
   const { citySlug } = useParams();
+  const location = useLocation();
   const openPicker = useClinicPicker();
-  const loc = locationDetails[citySlug];
+
+  let targetSlug = citySlug;
+  if (!targetSlug) {
+    if (location.pathname.includes('stomatologie-dristor')) targetSlug = 'dristor';
+    else if (location.pathname.includes('stomatologie-baba-novac')) targetSlug = 'baba-novac';
+    else if (location.pathname.includes('stomatologie-prelungirea-ghencea')) targetSlug = 'prelungirea-ghencea';
+  }
+
+  const loc = locationDetails[targetSlug];
 
   if (!loc) {
     return <Navigate to="/" replace />;
