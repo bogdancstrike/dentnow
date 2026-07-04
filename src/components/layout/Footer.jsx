@@ -1,0 +1,53 @@
+import { Link } from 'react-router-dom';
+import { footerServices, footerClinic } from '../../data/navigation';
+import config from '../../config';
+import { IconFacebook, IconInstagram, IconWhatsApp } from '../ui/Icons';
+import './Footer.css';
+
+export default function Footer() {
+  return (
+    <footer className="footer" data-nav-dark>
+      <div className="footer-top">
+        <div>
+          <Link to="/" className="footer-logo">Dent<span>Now</span></Link>
+          <p className="footer-desc">
+            Clinică stomatologică modernă în București. Servicii complete cu echipamente de ultimă generație și o echipă dedicată sănătății tale dentare. Lucrăm cu CAS — copii gratuit.
+          </p>
+          <div className="footer-social">
+            <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" title="Facebook"><IconFacebook size={20} /></a>
+            <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><IconInstagram size={20} /></a>
+            <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" title="WhatsApp"><IconWhatsApp size={20} /></a>
+          </div>
+        </div>
+        <div>
+          <p className="footer-col-title">Servicii</p>
+          <ul className="footer-links">
+            {footerServices.map((s) => <li key={s.to}><Link to={s.to}>{s.label}</Link></li>)}
+          </ul>
+        </div>
+        <div>
+          <p className="footer-col-title">Clinica</p>
+          <ul className="footer-links">
+            {footerClinic.map((c) => <li key={c.to}><Link to={c.to}>{c.label}</Link></li>)}
+          </ul>
+        </div>
+        <div>
+          <p className="footer-col-title">Contact</p>
+          <ul className="footer-links">
+            <li><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></li>
+            <li><a href={`mailto:${config.email}`}>{config.email}</a></li>
+            <li><a href={config.maps.link} target="_blank" rel="noopener noreferrer">{config.address.street}<br />{config.address.detail}</a></li>
+          </ul>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <p className="footer-copy">© {new Date().getFullYear()} DentNow. Toate drepturile rezervate.</p>
+        <div className="footer-legal">
+          <Link to="/gdpr">GDPR</Link>
+          <Link to="/confidentialitate">Confidențialitate</Link>
+          <Link to="/termeni">Termeni</Link>
+        </div>
+      </div>
+    </footer>
+  );
+}

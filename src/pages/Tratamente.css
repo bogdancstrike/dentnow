@@ -1,0 +1,20 @@
+.tarife-wrap{max-width:1100px;margin:0 auto;padding:60px 48px 80px}
+.tarife-cat{margin-bottom:56px;scroll-margin-top:80px}
+.cat-title{font-family:var(--fd);font-size:28px;font-weight:700;margin-bottom:4px;padding-bottom:16px;border-bottom:3px solid var(--accent);display:inline-block}
+.tarife-table{margin-top:28px;background:var(--white);border-radius:var(--r);overflow:hidden;border:1px solid var(--light)}
+.t-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:18px 28px;border-bottom:1px solid var(--light);transition:background .2s;gap:16px}
+.t-row:last-child{border-bottom:none}
+.t-row:hover{background:#f9f9fb}
+.t-row.promo{background:#fffbeb}
+.t-row.promo:hover{background:#fef9e0}
+.tr-name{font-size:16px;font-weight:400;line-height:1.4}
+.tr-old{font-size:14px;color:var(--gray);text-decoration:line-through;text-align:right;white-space:nowrap}
+.tr-price{font-size:17px;font-weight:700;color:var(--black);text-align:right;white-space:nowrap}
+.tr-price.promo-p{color:var(--accent)}
+.promo-tag{display:inline-block;font-size:10px;font-weight:700;background:var(--accent);color:#fff;padding:2px 8px;border-radius:980px;margin-left:8px;vertical-align:middle}
+.cas-banner{background:var(--green-bg);border:1.5px solid #b4dfc0;border-radius:var(--r);padding:28px 32px;display:flex;gap:20px;align-items:flex-start;margin-bottom:48px}
+.payment-box{background:var(--white);border-radius:var(--r);padding:36px;border:1px solid var(--light);display:flex;gap:24px;align-items:flex-start;margin-top:20px}
+.jump-nav{background:var(--white);border-bottom:1px solid var(--light);padding:16px 48px;display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:var(--nav-h);z-index:100;justify-content:center}
+.jump-btn{font-size:13px;color:var(--gray);text-decoration:none;padding:6px 14px;border-radius:980px;border:1px solid var(--light);transition:all .2s;background:var(--white);cursor:pointer}
+.jump-btn:hover,.jump-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media(max-width:768px){.tarife-wrap{padding:40px 20px 60px}.t-row{grid-template-columns:1fr auto}.tr-old{display:none}.jump-nav{padding:12px 20px;gap:6px}.jump-btn{font-size:12px;padding:5px 10px}}

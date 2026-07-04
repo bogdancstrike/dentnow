@@ -1,0 +1,22 @@
+.offers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1100px;margin:60px auto 80px;padding:0 48px}
+.offer-card{background:var(--white);border-radius:var(--r);padding:40px;border:1px solid var(--light);position:relative;overflow:hidden;transition:transform var(--transition),box-shadow var(--transition)}
+.offer-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.offer-card.featured{background:var(--white);border:2px solid var(--accent);box-shadow:0 4px 24px rgba(0,113,227,.12)}
+.offer-badge{position:absolute;top:0;right:0;background:var(--accent);color:#fff;font-size:11px;font-weight:700;letter-spacing:.07em;padding:7px 18px;border-bottom-left-radius:12px}
+.offer-icon{font-size:44px;margin-bottom:24px;display:block}
+.offer-name{font-family:var(--fd);font-size:22px;font-weight:700;margin-bottom:12px;line-height:1.2}
+
+.offer-desc{font-size:14px;font-weight:300;color:var(--gray);line-height:1.65;margin-bottom:28px}
+
+.price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.price-new{font-family:var(--fd);font-size:40px;font-weight:900;color:var(--black)}
+
+.price-old{font-size:20px;color:var(--gray);text-decoration:line-through}
+.price-save{display:inline-block;font-size:12px;font-weight:700;background:#fef3c7;color:#92400e;padding:4px 12px;border-radius:980px;margin-bottom:24px}
+
+.offer-features{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.of{font-size:14px;color:var(--gray);display:flex;align-items:center;gap:8px}
+.of::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0}
+
+@media(max-width:1024px){.offers-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.offers-grid{grid-template-columns:1fr;padding:0 20px}}

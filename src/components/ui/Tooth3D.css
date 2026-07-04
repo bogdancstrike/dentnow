@@ -1,0 +1,34 @@
+.tooth3d-container {
+  position: fixed;
+  right: 6vw;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 0;
+  pointer-events: none;
+  width: clamp(120px, 12vw, 200px);
+  height: auto;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.tooth3d {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.05s linear;
+}
+
+.tooth3d svg {
+  width: 100%;
+  height: auto;
+  --tooth-stroke: var(--accent);
+  --tooth-highlight: var(--accent);
+  --tooth-top: var(--accent);
+  --tooth-bottom: #6e6e73;
+}
+
+@media (max-width: 1200px) {
+  .tooth3d-container { right: 2vw; width: 100px; opacity: 0.3; }
+}
+@media (max-width: 768px) {
+  .tooth3d-container { display: none; }
+}
