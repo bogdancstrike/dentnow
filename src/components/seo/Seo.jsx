@@ -54,7 +54,7 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
         '@id': `${config.social.website}#clinic-${i}`,
         name: loc.name,
         url: config.social.website,
-        telephone: config.phone,
+        telephone: loc.phone,
         email: config.email,
         image: new URL(image, config.social.website).toString(),
         address: {

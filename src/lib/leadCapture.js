@@ -24,3 +24,9 @@ export function buildWhatsAppLeadUrl(payload = {}) {
   const phone = config.phone.replace(/[^0-9]/g, '');
   return `https://wa.me/${phone}?text=${encodeURIComponent(buildMessage(payload))}`;
 }
+
+// WhatsApp link for a specific clinic number.
+export function whatsappUrlFor(phone, text = 'Buna ziua, doresc o programare la DentNow.') {
+  const digits = String(phone).replace(/[^0-9]/g, '');
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}

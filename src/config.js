@@ -19,6 +19,22 @@ const config = {
     'https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow',
   bookingUrl: import.meta.env.VITE_BOOKING_URL || '',
   leadEndpoint: import.meta.env.VITE_LEAD_ENDPOINT || '',
+
+  // Cele doua linii telefonice — clinicile sunt separate.
+  phones: [
+    {
+      display: '0720 509 802',
+      tel: '+40720509802',
+      label: 'Dristor & Baba Novac',
+      whatsapp: 'https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow',
+    },
+    {
+      display: '0723 232 263',
+      tel: '+40723232263',
+      label: 'Prelungirea Ghencea',
+      whatsapp: 'https://wa.me/40723232263?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow%20Prelungirea%20Ghencea',
+    },
+  ],
   verifiedReviewsUrl: import.meta.env.VITE_REVIEWS_URL || 'https://maps.app.goo.gl/N4KTXjfQhuvNNKS58',
   contentUpdatedAt: import.meta.env.VITE_CONTENT_UPDATED_AT || '2026-07-04',
 

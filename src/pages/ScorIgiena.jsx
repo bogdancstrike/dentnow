@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import config from '../config';
 import { quizQuestions } from '../data/content';
 import { buildWhatsAppLeadUrl } from '../lib/leadCapture';
+import { useClinicPicker } from '../hooks/useClinicPicker';
 import Seo from '../components/seo/Seo';
 import './ScorIgiena.css';
 
@@ -77,6 +78,7 @@ export default function ScorIgiena() {
 }
 
 function QuizResult({ answers, questions, onRestart }) {
+  const openPicker = useClinicPicker();
   const total = answers.reduce((sum, ai, qi) => sum + questions[qi].opts[ai][1], 0);
   const max = questions.length * 5;
   const pct = Math.round((total / max) * 100);
@@ -132,7 +134,7 @@ function QuizResult({ answers, questions, onRestart }) {
       </div>
 
       <div className="qr-actions">
-        <a href={`tel:${config.phone}`} className="btn btn-dark">Suna acum: {config.phoneDisplay}</a>
+        <button type="button" onClick={() => openPicker('call')} className="btn btn-dark">Suna acum</button>
         <a className="btn btn-outline" href={waUrl} target="_blank" rel="noopener noreferrer">Trimite scorul pe WhatsApp</a>
         <button className="btn btn-outline" onClick={onRestart}>Reia testul</button>
       </div>

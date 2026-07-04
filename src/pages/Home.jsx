@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useRevealAll } from '../hooks/useReveal';
+import { useClinicPicker } from '../hooks/useClinicPicker';
+import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
 import { services, quickServices, trustStats } from '../data/content';
 import { reviews } from '../data/reviews';
@@ -15,6 +17,7 @@ import './Home.css';
 
 export default function Home() {
   const revealRef = useRevealAll([]);
+  const openPicker = useClinicPicker();
 
   return (
     <div ref={revealRef}>
@@ -27,8 +30,8 @@ export default function Home() {
             <h1 className="hero-clinic-name">Dent<span>Now</span></h1>
             <p className="hero-tagline">Tratament explicat clar, deviz inainte de interventie si programari rapide pentru urgente.</p>
             <div className="hero-cta-row left">
-              <a href={`tel:${config.phone}`} className="cta-phone-big"><IconPhone size={18} /> {config.phoneDisplay}</a>
-              <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="cta-wa"><IconWhatsApp size={18} /> WhatsApp</a>
+              <button type="button" onClick={() => openPicker('call')} className="cta-phone-big"><IconPhone size={18} /> Suna acum</button>
+              <button type="button" onClick={() => openPicker('whatsapp')} className="cta-wa"><IconWhatsApp size={18} /> WhatsApp</button>
               <a href="#contact" className="btn btn-outline">Program si locatie</a>
             </div>
             <TrustStrip items={trustStats} />
@@ -59,6 +62,7 @@ export default function Home() {
                 <h3 className="location-name">{loc.name}</h3>
                 <p className="location-line"><IconMapPin size={16} /><span>{loc.address}</span></p>
                 <p className="location-line"><IconPhone size={16} /><a href={`tel:${loc.phone}`}>{loc.phoneDisplay}</a></p>
+                <p className="location-line"><IconWhatsApp size={16} /><a href={whatsappUrlFor(loc.phone, `Buna ziua, doresc o programare la ${loc.name}.`)} target="_blank" rel="noopener noreferrer">WhatsApp {loc.phoneDisplay}</a></p>
                 <div className="location-line location-hours">
                   <IconClock size={16} />
                   <span>{loc.schedule.map((h) => <span key={h.day} className="loc-hour">{h.day}: {h.hours}{h.open ? '' : ' (Inchis)'}</span>)}</span>
@@ -70,7 +74,6 @@ export default function Home() {
         </div>
         <div className="contact-social rv">
           <a href={`mailto:${config.email}`} className="social-btn"><IconMail size={16} /> {config.email}</a>
-          <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-btn"><IconWhatsApp size={16} /> WhatsApp</a>
           <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="social-btn"><IconFacebook size={16} /> Facebook</a>
           <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="social-btn"><IconInstagram size={16} /> Instagram</a>
           <a href={config.social.linkedin} target="_blank" rel="noopener noreferrer" className="social-btn"><IconLinkedIn size={16} /> LinkedIn</a>

@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useRevealAll } from '../hooks/useReveal';
-import config from '../config';
+import { useClinicPicker } from '../hooks/useClinicPicker';
 import { articles } from '../data/articles';
 import PageHero from '../components/ui/PageHero';
 import PlaceholderCover from '../components/ui/PlaceholderCover';
@@ -14,6 +14,7 @@ function slugify(value) {
 export default function Articole() {
   const { slug } = useParams();
   const ref = useRevealAll([slug]);
+  const openPicker = useClinicPicker();
   const article = slug ? articles.find((item) => slugify(item.title) === slug) : null;
 
   if (slug) {
@@ -34,7 +35,7 @@ export default function Articole() {
           <PlaceholderCover className="article-detail-img" label={article.title} tag={article.cat} />
           <div className="article-body" dangerouslySetInnerHTML={{ __html: article.body }} />
           <div className="article-actions">
-            <a href={`tel:${config.phone}`} className="btn btn-dark">Programare: {config.phoneDisplay}</a>
+            <button type="button" onClick={() => openPicker('call')} className="btn btn-dark">Programare telefonica</button>
             <Link to="/articole" className="btn btn-outline">Inapoi la articole</Link>
           </div>
         </article>

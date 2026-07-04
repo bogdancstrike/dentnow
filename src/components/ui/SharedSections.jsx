@@ -1,4 +1,4 @@
-import config from '../../config';
+import { useClinicPicker } from '../../hooks/useClinicPicker';
 import { IconPhone } from './Icons';
 
 export function SectionTag({ children }) {
@@ -6,12 +6,13 @@ export function SectionTag({ children }) {
 }
 
 export function DarkCTA({ eyebrow, title, subtitle, showButtons = true }) {
+  const openPicker = useClinicPicker();
   return (
     <section className="dark-cta" data-nav-dark>
       {eyebrow && <p className="eyebrow lt rv">{eyebrow}</p>}
       {title && <h2 className="h3d rv" dangerouslySetInnerHTML={{ __html: title }} />}
       {subtitle && <p className="lead lt rv d1">{subtitle}</p>}
-      {showButtons && <a href={`tel:${config.phone}`} className="btn btn-white btn-lg"><IconPhone size={18} /> {config.phoneDisplay}</a>}
+      {showButtons && <button type="button" onClick={() => openPicker('call')} className="btn btn-white btn-lg"><IconPhone size={18} /> Suna acum</button>}
     </section>
   );
 }

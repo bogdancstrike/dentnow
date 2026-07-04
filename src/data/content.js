@@ -26,7 +26,6 @@ export const whyItems = [
 
 // ── Trust stats ──
 export const trustStats = [
-  { value: '4.8/5', accent: '', label: 'Rating Google - de verificat inainte de lansare' },
   { value: 'Urgente', accent: '', label: 'Preluare prioritara in functie de program' },
   { value: 'CAS', accent: '', label: 'Suport pentru servicii eligibile si copii' },
   { value: 'Deviz clar', accent: '', label: 'Costuri explicate inainte de tratament' },

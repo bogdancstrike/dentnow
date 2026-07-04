@@ -1,0 +1,25 @@
+.clinic-modal-bg{position:fixed;inset:0;z-index:2000;background:rgba(10,15,20,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;animation:cm-fade .18s ease}
+.clinic-modal-backdrop{position:absolute;inset:0;border:none;background:none;cursor:pointer;padding:0}
+.clinic-modal{position:relative;z-index:1;width:100%;max-width:440px;background:var(--surface-raised);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-lg);padding:28px;animation:cm-pop .2s ease}
+.clinic-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:26px;line-height:1;color:var(--muted-text);cursor:pointer}
+.clinic-modal-close:hover{color:var(--text-primary)}
+.clinic-modal-title{font-family:var(--fd);font-size:24px;line-height:1.15;color:var(--text-primary);margin-bottom:6px;padding-right:24px}
+.clinic-modal-sub{font-size:14px;color:var(--muted-text);line-height:1.5;margin-bottom:20px}
+.clinic-modal-list{display:flex;flex-direction:column;gap:10px}
+.clinic-modal-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--surface);text-decoration:none;color:var(--text-primary);transition:border-color .18s,transform .12s,box-shadow .18s}
+.clinic-modal-item:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow)}
+.clinic-modal-icon{width:42px;height:42px;flex-shrink:0;border-radius:12px;background:var(--interactive-soft);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.clinic-modal-info{display:flex;flex-direction:column;flex:1;line-height:1.25}
+.clinic-modal-info strong{font-size:15px}
+.clinic-modal-info span{font-size:14px;color:var(--muted-text)}
+.clinic-modal-go{font-size:13px;font-weight:800;color:var(--accent);white-space:nowrap}
+.clinic-modal-item.both{cursor:default}
+.clinic-modal-item.both:hover{border-color:var(--border);transform:none;box-shadow:none}
+.clinic-modal-acts{display:flex;gap:8px;flex-shrink:0}
+.clinic-modal-act{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:transform .12s,opacity .2s}
+.clinic-modal-act.call{background:var(--button-primary-bg);color:var(--button-primary-text)}
+.clinic-modal-act.wa{background:#128c56;color:#fff}
+.clinic-modal-act:hover{transform:translateY(-1px);opacity:.92}
+@keyframes cm-fade{from{opacity:0}to{opacity:1}}
+@keyframes cm-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.clinic-modal-bg,.clinic-modal{animation:none}}

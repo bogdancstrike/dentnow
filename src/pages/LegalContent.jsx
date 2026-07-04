@@ -6,7 +6,7 @@ const content = {
     { title: '2. Categorii de date', text: 'Putem colecta nume, telefon, email, mesajul transmis, preferinta de programare si informatii medicale oferite voluntar in formular sau conversatie.' },
     { title: '3. Temei si scop', text: 'Datele sunt folosite pentru a raspunde solicitarilor, pentru programari si pentru furnizarea serviciilor medicale. Datele medicale se trateaza cu confidentialitate sporita.' },
     { title: '4. Drepturi GDPR', list: ['Dreptul de acces', 'Dreptul la rectificare', 'Dreptul la stergere unde legea permite', 'Dreptul la restrictionare', 'Dreptul la opozitie', 'Dreptul de a depune plangere la ANSPDCP'] },
-    { title: '5. Contact', text: `Pentru solicitari legate de date personale: ${config.email} sau ${config.phoneDisplay}.` },
+    { title: '5. Contact', text: `Pentru solicitari legate de date personale: ${config.email} sau ${config.phones.map((p) => `${p.display} (${p.label})`).join(', ')}.` },
   ],
   privacy: [
     { title: '1. Ce colectam pe website', text: 'Website-ul poate colecta date trimise prin formulare, date tehnice de navigare si eventual date de analytics daca aceste integrari sunt activate.' },

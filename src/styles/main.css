@@ -180,6 +180,9 @@ em.ac {
 .btn:hover {
   transform: scale(1.03);
 }
+button.cta-phone-big, button.cta-wa, button.fab-btn, button.contact-cta-call, button.contact-cta-wa, button.nav-cta, button.nav-cta-mobile {
+  -webkit-appearance: none; appearance: none; border: none; cursor: pointer; font-family: var(--fb);
+}
 .btn-dark {
   background: var(--black);
   color: #fff;

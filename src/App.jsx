@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ToastProvider } from './hooks/useToast';
 import { ThemeProvider } from './hooks/useTheme';
+import { ClinicPickerProvider } from './hooks/useClinicPicker';
 import Layout from './components/layout/Layout';
 
 import Home from './pages/Home';
@@ -23,6 +24,7 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <ToastProvider>
+          <ClinicPickerProvider>
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<Home />} />
@@ -42,6 +44,7 @@ export default function App() {
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
+          </ClinicPickerProvider>
         </ToastProvider>
       </ThemeProvider>
     </BrowserRouter>

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navLinks, mobileNavLinks } from '../../data/navigation';
-import config from '../../config';
 import { useTheme } from '../../hooks/useTheme';
-import { IconPhone, IconSun, IconMoon } from '../ui/Icons';
+import { useClinicPicker } from '../../hooks/useClinicPicker';
+import { IconSun, IconMoon, IconPhone } from '../ui/Icons';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -12,6 +12,7 @@ export default function Navbar() {
   const [isDark, setIsDark] = useState(false);
   const location = useLocation();
   const { dark, toggle } = useTheme();
+  const openPicker = useClinicPicker();
 
   const closeMenus = () => { setMobileOpen(false); setOpenMenu(''); };
 
@@ -71,9 +72,9 @@ export default function Navbar() {
           <button className="theme-toggle" onClick={toggle} aria-label={dark ? 'Activeaza modul luminos' : 'Activeaza modul intunecat'} title={dark ? 'Mod luminos' : 'Mod intunecat'}>
             {dark ? <IconSun size={16} /> : <IconMoon size={16} />}
           </button>
-          <a href={`tel:${config.phone}`} className="nav-cta">
-            <IconPhone size={14} /> {config.phoneDisplay}
-          </a>
+          <button type="button" className="nav-cta" onClick={() => openPicker('both')}>
+            <IconPhone size={14} /> Programează-te
+          </button>
           <button className={`nav-ham${mobileOpen ? ' open' : ''}`} onClick={() => setMobileOpen(!mobileOpen)} aria-label="Meniu" aria-expanded={mobileOpen} aria-controls="mobile-navigation">
             <span /><span /><span />
           </button>
@@ -82,7 +83,7 @@ export default function Navbar() {
       {mobileOpen && <button className="nav-backdrop" aria-label="Inchide meniul" onClick={() => setMobileOpen(false)} />}
       <nav id="mobile-navigation" className={`nav-mobile${mobileOpen ? ' open' : ''}`} aria-label="Navigatie mobila">
         {mobileNavLinks.map((l) => <Link key={l.to} to={l.to} onClick={closeMenus}>{l.label}</Link>)}
-        <a href={`tel:${config.phone}`} className="nav-cta-mobile" onClick={closeMenus}><IconPhone size={16} /> Suna: {config.phoneDisplay}</a>
+        <button type="button" className="nav-cta-mobile" onClick={() => { closeMenus(); openPicker('both'); }}><IconPhone size={16} /> Programează-te</button>
       </nav>
     </>
   );

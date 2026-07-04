@@ -11,6 +11,10 @@
 .footer-links a { font-size: 14px; color: rgba(255,255,255,.6); text-decoration: none; transition: color .2s; }
 .footer-links a:hover { color: #fff; }
 .footer-loc-area { font-size: 12px; color: rgba(255,255,255,.4); }
+.footer-phone { display: flex; flex-direction: column; gap: 2px; }
+.footer-phone-actions { display: flex; gap: 14px; align-items: baseline; }
+.footer-wa { font-size: 13px; color: rgba(255,255,255,.55); }
+.footer-wa:hover { color: #35d07f; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
 .footer-copy { font-size: 13px; }
 .footer-legal { display: flex; gap: 20px; }

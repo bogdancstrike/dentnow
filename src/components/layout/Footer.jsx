@@ -35,7 +35,15 @@ export default function Footer() {
         <div>
           <p className="footer-col-title">Contact &amp; locatii</p>
           <ul className="footer-links">
-            <li><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></li>
+            {config.phones.map((p) => (
+              <li key={p.tel} className="footer-phone">
+                <span className="footer-loc-area">{p.label}</span>
+                <span className="footer-phone-actions">
+                  <a href={`tel:${p.tel}`}>{p.display}</a>
+                  <a href={p.whatsapp} target="_blank" rel="noopener noreferrer" className="footer-wa">WhatsApp</a>
+                </span>
+              </li>
+            ))}
             <li><a href={`mailto:${config.email}`}>{config.email}</a></li>
             {config.locations.map((loc) => (
               <li key={loc.name}><a href={loc.mapsLink} target="_blank" rel="noopener noreferrer">{loc.name}<br /><span className="footer-loc-area">{loc.area}</span></a></li>

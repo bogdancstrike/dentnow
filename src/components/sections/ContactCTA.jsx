@@ -1,22 +1,19 @@
-import config from '../../config';
-import { buildWhatsAppLeadUrl } from '../../lib/leadCapture';
+import { useClinicPicker } from '../../hooks/useClinicPicker';
 import { IconPhone, IconWhatsApp } from '../ui/Icons';
 import './Sections.css';
 
 export default function ContactCTA({
   title = 'Programează-te telefonic sau pe WhatsApp',
-  subtitle = 'Momentan preluăm programările telefonic și pe WhatsApp. Îți răspundem rapid și confirmăm intervalul disponibil.',
-  service = '',
-  source = 'contact cta',
+  subtitle = 'Momentan preluăm programările telefonic și pe WhatsApp. Alege clinica dorită și te punem în legătură cu numărul potrivit.',
 }) {
-  const waUrl = buildWhatsAppLeadUrl({ source, service });
+  const openPicker = useClinicPicker();
   return (
     <aside className="contact-cta" aria-label="Contact DentNow">
       <h2 className="contact-cta-title">{title}</h2>
       <p className="contact-cta-sub">{subtitle}</p>
       <div className="contact-cta-actions">
-        <a href={`tel:${config.phone}`} className="contact-cta-call"><IconPhone size={18} /> {config.phoneDisplay}</a>
-        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="contact-cta-wa"><IconWhatsApp size={18} /> Scrie pe WhatsApp</a>
+        <button type="button" onClick={() => openPicker('call')} className="contact-cta-call"><IconPhone size={18} /> Suna acum</button>
+        <button type="button" onClick={() => openPicker('whatsapp')} className="contact-cta-wa"><IconWhatsApp size={18} /> Scrie pe WhatsApp</button>
       </div>
     </aside>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRevealAll } from '../hooks/useReveal';
-import config from '../config';
+import { useClinicPicker } from '../hooks/useClinicPicker';
 import { treatmentCategories, jumpNavItems } from '../data/content';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
@@ -9,6 +9,7 @@ import './Tratamente.css';
 
 export default function Tratamente() {
   const revealRef = useRevealAll([]);
+  const openPicker = useClinicPicker();
   const [activeId, setActiveId] = useState('');
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export default function Tratamente() {
           <div>
             <div className="banner-title">Plata in rate - de confirmat cu clinica</div>
             <p>Conditiile de plata trebuie validate de clinica inainte de publicare.</p>
-            <a href={`tel:${config.phone}`} className="btn btn-dark btn-sm">{config.phoneDisplay}</a>
+            <button type="button" onClick={() => openPicker('call')} className="btn btn-dark btn-sm">Suna acum</button>
           </div>
         </div>
 
