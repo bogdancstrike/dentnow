@@ -10,9 +10,9 @@ export const clinicGallery = [
 ];
 
 export const doctors = [
-  { name: 'Dr. Daria', role: 'Medicina dentara generala si copii', focus: 'Comunicare calma, preventie si planuri clare pentru familii.', image: assetBase + 'doctor-daria.svg' },
-  { name: 'Dr. Diana', role: 'Stomatologie restaurativa', focus: 'Obturații estetice, tratamente conservatoare si explicatii pas cu pas.', image: assetBase + 'doctor-diana.svg' },
-  { name: 'Dr. Loredana', role: 'Diagnostic si planuri de tratament', focus: 'Evaluare initiala, deviz transparent si coordonarea tratamentelor complexe.', image: assetBase + 'doctor-loredana.svg' },
+  { name: 'Dr. Maria', role: 'Medicina dentara generala si copii', focus: 'Comunicare calma, preventie si planuri clare pentru familii.', image: assetBase + 'doctor-daria.svg' },
+  { name: 'Dr. Ruxandra', role: 'Stomatologie restaurativa', focus: 'Obturații estetice, tratamente conservatoare si explicatii pas cu pas.', image: assetBase + 'doctor-diana.svg' },
+  { name: 'Dr. Diana', role: 'Diagnostic si planuri de tratament', focus: 'Evaluare initiala, deviz transparent si coordonarea tratamentelor complexe.', image: assetBase + 'doctor-loredana.svg' },
 ];
 
 export const technologies = [
