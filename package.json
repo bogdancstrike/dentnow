@@ -5,7 +5,7 @@
   "description": "DentNow — Clinică Stomatologică București — Website React",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/generate-sitemap.mjs && vite build",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "smoke": "node scripts/smoke-check.mjs"

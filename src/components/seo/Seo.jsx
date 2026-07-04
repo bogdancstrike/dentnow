@@ -38,36 +38,102 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
   useEffect(() => {
     const absoluteUrl = new URL(path, config.social.website).toString();
     const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+    const fullImageUrl = new URL(image, config.social.website).toString();
+
     document.title = fullTitle;
+
+    // Standard Meta
     upsertMeta('meta[name="description"]', { name: 'description', content: description });
+
+    // OpenGraph Meta
+    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: siteName });
     upsertMeta('meta[property="og:title"]', { property: 'og:title', content: fullTitle });
     upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
     upsertMeta('meta[property="og:type"]', { property: 'og:type', content: 'website' });
     upsertMeta('meta[property="og:url"]', { property: 'og:url', content: absoluteUrl });
-    upsertMeta('meta[property="og:image"]', { property: 'og:image', content: new URL(image, config.social.website).toString() });
+    upsertMeta('meta[property="og:image"]', { property: 'og:image', content: fullImageUrl });
+
+    // Twitter Card Meta
+    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
+    upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle });
+    upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: description });
+    upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: fullImageUrl });
+
+    // Canonical
     upsertCanonical(absoluteUrl);
 
-    upsertJsonLd(jsonLd || {
-      '@context': 'https://schema.org',
-      '@graph': config.locations.map((loc, i) => ({
-        '@type': 'Dentist',
-        '@id': `${config.social.website}#clinic-${i}`,
-        name: loc.name,
-        url: config.social.website,
-        telephone: loc.phone,
-        email: config.email,
-        image: new URL(image, config.social.website).toString(),
-        address: {
-          '@type': 'PostalAddress',
-          streetAddress: loc.address,
-          addressLocality: 'Bucuresti',
-          addressCountry: 'RO',
-        },
-        hasMap: loc.mapsLink,
-        openingHours: ['Mo-Fr 09:00-19:00', 'Sa 09:00-15:00'],
-        sameAs: [config.social.facebook, config.social.instagram].filter(Boolean),
-      })),
+    // Build default Breadcrumb schema
+    const pathParts = path.split('/').filter(Boolean);
+    const breadcrumbItems = [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Acasă',
+        item: config.social.website
+      }
+    ];
+
+    let currentAcc = '';
+    pathParts.forEach((part, idx) => {
+      currentAcc += `/${part}`;
+      const readableName = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
+      breadcrumbItems.push({
+        '@type': 'ListItem',
+        position: idx + 2,
+        name: readableName,
+        item: new URL(currentAcc, config.social.website).toString()
+      });
     });
+
+    const defaultSchema = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: breadcrumbItems
+        },
+        ...config.locations.map((loc, i) => ({
+          '@type': 'Dentist',
+          '@id': `${config.social.website}#clinic-${i}`,
+          name: loc.name,
+          url: config.social.website,
+          telephone: loc.phone,
+          email: config.email,
+          image: fullImageUrl,
+          priceRange: '$$',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: loc.address,
+            addressLocality: 'București',
+            addressRegion: 'București',
+            addressCountry: 'RO'
+          },
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: loc.area.includes('Dristor') ? 44.4136318 : loc.area.includes('Ghencea') ? 44.4055 : 44.4180,
+            longitude: loc.area.includes('Dristor') ? 26.1408659 : loc.area.includes('Ghencea') ? 26.0020 : 26.1450
+          },
+          hasMap: loc.mapsLink,
+          openingHoursSpecification: [
+            {
+              '@type': 'OpeningHoursSpecification',
+              dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+              opens: '09:00',
+              closes: '19:00'
+            },
+            {
+              '@type': 'OpeningHoursSpecification',
+              dayOfWeek: 'Saturday',
+              opens: '09:00',
+              closes: '15:00'
+            }
+          ],
+          sameAs: [config.social.facebook, config.social.instagram, config.social.linkedin].filter(Boolean)
+        }))
+      ]
+    };
+
+    upsertJsonLd(jsonLd || defaultSchema);
   }, [title, description, path, image, jsonLd]);
 
   return null;

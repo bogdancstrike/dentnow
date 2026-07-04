@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 
-const routes = ['/', '/tratamente', '/oferte', '/recenzii', '/scor-igiena', '/articole', '/ebook'];
+const routes = ['/', '/tratamente', '/oferte', '/recenzii', '/scor-igiena', '/articole', '/ebook', '/locatii/dristor', '/locatii/baba-novac', '/locatii/prelungirea-ghencea'];
 const port = 4174;
 
 function run(command, args) {

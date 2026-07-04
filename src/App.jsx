@@ -14,6 +14,7 @@ import Noutati from './pages/Noutati';
 import ScorIgiena from './pages/ScorIgiena';
 import Parteneri from './pages/Parteneri';
 import Ebook from './pages/Ebook';
+import LocationPage from './pages/LocationPage';
 import GDPR from './pages/GDPR';
 import Confidentialitate from './pages/Confidentialitate';
 import Termeni from './pages/Termeni';
@@ -38,6 +39,7 @@ export default function App() {
               <Route path="scor-igiena" element={<ScorIgiena />} />
               <Route path="parteneri" element={<Parteneri />} />
               <Route path="ebook" element={<Ebook />} />
+              <Route path="locatii/:citySlug" element={<LocationPage />} />
               <Route path="gdpr" element={<GDPR />} />
               <Route path="confidentialitate" element={<Confidentialitate />} />
               <Route path="termeni" element={<Termeni />} />

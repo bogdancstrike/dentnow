@@ -4,6 +4,15 @@ export const navLinks = [
   { label: 'Oferte', to: '/oferte' },
   { label: 'Recenzii', to: '/recenzii' },
   {
+    label: 'Locații',
+    to: '/locatii/dristor',
+    children: [
+      { label: 'DentNow Dristor', to: '/locatii/dristor' },
+      { label: 'DentNow Baba Novac', to: '/locatii/baba-novac' },
+      { label: 'DentNow Prelungirea Ghencea', to: '/locatii/prelungirea-ghencea' },
+    ],
+  },
+  {
     label: 'Clinica',
     to: '/#clinica',
     children: [
@@ -29,6 +38,9 @@ export const mobileNavLinks = [
   { label: 'Acasa', to: '/' },
   { label: 'Tratamente si tarife', to: '/tratamente' },
   { label: 'Oferte', to: '/oferte' },
+  { label: 'DentNow Dristor', to: '/locatii/dristor' },
+  { label: 'DentNow Baba Novac', to: '/locatii/baba-novac' },
+  { label: 'DentNow Prelungirea Ghencea', to: '/locatii/prelungirea-ghencea' },
   { label: 'Recenzii', to: '/recenzii' },
   { label: 'Clinica si galerie', to: '/#clinica' },
   { label: 'Before & After', to: '/before-after' },
@@ -49,6 +61,9 @@ export const footerServices = [
 ];
 
 export const footerClinic = [
+  { label: 'DentNow Dristor', to: '/locatii/dristor' },
+  { label: 'DentNow Baba Novac', to: '/locatii/baba-novac' },
+  { label: 'DentNow Prelungirea Ghencea', to: '/locatii/prelungirea-ghencea' },
   { label: 'Clinica si galerie', to: '/#clinica' },
   { label: 'Recenzii Pacienti', to: '/recenzii' },
   { label: 'Before & After', to: '/before-after' },
