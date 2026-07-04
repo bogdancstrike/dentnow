@@ -3,6 +3,7 @@ import { useRevealAll } from '../hooks/useReveal';
 import config from '../config';
 import { articles } from '../data/articles';
 import PageHero from '../components/ui/PageHero';
+import PlaceholderCover from '../components/ui/PlaceholderCover';
 import Seo from '../components/seo/Seo';
 import './Articole.css';
 
@@ -30,7 +31,7 @@ export default function Articole() {
         <Seo title={article.title} description={article.excerpt} path={`/articole/${slug}`} />
         <PageHero tag={article.cat} title={article.title} subtitle={article.excerpt} />
         <article className="article-detail">
-          <img className="article-detail-img" src="/assets/dentnow/article-prevention.svg" alt="Placeholder articol DentNow" />
+          <PlaceholderCover className="article-detail-img" label={article.title} tag={article.cat} />
           <div className="article-body" dangerouslySetInnerHTML={{ __html: article.body }} />
           <div className="article-actions">
             <a href={`tel:${config.phone}`} className="btn btn-dark">Programare: {config.phoneDisplay}</a>
@@ -48,7 +49,7 @@ export default function Articole() {
       <div className="articles-grid">
         {articles.map((a, i) => (
           <Link key={a.title} to={`/articole/${slugify(a.title)}`} className={`art-card rv${i % 3 > 0 ? ` d${i % 3}` : ''}`}>
-            <img className="art-thumb" src="/assets/dentnow/article-prevention.svg" alt="Placeholder articol DentNow" />
+            <PlaceholderCover className="art-thumb" label={a.title} tag={a.cat} />
             <div className="art-body">
               <div className="art-cat">{a.cat}</div>
               <h3 className="art-title">{a.title}</h3>

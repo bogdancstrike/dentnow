@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { footerServices, footerClinic } from '../../data/navigation';
 import config from '../../config';
-import { IconFacebook, IconInstagram, IconWhatsApp } from '../ui/Icons';
+import { IconFacebook, IconInstagram, IconWhatsApp, IconLinkedIn } from '../ui/Icons';
 import './Footer.css';
 
 export default function Footer() {
@@ -16,6 +16,7 @@ export default function Footer() {
           <div className="footer-social">
             <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" title="Facebook"><IconFacebook size={20} /></a>
             <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><IconInstagram size={20} /></a>
+            <a href={config.social.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><IconLinkedIn size={20} /></a>
             <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" title="WhatsApp"><IconWhatsApp size={20} /></a>
           </div>
         </div>

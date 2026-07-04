@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useRevealAll } from '../hooks/useReveal';
 import config from '../config';
-import { services, quickServices, trustStats, scheduleHours } from '../data/content';
+import { services, quickServices, trustStats } from '../data/content';
 import { reviews } from '../data/reviews';
 import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
@@ -10,7 +10,7 @@ import ProofGallery from '../components/sections/ProofGallery';
 import DoctorTeam from '../components/sections/DoctorTeam';
 import TechnologySection from '../components/sections/TechnologySection';
 import PatientJourney from '../components/sections/PatientJourney';
-import { IconPhone, IconWhatsApp, IconMapPin, IconMail, IconClock, IconFacebook, IconInstagram } from '../components/ui/Icons';
+import { IconPhone, IconWhatsApp, IconMapPin, IconMail, IconClock, IconFacebook, IconInstagram, IconLinkedIn } from '../components/ui/Icons';
 import './Home.css';
 
 export default function Home() {
@@ -57,29 +57,23 @@ export default function Home() {
               <div className="location-info">
                 <span className="location-area">{loc.area}</span>
                 <h3 className="location-name">{loc.name}</h3>
-                <p className="location-address"><IconMapPin size={16} /> {loc.address}</p>
+                <p className="location-line"><IconMapPin size={16} /><span>{loc.address}</span></p>
+                <p className="location-line"><IconPhone size={16} /><a href={`tel:${loc.phone}`}>{loc.phoneDisplay}</a></p>
+                <div className="location-line location-hours">
+                  <IconClock size={16} />
+                  <span>{loc.schedule.map((h) => <span key={h.day} className="loc-hour">{h.day}: {h.hours}{h.open ? '' : ' (Inchis)'}</span>)}</span>
+                </div>
                 <a href={loc.mapsLink} target="_blank" rel="noopener noreferrer" className="location-link">Deschide in Google Maps</a>
               </div>
             </div>
           ))}
         </div>
-        <div className="contact-general">
-          <div className="contact-col">
-            <h3 className="h3d rv">Contact rapid</h3>
-            <ContactItem icon={<IconPhone size={18} />} label="Telefon" rv="rv"><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></ContactItem>
-            <ContactItem icon={<IconMail size={18} />} label="Email" rv="rv d1"><a href={`mailto:${config.email}`}>{config.email}</a></ContactItem>
-            <div className="social-links rv">
-              <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="social-btn"><IconFacebook size={16} /> Facebook</a>
-              <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-btn"><IconWhatsApp size={16} /> WhatsApp</a>
-              <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="social-btn"><IconInstagram size={16} /> Instagram</a>
-            </div>
-          </div>
-          <div className="contact-col">
-            <h3 className="h3d rv">Program</h3>
-            <ContactItem icon={<IconClock size={18} />} label="Valabil in toate clinicile" rv="rv d1">
-              {scheduleHours.map((h, i) => <span key={h.day}>{h.day}: {h.hours}{h.open ? '' : ' (Inchis)'}{i < scheduleHours.length - 1 && <br />}</span>)}
-            </ContactItem>
-          </div>
+        <div className="contact-social rv">
+          <a href={`mailto:${config.email}`} className="social-btn"><IconMail size={16} /> {config.email}</a>
+          <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-btn"><IconWhatsApp size={16} /> WhatsApp</a>
+          <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="social-btn"><IconFacebook size={16} /> Facebook</a>
+          <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="social-btn"><IconInstagram size={16} /> Instagram</a>
+          <a href={config.social.linkedin} target="_blank" rel="noopener noreferrer" className="social-btn"><IconLinkedIn size={16} /> LinkedIn</a>
         </div>
       </section>
 
@@ -133,18 +127,6 @@ export default function Home() {
         </div>
       </section>
 
-    </div>
-  );
-}
-
-function ContactItem({ icon, label, rv, children }) {
-  return (
-    <div className={`contact-item ${rv}`}>
-      <div className="ci-icon">{icon}</div>
-      <div>
-        <div className="ci-label">{label}</div>
-        <div className="ci-value">{children}</div>
-      </div>
     </div>
   );
 }

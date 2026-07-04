@@ -2,6 +2,7 @@ import { useRevealAll } from '../hooks/useReveal';
 import { ebooks } from '../data/content';
 import { buildWhatsAppLeadUrl } from '../lib/leadCapture';
 import PageHero from '../components/ui/PageHero';
+import PlaceholderCover from '../components/ui/PlaceholderCover';
 import Seo from '../components/seo/Seo';
 import './Ebook.css';
 
@@ -16,7 +17,7 @@ export default function Ebook() {
       <div className="ebook-grid">
         {ebooks.map((eb, i) => (
           <article key={eb.title} className={`ebook-card rv${i % 3 > 0 ? ` d${i % 3}` : ''}`}>
-            <div className={`ebook-cover ${eb.bg}`}><img src="/assets/dentnow/ebook-cover.svg" alt="Coperta placeholder e-book DentNow" /><span className="ebook-lbl">{eb.label}</span></div>
+            <PlaceholderCover className="ebook-cover" label={eb.title} tag={eb.label} />
             <div className="ebook-body">
               <div className="ebook-cat">{eb.cat}</div>
               <h3 className="ebook-title">{eb.title}</h3>
