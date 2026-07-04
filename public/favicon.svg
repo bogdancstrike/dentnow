@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0080FF" />
+      <stop offset="100%" stop-color="#0046B3" />
+    </linearGradient>
+    <linearGradient id="toothGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E0F2FE" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#00194D" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Tooth Symbol -->
+  <g filter="url(#shadow)">
+    <!-- Anatomical Tooth Crown & Roots -->
+    <path d="M 256 135
+             C 230 120, 190 112, 170 125
+             C 140 140, 130 180, 135 230
+             C 140 280, 160 320, 180 360
+             C 190 380, 192 415, 205 415
+             C 218 415, 235 360, 256 325
+             C 277 360, 294 415, 307 415
+             C 320 415, 322 380, 332 360
+             C 352 320, 372 280, 377 230
+             C 382 180, 372 140, 342 125
+             C 322 112, 282 120, 256 135 Z"
+          fill="url(#toothGrad)" />
+
+    <!-- Sparkle Star Accent -->
+    <path d="M 380 91.5
+             L 387.5 122.5
+             L 418.5 130
+             L 387.5 137.5
+             L 380 168.5
+             L 372.5 137.5
+             L 341.5 130
+             L 372.5 122.5 Z"
+          fill="#38BDF8" />
+    <path d="M 380 104.5
+             L 383.75 126.25
+             L 405.5 130
+             L 383.75 133.75
+             L 380 155.5
+             L 376.25 133.75
+             L 354.5 130
+             L 376.25 126.25 Z"
+          fill="#FFFFFF" />
+  </g>
+</svg>
