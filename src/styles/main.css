@@ -429,6 +429,72 @@ button.cta-phone-big, button.cta-wa, button.fab-btn, button.contact-cta-call, bu
 }
 .modal-close:hover { background: var(--light); }
 
+/* ── Shared cross-page utilities ── */
+.full-width {
+  width: 100%;
+  text-align: center;
+}
+
+.btn-whatsapp {
+  background: #25d366;
+  color: #fff;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--rs);
+  font-weight: 600;
+  text-decoration: none;
+}
+.btn-whatsapp:hover {
+  background: #1eb957;
+  color: #fff;
+}
+
+/* AI Overview summary box (SGE snippets, shared by landing pages) */
+.sge-ai-box {
+  background: linear-gradient(135deg, rgba(0, 113, 227, 0.06) 0%, rgba(56, 189, 248, 0.08) 100%);
+  border: 1px solid rgba(0, 113, 227, 0.2);
+  border-radius: var(--rs);
+  padding: 24px;
+  margin-bottom: 40px;
+}
+.sge-ai-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.sge-ai-badge {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+.sge-ai-tag {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sge-ai-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--black);
+}
+[data-theme='dark'] .sge-ai-box {
+  background: linear-gradient(135deg, rgba(84, 211, 220, 0.08) 0%, rgba(84, 211, 220, 0.04) 100%);
+  border-color: rgba(84, 211, 220, 0.25);
+}
+[data-theme='dark'] .sge-ai-tag {
+  color: #061316;
+}
+
 /* ══════════════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════════════ */

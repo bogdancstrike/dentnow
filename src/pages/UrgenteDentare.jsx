@@ -61,16 +61,16 @@ export default function UrgenteDentare() {
           <div className="call-card">
             <h3>Sediul Dristor & Baba Novac</h3>
             <p>Strada Râmnicu Vâlcea nr. 29 & Str. Dristorului 96</p>
-            <a href="tel:+40720509802" className="btn btn-dark btn-lg">
-              <IconPhone size={20} /> Sună Acum: 0720 509 802
+            <a href={`tel:${config.phones[0].tel}`} className="btn btn-dark btn-lg">
+              <IconPhone size={20} /> Sună Acum: {config.phones[0].display}
             </a>
           </div>
 
           <div className="call-card">
             <h3>Sediul Prelungirea Ghencea</h3>
             <p>Prelungirea Ghencea nr. 91F, Sector 6</p>
-            <a href="tel:+40723232263" className="btn btn-dark btn-lg">
-              <IconPhone size={20} /> Sună Acum: 0723 232 263
+            <a href={`tel:${config.phones[1].tel}`} className="btn btn-dark btn-lg">
+              <IconPhone size={20} /> Sună Acum: {config.phones[1].display}
             </a>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function UrgenteDentare() {
           <h3><IconClock size={20} /> Program de Preluare Urgențe</h3>
           <p>Luni – Vineri: 09:00 – 19:00 | Sâmbătă: 09:00 – 15:00</p>
           <div className="hours-whatsapp">
-            <a href="https://wa.me/40720509802?text=Buna%20ziua%2C%20am%20o%20urgenta%20dentara" target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+            <a href={`https://wa.me/${config.phones[0].tel.replace('+', '')}?text=Buna%20ziua%2C%20am%20o%20urgenta%20dentara`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
               <IconWhatsApp size={18} /> Trimite un Mesaj WhatsApp Rapid
             </a>
           </div>

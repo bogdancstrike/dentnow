@@ -1,8 +1,9 @@
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useLocation, Link, Navigate } from 'react-router-dom';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { IconPhone, IconClock, IconAlert } from '../components/ui/Icons';
+import config from '../config';
 import './TreatmentDetail.css';
 
 const treatmentData = {
@@ -136,7 +137,10 @@ const treatmentData = {
 };
 
 export default function TreatmentDetail() {
-  const { treatSlug } = useParams();
+  // Routes are static paths (e.g. /implant-dentar-bucuresti), so the slug
+  // comes from the pathname, not from a route param.
+  const { pathname } = useLocation();
+  const treatSlug = pathname.replace(/\/+$/, '').split('/').pop();
   const openPicker = useClinicPicker();
   const item = treatmentData[treatSlug];
 
@@ -144,19 +148,28 @@ export default function TreatmentDetail() {
     return <Navigate to="/tratamente" replace />;
   }
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'MedicalProcedure',
-    name: item.title,
-    description: item.description,
-    procedureType: item.tag,
-    offers: {
-      '@type': 'Offer',
-      price: item.price.replace(/[^0-9]/g, '') || '1490',
-      priceCurrency: 'RON',
-      availability: 'https://schema.org/InStock'
+  const jsonLd = [
+    {
+      '@type': 'MedicalProcedure',
+      name: item.title,
+      description: item.description,
+      procedureType: item.tag,
+      offers: {
+        '@type': 'Offer',
+        price: item.price.replace(/[^0-9]/g, '') || '1490',
+        priceCurrency: 'RON',
+        availability: 'https://schema.org/InStock'
+      }
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: item.faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a }
+      }))
     }
-  };
+  ];
 
   return (
     <div>
@@ -213,7 +226,7 @@ export default function TreatmentDetail() {
               <button type="button" className="btn btn-dark full-width" onClick={() => openPicker('both')}>
                 <IconPhone size={18} /> Programează o Consultație
               </button>
-              <a href="https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20detalii%20despre%20tratamentul%20de%20" target="_blank" rel="noopener noreferrer" className="btn btn-outline full-width">
+              <a href={`https://wa.me/${config.phones[0].tel.replace('+', '')}?text=${encodeURIComponent(`Buna ziua, doresc detalii despre ${item.title}`)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline full-width">
                 Întreabă un Medic pe WhatsApp
               </a>
             </div>

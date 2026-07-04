@@ -97,8 +97,7 @@ export default function LocationPage() {
     return <Navigate to="/" replace />;
   }
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
+  const jsonLd = [{
     '@type': 'Dentist',
     name: loc.name,
     description: loc.description,
@@ -128,7 +127,15 @@ export default function LocationPage() {
       }
     ],
     hasMap: loc.mapsLink
-  };
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: loc.faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a }
+    }))
+  }];
 
   return (
     <div>

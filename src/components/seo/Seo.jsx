@@ -101,9 +101,17 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
       });
     });
 
-    const defaultSchema = {
+    // Page-level schemas are merged into the default graph so breadcrumbs
+    // and clinic entities are kept on every page.
+    const pageSchemas = (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).map(
+      // eslint-disable-next-line no-unused-vars
+      ({ '@context': _ctx, ...schema }) => schema
+    );
+
+    const fullSchema = {
       '@context': 'https://schema.org',
       '@graph': [
+        ...pageSchemas,
         {
           '@type': 'BreadcrumbList',
           itemListElement: breadcrumbItems
@@ -149,7 +157,7 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
       ]
     };
 
-    upsertJsonLd(jsonLd || defaultSchema);
+    upsertJsonLd(fullSchema);
   }, [title, description, path, image, jsonLd]);
 
   return null;

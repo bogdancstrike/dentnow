@@ -75,22 +75,7 @@
   margin: 28px 0;
 }
 
-.btn-whatsapp {
-  background: #25d366;
-  color: #fff;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: var(--rs);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.btn-whatsapp:hover {
-  background: #1eb957;
-}
+/* .btn-whatsapp lives in styles/main.css */
 
 .transit-box {
   background: var(--bg);
@@ -124,10 +109,7 @@
   margin-bottom: 16px;
 }
 
-.full-width {
-  width: 100%;
-  text-align: center;
-}
+/* .full-width lives in styles/main.css */
 
 .location-faq-sec {
   margin-top: 60px;

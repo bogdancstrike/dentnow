@@ -1,6 +1,10 @@
+import { useRevealAll } from '../../hooks/useReveal';
+
 export default function PageHero({ tag, title, subtitle, dark = false, children }) {
+  const revealRef = useRevealAll([title, subtitle]);
+
   return (
-    <div className={`page-hero${dark ? ' dark' : ''}`} {...(dark ? { 'data-nav-dark': true } : {})}>
+    <div ref={revealRef} className={`page-hero${dark ? ' dark' : ''}`} {...(dark ? { 'data-nav-dark': true } : {})}>
       {dark && <div className="page-hero-glow" />}
       {tag && <div className="stag" style={dark ? { position: 'relative', zIndex: 1 } : {}}>{tag}</div>}
       {title && (
