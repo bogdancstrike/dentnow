@@ -23,7 +23,8 @@ async function waitFor(url, timeoutMs = 10000) {
 }
 
 await run('npm', ['run', 'build']);
-const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', String(port)], { stdio: 'pipe' });
+const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', String(port)], { stdio: 'pipe', detached: true });
+let exitCode = 0;
 try {
   await waitFor(`http://127.0.0.1:${port}/`);
   for (const route of routes) {
@@ -32,6 +33,10 @@ try {
     if (!response.ok || !text.includes('<div id="root"></div>')) throw new Error(`Smoke failed for ${route}`);
     console.log(`ok ${route}`);
   }
+} catch (error) {
+  console.error(error.message);
+  exitCode = 1;
 } finally {
-  server.kill('SIGTERM');
+  try { process.kill(-server.pid, 'SIGTERM'); } catch {}
 }
+process.exit(exitCode);

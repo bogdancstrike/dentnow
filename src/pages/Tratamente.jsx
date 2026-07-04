@@ -4,7 +4,7 @@ import config from '../config';
 import { treatmentCategories, jumpNavItems } from '../data/content';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
-import AppointmentPanel from '../components/sections/AppointmentPanel';
+import ContactCTA from '../components/sections/ContactCTA';
 import './Tratamente.css';
 
 export default function Tratamente() {
@@ -71,7 +71,7 @@ export default function Tratamente() {
         </div>
 
         <div id="programare-tratamente" className="tarife-appointment rv">
-          <AppointmentPanel title="Cere o programare pentru tratament" selectedService="Consultatie" source="tratamente" />
+          <ContactCTA title="Programează-te pentru tratament" service="Consultatie" source="tratamente" />
         </div>
       </div>
     </div>

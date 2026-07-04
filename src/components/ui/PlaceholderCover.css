@@ -1,0 +1,4 @@
+.ph-cover{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow:hidden;color:#fff;text-align:center;padding:20px}
+.ph-watermark{position:absolute;right:-12px;bottom:-30px;font-family:var(--fd);font-size:150px;font-weight:900;line-height:1;color:rgba(255,255,255,.10);pointer-events:none;user-select:none}
+.ph-brand{position:relative;font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:.4px}
+.ph-tag{position:relative;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;background:rgba(255,255,255,.18);padding:5px 12px;border-radius:999px;max-width:90%}

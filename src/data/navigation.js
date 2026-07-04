@@ -1,4 +1,5 @@
 export const navLinks = [
+  { label: 'Acasa', to: '/' },
   { label: 'Tratamente', to: '/tratamente' },
   { label: 'Oferte', to: '/oferte' },
   { label: 'Recenzii', to: '/recenzii' },

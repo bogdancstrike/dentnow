@@ -1,5 +1,10 @@
 import config from '../config';
 
+/**
+ * Presentation site — there is no backend to accept form submissions.
+ * We only build a prefilled WhatsApp message so a request opens the chat
+ * with the relevant context instead of pretending data was stored.
+ */
 function buildMessage(payload) {
   const rows = [
     `Sursa: ${payload.source || 'DentNow website'}`,
@@ -12,30 +17,10 @@ function buildMessage(payload) {
     payload.ebook ? `E-book: ${payload.ebook}` : '',
     payload.message ? `Mesaj: ${payload.message}` : '',
   ].filter(Boolean);
-  return rows.join('\\n');
+  return rows.join('\n');
 }
 
-export function buildWhatsAppLeadUrl(payload) {
+export function buildWhatsAppLeadUrl(payload = {}) {
   const phone = config.phone.replace(/[^0-9]/g, '');
   return `https://wa.me/${phone}?text=${encodeURIComponent(buildMessage(payload))}`;
-}
-
-export async function submitLead(payload) {
-  const fallbackUrl = buildWhatsAppLeadUrl(payload);
-  if (!config.leadEndpoint) {
-    return { ok: false, fallback: 'whatsapp', fallbackUrl };
-  }
-
-  try {
-    const response = await fetch(config.leadEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, submittedAt: new Date().toISOString() }),
-    });
-
-    if (response.ok) return { ok: true };
-    return { ok: false, error: `Server response ${response.status}`, fallback: 'whatsapp', fallbackUrl };
-  } catch (error) {
-    return { ok: false, error: error.message, fallback: 'whatsapp', fallbackUrl };
-  }
 }

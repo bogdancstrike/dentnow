@@ -5,7 +5,6 @@ import { services, quickServices, trustStats, scheduleHours } from '../data/cont
 import { reviews } from '../data/reviews';
 import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
-import AppointmentPanel from '../components/sections/AppointmentPanel';
 import TrustStrip from '../components/sections/TrustStrip';
 import ProofGallery from '../components/sections/ProofGallery';
 import DoctorTeam from '../components/sections/DoctorTeam';
@@ -30,7 +29,7 @@ export default function Home() {
             <div className="hero-cta-row left">
               <a href={`tel:${config.phone}`} className="cta-phone-big"><IconPhone size={18} /> {config.phoneDisplay}</a>
               <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="cta-wa"><IconWhatsApp size={18} /> WhatsApp</a>
-              <a href="#programare" className="btn btn-outline">Programare online</a>
+              <a href="#contact" className="btn btn-outline">Program si locatie</a>
             </div>
             <TrustStrip items={trustStats} />
           </div>
@@ -41,8 +40,45 @@ export default function Home() {
               <span>Inlocuieste cu fotografia reala a cabinetului in `public/assets/dentnow`.</span>
             </div>
           </div>
-          <div id="programare" className="hero-appointment">
-            <AppointmentPanel compact selectedService="Consultatie" source="homepage hero" />
+        </div>
+      </section>
+
+      <section className="contact-section" id="contact">
+        <div className="contact-heading">
+          <div className="stag rv">Contact, locatii si program</div>
+          <h2 className="h2d rv d1">Cele 3 clinici DentNow din Bucuresti.</h2>
+        </div>
+        <div className="locations-grid">
+          {config.locations.map((loc, i) => (
+            <div className={`location-card rv${i > 0 ? ` d${i}` : ''}`} key={loc.name}>
+              <div className="location-map">
+                <iframe src={loc.embedUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={`${loc.name} pe Google Maps`} />
+              </div>
+              <div className="location-info">
+                <span className="location-area">{loc.area}</span>
+                <h3 className="location-name">{loc.name}</h3>
+                <p className="location-address"><IconMapPin size={16} /> {loc.address}</p>
+                <a href={loc.mapsLink} target="_blank" rel="noopener noreferrer" className="location-link">Deschide in Google Maps</a>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="contact-general">
+          <div className="contact-col">
+            <h3 className="h3d rv">Contact rapid</h3>
+            <ContactItem icon={<IconPhone size={18} />} label="Telefon" rv="rv"><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></ContactItem>
+            <ContactItem icon={<IconMail size={18} />} label="Email" rv="rv d1"><a href={`mailto:${config.email}`}>{config.email}</a></ContactItem>
+            <div className="social-links rv">
+              <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="social-btn"><IconFacebook size={16} /> Facebook</a>
+              <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-btn"><IconWhatsApp size={16} /> WhatsApp</a>
+              <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="social-btn"><IconInstagram size={16} /> Instagram</a>
+            </div>
+          </div>
+          <div className="contact-col">
+            <h3 className="h3d rv">Program</h3>
+            <ContactItem icon={<IconClock size={18} />} label="Valabil in toate clinicile" rv="rv d1">
+              {scheduleHours.map((h, i) => <span key={h.day}>{h.day}: {h.hours}{h.open ? '' : ' (Inchis)'}{i < scheduleHours.length - 1 && <br />}</span>)}
+            </ContactItem>
           </div>
         </div>
       </section>
@@ -97,34 +133,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="contact-section" id="contact">
-        <div className="contact-heading">
-          <div className="stag rv">Contact, locatie si program</div>
-          <h2 className="h2d rv d1">Gaseste usor clinica DentNow.</h2>
-        </div>
-        <div className="contact-grid">
-          <div>
-            <h3 className="h3d rv">Informatii utile</h3>
-            <ContactItem icon={<IconMapPin size={18} />} label="Adresa" rv="rv">
-              {config.address.full}<br />
-              <a href={config.maps.link} target="_blank" rel="noopener noreferrer">Deschide in Google Maps</a>
-            </ContactItem>
-            <ContactItem icon={<IconPhone size={18} />} label="Telefon" rv="rv d1"><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></ContactItem>
-            <ContactItem icon={<IconMail size={18} />} label="Email" rv="rv d2"><a href={`mailto:${config.email}`}>{config.email}</a></ContactItem>
-            <ContactItem icon={<IconClock size={18} />} label="Program" rv="rv d3">
-              {scheduleHours.map((h, i) => <span key={h.day}>{h.day}: {h.hours}{h.open ? '' : ' (Inchis)'}{i < scheduleHours.length - 1 && <br />}</span>)}
-            </ContactItem>
-            <div className="social-links rv">
-              <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="social-btn"><IconFacebook size={16} /> Facebook</a>
-              <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-btn"><IconWhatsApp size={16} /> WhatsApp</a>
-              <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="social-btn"><IconInstagram size={16} /> Instagram</a>
-            </div>
-          </div>
-          <div className="map-wrapper rv d1">
-            <iframe src={config.maps.embedUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="DentNow pe Google Maps" />
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

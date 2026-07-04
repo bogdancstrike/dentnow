@@ -49,20 +49,24 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
 
     upsertJsonLd(jsonLd || {
       '@context': 'https://schema.org',
-      '@type': 'Dentist',
-      name: 'DentNow',
-      url: config.social.website,
-      telephone: config.phone,
-      email: config.email,
-      image: new URL(image, config.social.website).toString(),
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: config.address.full,
-        addressLocality: 'Bucuresti',
-        addressCountry: 'RO',
-      },
-      openingHours: ['Mo-Fr 09:00-19:00', 'Sa 09:00-15:00'],
-      sameAs: [config.social.facebook, config.social.instagram].filter(Boolean),
+      '@graph': config.locations.map((loc, i) => ({
+        '@type': 'Dentist',
+        '@id': `${config.social.website}#clinic-${i}`,
+        name: loc.name,
+        url: config.social.website,
+        telephone: config.phone,
+        email: config.email,
+        image: new URL(image, config.social.website).toString(),
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: loc.address,
+          addressLocality: 'Bucuresti',
+          addressCountry: 'RO',
+        },
+        hasMap: loc.mapsLink,
+        openingHours: ['Mo-Fr 09:00-19:00', 'Sa 09:00-15:00'],
+        sameAs: [config.social.facebook, config.social.instagram].filter(Boolean),
+      })),
     });
   }, [title, description, path, image, jsonLd]);
 

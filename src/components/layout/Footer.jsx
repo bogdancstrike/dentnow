@@ -32,11 +32,13 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <p className="footer-col-title">Contact</p>
+          <p className="footer-col-title">Contact &amp; locatii</p>
           <ul className="footer-links">
             <li><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></li>
             <li><a href={`mailto:${config.email}`}>{config.email}</a></li>
-            <li><a href={config.maps.link} target="_blank" rel="noopener noreferrer">{config.address.street}<br />{config.address.detail}</a></li>
+            {config.locations.map((loc) => (
+              <li key={loc.name}><a href={loc.mapsLink} target="_blank" rel="noopener noreferrer">{loc.name}<br /><span className="footer-loc-area">{loc.area}</span></a></li>
+            ))}
           </ul>
         </div>
       </div>

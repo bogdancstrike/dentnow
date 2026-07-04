@@ -1,14 +1,12 @@
-import { useState } from 'react';
 import { useRevealAll } from '../hooks/useReveal';
 import { offers } from '../data/content';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
-import AppointmentPanel from '../components/sections/AppointmentPanel';
+import ContactCTA from '../components/sections/ContactCTA';
 import './Oferte.css';
 
 export default function Oferte() {
   const ref = useRevealAll([]);
-  const [selected, setSelected] = useState('');
   return (
     <div ref={ref}>
       <Seo title="Oferte stomatologice DentNow" description="Oferte DentNow pentru consultatii, igienizare, implanturi si albire. Preturile se confirma inainte de tratament." path="/oferte" />
@@ -23,12 +21,12 @@ export default function Oferte() {
             <div className="price-row"><span className="price-new">{o.price}</span><span className="price-old">{o.oldPrice}</span></div>
             <span className="price-save">Economisesti {o.save}</span>
             <div className="offer-features">{o.features.map((f) => <div key={f} className="of">{f}</div>)}</div>
-            <a href="#oferta-programare" onClick={() => setSelected(o.name)} className="btn btn-dark offer-action">Cere programare</a>
+            <a href="#oferta-programare" className="btn btn-dark offer-action">Cere programare</a>
           </article>
         ))}
       </div>
       <section id="oferta-programare" className="offer-appointment">
-        <AppointmentPanel title="Cere detalii despre oferta" selectedService={selected || 'Consultatie'} source="oferte" />
+        <ContactCTA title="Cere detalii despre ofertă" subtitle="Sună-ne sau scrie-ne pe WhatsApp și îți spunem exact ce include oferta și cum te poți programa. Nu folosim formular online." source="oferte" />
         <p className="offer-note">Ultima actualizare continut: Iulie 2026. Valabilitatea ofertelor trebuie confirmata de clinica inainte de publicare.</p>
       </section>
     </div>

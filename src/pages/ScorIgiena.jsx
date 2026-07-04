@@ -1,8 +1,7 @@
 import { useState, useCallback } from 'react';
 import config from '../config';
 import { quizQuestions } from '../data/content';
-import { submitLead } from '../lib/leadCapture';
-import { useToast } from '../hooks/useToast';
+import { buildWhatsAppLeadUrl } from '../lib/leadCapture';
 import Seo from '../components/seo/Seo';
 import './ScorIgiena.css';
 
@@ -78,8 +77,6 @@ export default function ScorIgiena() {
 }
 
 function QuizResult({ answers, questions, onRestart }) {
-  const showToast = useToast();
-  const [loading, setLoading] = useState(false);
   const total = answers.reduce((sum, ai, qi) => sum + questions[qi].opts[ai][1], 0);
   const max = questions.length * 5;
   const pct = Math.round((total / max) * 100);
@@ -106,19 +103,7 @@ function QuizResult({ answers, questions, onRestart }) {
   const circumference = 2 * Math.PI * 54;
   const dash = (pct / 100) * circumference;
 
-  const shareScore = async () => {
-    setLoading(true);
-    const result = await submitLead({ source: 'scor igiena', service: 'Igienizare GBT', score: `${pct}% - ${title}`, message: tips.join('; ') });
-    setLoading(false);
-    if (result.ok) {
-      showToast('Scorul a fost trimis catre DentNow.');
-      return;
-    }
-    if (result.fallbackUrl) {
-      window.open(result.fallbackUrl, '_blank', 'noopener,noreferrer');
-      showToast('Am deschis WhatsApp cu scorul completat.');
-    }
-  };
+  const waUrl = buildWhatsAppLeadUrl({ source: 'scor igiena', service: 'Igienizare GBT', score: `${pct}% - ${title}`, message: tips.join('; ') });
 
   return (
     <div className="quiz-result">
@@ -148,7 +133,7 @@ function QuizResult({ answers, questions, onRestart }) {
 
       <div className="qr-actions">
         <a href={`tel:${config.phone}`} className="btn btn-dark">Suna acum: {config.phoneDisplay}</a>
-        <button className="btn btn-outline" onClick={shareScore} disabled={loading}>{loading ? 'Se pregateste...' : 'Trimite scorul pe WhatsApp'}</button>
+        <a className="btn btn-outline" href={waUrl} target="_blank" rel="noopener noreferrer">Trimite scorul pe WhatsApp</a>
         <button className="btn btn-outline" onClick={onRestart}>Reia testul</button>
       </div>
     </div>
