@@ -7,6 +7,7 @@ export default function Tooth3D() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     const onScroll = () => {
       const scrollY = window.scrollY;
       const rotateY = (scrollY * 0.15) % 360;

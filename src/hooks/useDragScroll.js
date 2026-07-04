@@ -8,32 +8,37 @@ export function useDragScroll() {
     if (!el) return;
 
     let isDown = false;
-    let startX;
-    let scrollLeft;
+    let startX = 0;
+    let scrollLeft = 0;
 
     const onDown = (e) => {
       isDown = true;
-      startX = e.pageX - el.offsetLeft;
+      startX = e.clientX;
       scrollLeft = el.scrollLeft;
+      el.setPointerCapture?.(e.pointerId);
     };
-    const onLeave = () => { isDown = false; };
-    const onUp = () => { isDown = false; };
+    const stop = (e) => {
+      isDown = false;
+      if (e?.pointerId !== undefined) el.releasePointerCapture?.(e.pointerId);
+    };
     const onMove = (e) => {
       if (!isDown) return;
       e.preventDefault();
-      el.scrollLeft = scrollLeft - (e.pageX - el.offsetLeft - startX) * 1.5;
+      el.scrollLeft = scrollLeft - (e.clientX - startX) * 1.5;
     };
 
-    el.addEventListener('mousedown', onDown);
-    el.addEventListener('mouseleave', onLeave);
-    el.addEventListener('mouseup', onUp);
-    el.addEventListener('mousemove', onMove);
+    el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointerleave', stop);
+    el.addEventListener('pointerup', stop);
+    el.addEventListener('pointercancel', stop);
+    el.addEventListener('pointermove', onMove);
 
     return () => {
-      el.removeEventListener('mousedown', onDown);
-      el.removeEventListener('mouseleave', onLeave);
-      el.removeEventListener('mouseup', onUp);
-      el.removeEventListener('mousemove', onMove);
+      el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('pointerleave', stop);
+      el.removeEventListener('pointerup', stop);
+      el.removeEventListener('pointercancel', stop);
+      el.removeEventListener('pointermove', onMove);
     };
   }, []);
 

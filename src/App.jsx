@@ -16,6 +16,7 @@ import Ebook from './pages/Ebook';
 import GDPR from './pages/GDPR';
 import Confidentialitate from './pages/Confidentialitate';
 import Termeni from './pages/Termeni';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="tratamente" element={<Tratamente />} />
               <Route path="oferte" element={<Oferte />} />
               <Route path="articole" element={<Articole />} />
+              <Route path="articole/:slug" element={<Articole />} />
               <Route path="recenzii" element={<Recenzii />} />
               <Route path="before-after" element={<BeforeAfter />} />
               <Route path="noutati" element={<Noutati />} />
@@ -37,7 +39,7 @@ export default function App() {
               <Route path="gdpr" element={<GDPR />} />
               <Route path="confidentialitate" element={<Confidentialitate />} />
               <Route path="termeni" element={<Termeni />} />
-              <Route path="*" element={<Home />} />
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </ToastProvider>

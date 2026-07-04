@@ -1,187 +1,123 @@
 import { Link } from 'react-router-dom';
 import { useRevealAll } from '../hooks/useReveal';
-import { useDragScroll } from '../hooks/useDragScroll';
 import config from '../config';
-import { services, quickServices, whyItems, trustStats, scheduleHours } from '../data/content';
+import { services, quickServices, trustStats, scheduleHours } from '../data/content';
 import { reviews } from '../data/reviews';
+import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
-import { IconPhone, IconWhatsApp, IconMapPin, IconMail, IconClock, IconFacebook, IconInstagram, IconGlobe } from '../components/ui/Icons';
+import AppointmentPanel from '../components/sections/AppointmentPanel';
+import TrustStrip from '../components/sections/TrustStrip';
+import ProofGallery from '../components/sections/ProofGallery';
+import DoctorTeam from '../components/sections/DoctorTeam';
+import TechnologySection from '../components/sections/TechnologySection';
+import PatientJourney from '../components/sections/PatientJourney';
+import { IconPhone, IconWhatsApp, IconMapPin, IconMail, IconClock, IconFacebook, IconInstagram } from '../components/ui/Icons';
 import './Home.css';
 
 export default function Home() {
   const revealRef = useRevealAll([]);
-  const scrollRef = useDragScroll();
 
   return (
     <div ref={revealRef}>
-      {/* ═══ HERO ═══ */}
-      <section className="hero">
-        <div className="hero-top">
-          <p className="hero-clinic-label">Clinică Stomatologică · București</p>
-          <h1 className="hero-clinic-name">Dent<span>Now</span></h1>
-          <p className="hero-tagline">Implanturi · Albire · Ortodonție · Obturații · Endodonție</p>
-        </div>
+      <Seo title="DentNow - Clinica stomatologica in Bucuresti" description="DentNow este o clinica stomatologica in Bucuresti pentru consultatii, urgente, implanturi, igienizare GBT, albire, ortodontie si tratamente pentru copii." path="/" />
 
-        <div className="hero-body">
-          <div className="hero-strip">
-            <div className="hs-cell"><div className="hs-label">Telefon</div><div className="hs-value"><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></div></div>
-            <div className="hs-cell"><div className="hs-label">Adresă</div><div className="hs-value">{config.address.street}<br /><span style={{ color: '#a0aec0', fontSize: 12 }}>{config.address.detail}</span></div></div>
-            <div className="hs-cell"><div className="hs-label">Program</div><div className="hs-value green"><strong>Lun–Vin</strong> 09:00–19:00 &nbsp;·&nbsp; <strong>Sâm</strong> 09:00–15:00</div></div>
-            <div className="hs-cell"><div className="hs-label">Card de sănătate</div><div className="hs-value green"><strong>Acceptăm CAS</strong> &nbsp;·&nbsp; Copii — <strong>gratuit</strong></div></div>
-            <div className="hs-cell"><div className="hs-label">Urgențe</div><div className="hs-value orange"><strong>Tratăm prioritar</strong> &nbsp;·&nbsp; <a href={`tel:${config.phone}`} style={{ color: '#ea580c' }}>{config.phoneDisplay}</a></div></div>
-          </div>
-
-          {/* Map — stretches to match strip height */}
-          <div className="hero-map-box">
-            <iframe src={config.maps.embedUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="DentNow pe Google Maps" />
-            <a href={config.maps.link} target="_blank" rel="noopener noreferrer" className="hero-map-link">
-              <IconMapPin size={14} /> Deschide în Google Maps
-            </a>
-          </div>
-        </div>
-
-        <div className="hero-cta-row">
-          <a href={`tel:${config.phone}`} className="cta-phone-big"><IconPhone size={18} color="#fff" /> {config.phoneDisplay}</a>
-          <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="cta-wa"><IconWhatsApp size={18} color="#fff" /> WhatsApp</a>
-        </div>
-
-        <div className="hero-trust">
-          {trustStats.map((s, i) => (
-            <div className="ht-item" key={i}>
-              <div className="ht-val" style={s.smallFont ? { fontSize: 'clamp(14px,2vw,22px)' } : {}}>{s.value}{s.accent && <span>{s.accent}</span>}</div>
-              <div className="ht-lbl">{s.label}</div>
+      <section className="hero clinical-hero">
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <p className="hero-clinic-label">Clinica stomatologica · Bucuresti</p>
+            <h1 className="hero-clinic-name">Dent<span>Now</span></h1>
+            <p className="hero-tagline">Tratament explicat clar, deviz inainte de interventie si programari rapide pentru urgente.</p>
+            <div className="hero-cta-row left">
+              <a href={`tel:${config.phone}`} className="cta-phone-big"><IconPhone size={18} /> {config.phoneDisplay}</a>
+              <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="cta-wa"><IconWhatsApp size={18} /> WhatsApp</a>
+              <a href="#programare" className="btn btn-outline">Programare online</a>
             </div>
-          ))}
+            <TrustStrip items={trustStats} />
+          </div>
+          <div className="hero-media-panel">
+            <img src="/assets/dentnow/treatment-room.svg" alt="Placeholder pentru cabinetul DentNow" />
+            <div className="hero-media-note">
+              <strong>Fotografie temporara</strong>
+              <span>Inlocuieste cu fotografia reala a cabinetului in `public/assets/dentnow`.</span>
+            </div>
+          </div>
+          <div id="programare" className="hero-appointment">
+            <AppointmentPanel compact selectedService="Consultatie" source="homepage hero" />
+          </div>
         </div>
       </section>
 
-      {/* ═══ QUICK SERVICES ═══ */}
-      <div className="stats-bar">
-        {quickServices.map((qs, i) => (
-          <Link to={qs.link} key={i} className={`stat-item rv${i > 0 ? ` d${i}` : ''}`} style={{ textDecoration: 'none', cursor: 'pointer' }}>
-            <div className="stat-num" style={{ fontSize: 28 }}>{qs.icon}</div>
-            <div className="stat-lbl" style={{ fontWeight: 600, color: 'var(--black)', marginTop: 4 }}>{qs.label}</div>
-            <div className="stat-lbl">de la <strong style={{ color: 'var(--accent)' }}>{qs.price}</strong></div>
+      <section className="quick-services" aria-label="Servicii rapide DentNow">
+        {quickServices.map((qs) => (
+          <Link to={qs.link} key={qs.label} className="quick-service-card">
+            <span>{qs.icon}</span>
+            <strong>{qs.label}</strong>
+            <small>de la {qs.price}</small>
           </Link>
         ))}
-      </div>
-
-      {/* ═══ DARK STATEMENT ═══ */}
-      <section className="dark-stmt" data-nav-dark>
-        <div className="glow" />
-        <p className="eyebrow lt rv">Filozofia noastră</p>
-        <h2 className="h2d rv d1" style={{ color: '#f5f5f7', maxWidth: 760, margin: '0 auto 28px' }}>Stomatologie modernă,<br /><em className="ac">fără compromisuri.</em></h2>
-        <p className="lead lt rv d2" style={{ maxWidth: 520, margin: '0 auto' }}>Combinăm tehnologia dentară de ultimă generație cu o abordare caldă și personalizată.</p>
       </section>
 
-      {/* ═══ SERVICES ═══ */}
       <section className="services-section" id="servicii">
         <div className="services-header">
-          <div className="stag rv">Servicii Complete</div>
-          <h2 className="h2d rv d1" style={{ maxWidth: 560, margin: '12px auto 18px' }}>Tot ce ai nevoie,<br />în același cabinet.</h2>
-          <p className="lead rv d2">De la controale de rutină până la implantologie complexă.</p>
+          <div className="stag rv">Servicii DentNow</div>
+          <h2 className="h2d rv d1">Tratamente uzuale, explicate pe intelesul pacientului.</h2>
+          <p className="lead rv d2">Am redus promisiunile vagi si am pastrat lucrurile care ajuta pacientul sa decida: serviciu, pret de pornire, pas urmator.</p>
         </div>
         <div className="services-grid">
           {services.map((s, i) => (
-            <Link to={s.link} key={i} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={s.link} key={s.title} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
               <span className="svc-icon">{s.icon}</span>
               <div className="svc-arrow">↗</div>
               <h3 className="svc-title">{s.title}</h3>
-              <p className="svc-desc" dangerouslySetInnerHTML={{ __html: s.desc }} />
+              <p className="svc-desc">{s.desc}</p>
             </Link>
           ))}
         </div>
-        <div style={{ textAlign: 'center', marginTop: 48 }}>
-          <Link to="/tratamente" className="btn btn-dark">Vezi toate tarifele →</Link>
+        <div className="section-action">
+          <Link to="/tratamente" className="btn btn-dark">Vezi tratamente si tarife</Link>
         </div>
       </section>
 
-      {/* ═══ WHY ═══ */}
-      <section className="why-section" data-nav-dark>
-        <p className="eyebrow lt rv" style={{ textAlign: 'center', display: 'block' }}>De ce DentNow?</p>
-        <div className="why-grid">
-          <div>
-            <h2 className="why-headline rv">Calitate<br /><em className="ac">fără</em><br />compromis.</h2>
-            <p className="why-body rv d1">Investim constant în tehnologie, formare și experiența pacientului.</p>
-            <a href={`tel:${config.phone}`} className="btn btn-white rv d2"><IconPhone size={16} /> Sună pentru programare</a>
-          </div>
-          <div>
-            {whyItems.map((w, i) => (
-              <div className={`why-item rv${i > 0 ? ` d${i}` : ''}`} key={i}>
-                <div className="why-num">{w.num}</div>
-                <div>
-                  <div className="why-item-title">{w.title}</div>
-                  <div className="why-item-text">{w.text}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ProofGallery />
+      <DoctorTeam />
+      <TechnologySection />
+      <PatientJourney />
 
-      {/* ═══ TESTIMONIALS ═══ */}
       <section className="testi-section">
         <div className="testi-header">
-          <div className="stag rv">Recenzii Pacienți Google</div>
-          <h2 className="h2d rv d1" style={{ margin: '12px 0 16px' }}>Ce spun <em className="ac">pacienții noștri.</em></h2>
-          <p className="lead rv d2">Rating pe Google Reviews</p>
+          <div className="stag rv">Recenzii pacienti</div>
+          <h2 className="h2d rv d1">Experiente recente, de verificat inainte de lansare.</h2>
+          <p className="lead rv d2">Pastreaza doar recenzii verificate si actualizeaza ratingul cu sursa reala.</p>
         </div>
-        <div className="hscroll rv" ref={scrollRef} style={{ padding: 0 }}>
-          <div className="htrack testi-scroll-wrap">
-            {reviews.slice(0, 10).map((r) => <ReviewCard key={r.id} review={r} />)}
-          </div>
+        <div className="reviews-static-grid">
+          {reviews.slice(0, 3).map((r) => <ReviewCard key={r.id} review={r} />)}
         </div>
-        <div style={{ textAlign: 'center', marginTop: 40 }}>
-          <Link to="/recenzii" className="btn btn-dark">Vezi toate recenziile →</Link>
+        <div className="section-action">
+          <Link to="/recenzii" className="btn btn-dark">Vezi recenziile</Link>
         </div>
       </section>
 
-      {/* ═══ CTA + CONTACT + PROGRAM — UNIFIED ═══ */}
-      <section className="cta-banner" data-nav-dark>
-        <div className="cta-glow" />
-        <p className="eyebrow lt rv">Primul pas e simplu</p>
-        <h2 className="cta-title rv d1">Programează-te<br /><em className="ac">astăzi.</em></h2>
-        <p className="lead lt rv d2" style={{ maxWidth: 460, margin: '0 auto', position: 'relative', zIndex: 1 }}>Consultația inițială este gratuită. Descoperă ce poate face DentNow pentru zâmbetul tău.</p>
-        <div className="cta-buttons rv d3">
-          <a href={`tel:${config.phone}`} className="btn btn-white btn-lg"><IconPhone size={18} /> {config.phoneDisplay}</a>
-          <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline-white btn-lg"><IconWhatsApp size={18} /> WhatsApp</a>
-        </div>
-      </section>
-
-      {/* ═══ CONTACT & PROGRAM — MERGED ═══ */}
       <section className="contact-section" id="contact">
-        <div style={{ textAlign: 'center', marginBottom: 60 }}>
-          <div className="stag rv">Contact, Locație &amp; Program</div>
-          <h2 className="h2d rv d1" style={{ margin: '12px 0 18px' }}>Suntem <em className="ac">aproape de tine.</em></h2>
+        <div className="contact-heading">
+          <div className="stag rv">Contact, locatie si program</div>
+          <h2 className="h2d rv d1">Gaseste usor clinica DentNow.</h2>
         </div>
         <div className="contact-grid">
           <div>
-            <h3 className="h3d rv" style={{ marginBottom: 32 }}>Informații</h3>
-            <ContactItem icon={<IconMapPin size={18} />} label="Adresă" rv="rv">
+            <h3 className="h3d rv">Informatii utile</h3>
+            <ContactItem icon={<IconMapPin size={18} />} label="Adresa" rv="rv">
               {config.address.full}<br />
-              <a href={config.maps.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>→ Deschide în Google Maps</a>
+              <a href={config.maps.link} target="_blank" rel="noopener noreferrer">Deschide in Google Maps</a>
             </ContactItem>
             <ContactItem icon={<IconPhone size={18} />} label="Telefon" rv="rv d1"><a href={`tel:${config.phone}`}>{config.phoneDisplay}</a></ContactItem>
             <ContactItem icon={<IconMail size={18} />} label="Email" rv="rv d2"><a href={`mailto:${config.email}`}>{config.email}</a></ContactItem>
             <ContactItem icon={<IconClock size={18} />} label="Program" rv="rv d3">
-              {scheduleHours.map((h, i) => (
-                <span key={i}>{h.day}: {h.hours}{h.open ? '' : ' (Închis)'}{i < scheduleHours.length - 1 && <br />}</span>
-              ))}
+              {scheduleHours.map((h, i) => <span key={h.day}>{h.day}: {h.hours}{h.open ? '' : ' (Inchis)'}{i < scheduleHours.length - 1 && <br />}</span>)}
             </ContactItem>
-
-            <div className="urgenta-box rv" style={{ marginTop: 20 }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>🚨</span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>Urgențe dentare</div>
-                <p style={{ fontSize: 14, color: 'var(--gray)', lineHeight: 1.5 }}>Sunați la <a href={`tel:${config.phone}`} style={{ color: 'var(--accent)', fontWeight: 600 }}>{config.phoneDisplay}</a></p>
-              </div>
-            </div>
-
             <div className="social-links rv">
               <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="social-btn"><IconFacebook size={16} /> Facebook</a>
               <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-btn"><IconWhatsApp size={16} /> WhatsApp</a>
               <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="social-btn"><IconInstagram size={16} /> Instagram</a>
-              <a href={config.social.website} target="_blank" rel="noopener noreferrer" className="social-btn"><IconGlobe size={16} /> Website</a>
             </div>
           </div>
           <div className="map-wrapper rv d1">

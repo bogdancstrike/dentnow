@@ -1,5 +1,6 @@
 import { LegalPage } from '../components/ui/SharedSections';
+import Seo from '../components/seo/Seo';
 import LegalContent from './LegalContent';
 export default function Confidentialitate() {
-  return <LegalPage title="Politica de Confidențialitate" date="Noiembrie 2024"><LegalContent /></LegalPage>;
+  return <><Seo title="Politica de Confidentialitate DentNow" description="Politica de confidentialitate pentru website-ul DentNow." path="/confidentialitate" /><LegalPage title="Politica de Confidentialitate" date="Iulie 2026"><LegalContent type="privacy" /></LegalPage></>;
 }

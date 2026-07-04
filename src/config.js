@@ -9,6 +9,10 @@ const config = {
   whatsappUrl:
     import.meta.env.VITE_WHATSAPP_URL ||
     'https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow',
+  bookingUrl: import.meta.env.VITE_BOOKING_URL || '',
+  leadEndpoint: import.meta.env.VITE_LEAD_ENDPOINT || '',
+  verifiedReviewsUrl: import.meta.env.VITE_REVIEWS_URL || 'https://maps.app.goo.gl/N4KTXjfQhuvNNKS58',
+  contentUpdatedAt: import.meta.env.VITE_CONTENT_UPDATED_AT || '2026-07-04',
 
   address: {
     street: import.meta.env.VITE_ADDRESS_STREET || 'Str. Râmnicu Vâlcea 29, Bl. 20D',

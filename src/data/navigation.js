@@ -1,40 +1,57 @@
 export const navLinks = [
-  { label: 'Acasă', to: '/' },
-  { label: 'Tratamente & Tarife', to: '/tratamente' },
+  { label: 'Tratamente', to: '/tratamente' },
   { label: 'Oferte', to: '/oferte' },
-  { label: 'Articole', to: '/articole' },
   { label: 'Recenzii', to: '/recenzii' },
-  { label: 'Before & After', to: '/before-after' },
-  { label: 'Noutăți', to: '/noutati' },
-  { label: 'Scor Igienă', to: '/scor-igiena' },
+  {
+    label: 'Clinica',
+    to: '/#clinica',
+    children: [
+      { label: 'Clinica si galerie', to: '/#clinica' },
+      { label: 'Before & After', to: '/before-after' },
+      { label: 'Parteneri', to: '/parteneri' },
+      { label: 'Contact', to: '/#contact' },
+    ],
+  },
+  {
+    label: 'Resurse',
+    to: '/articole',
+    children: [
+      { label: 'Articole', to: '/articole' },
+      { label: 'Noutati', to: '/noutati' },
+      { label: 'Scor Igiena', to: '/scor-igiena' },
+      { label: 'E-bookuri', to: '/ebook' },
+    ],
+  },
 ];
 
 export const mobileNavLinks = [
-  { label: '🏠 Acasă', to: '/' },
-  { label: '💰 Tratamente & Tarife', to: '/tratamente' },
-  { label: '🏷 Oferte Speciale', to: '/oferte' },
-  { label: '⭐ Recenzii Pacienți', to: '/recenzii' },
-  { label: '📖 Articole Utile', to: '/articole' },
-  { label: '🦷 Scor Igienă', to: '/scor-igiena' },
-  { label: '📢 Noutăți', to: '/noutati' },
-  { label: '🤝 Parteneri', to: '/parteneri' },
-  { label: '✨ Before & After', to: '/before-after' },
-  { label: '📚 E-Bookuri Gratuite', to: '/ebook' },
+  { label: 'Acasa', to: '/' },
+  { label: 'Tratamente si tarife', to: '/tratamente' },
+  { label: 'Oferte', to: '/oferte' },
+  { label: 'Recenzii', to: '/recenzii' },
+  { label: 'Clinica si galerie', to: '/#clinica' },
+  { label: 'Before & After', to: '/before-after' },
+  { label: 'Articole', to: '/articole' },
+  { label: 'Scor Igiena', to: '/scor-igiena' },
+  { label: 'Noutati', to: '/noutati' },
+  { label: 'Parteneri', to: '/parteneri' },
+  { label: 'E-bookuri', to: '/ebook' },
 ];
 
 export const footerServices = [
   { label: 'Implanturi Dentare', to: '/tratamente#implanturi' },
-  { label: 'Albire Dentară', to: '/tratamente#albire' },
-  { label: 'Ortodonție', to: '/tratamente#ortodontie' },
-  { label: 'Proteze & Coroane', to: '/tratamente#proteze' },
+  { label: 'Igienizare GBT', to: '/tratamente#igienizare' },
+  { label: 'Albire Dentara', to: '/tratamente#albire' },
+  { label: 'Ortodontie', to: '/tratamente#ortodontie' },
   { label: 'Obturații', to: '/tratamente#obturatii' },
-  { label: 'Pedodonție', to: '/tratamente#pediatrie' },
+  { label: 'Pedodontie', to: '/tratamente#pediatrie' },
 ];
 
 export const footerClinic = [
-  { label: 'Recenzii Pacienți', to: '/recenzii' },
+  { label: 'Clinica si galerie', to: '/#clinica' },
+  { label: 'Recenzii Pacienti', to: '/recenzii' },
   { label: 'Before & After', to: '/before-after' },
-  { label: 'Noutăți', to: '/noutati' },
+  { label: 'Noutati', to: '/noutati' },
   { label: 'Parteneri', to: '/parteneri' },
-  { label: 'E-Bookuri Gratuite', to: '/ebook' },
+  { label: 'E-bookuri', to: '/ebook' },
 ];

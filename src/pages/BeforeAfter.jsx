@@ -1,7 +1,7 @@
 import { useRevealAll } from '../hooks/useReveal';
-import config from '../config';
 import { beforeAfterCases } from '../data/content';
 import PageHero from '../components/ui/PageHero';
+import Seo from '../components/seo/Seo';
 import { DarkCTA } from '../components/ui/SharedSections';
 import './BeforeAfter.css';
 
@@ -9,23 +9,24 @@ export default function BeforeAfter() {
   const ref = useRevealAll([]);
   return (
     <div ref={ref}>
-      <PageHero dark tag="Cazuri Reale DentNow" title='Before & <em class="ac">After.</em>' subtitle="Rezultate reale ale pacienților noștri." />
-      <div className="ba-grid">
+      <Seo title="Before & After DentNow" description="Exemple vizuale DentNow pregatite pentru fotografii reale cu acordul pacientilor." path="/before-after" />
+      <PageHero dark tag="Exemple vizuale DentNow" title='Before & <em class="ac">After.</em>' subtitle="Placeholder-ele de mai jos nu sunt rezultate clinice reale. Inlocuieste-le cu fotografii publicabile doar dupa consimtamant." />
+      <div className="case-grid">
         {beforeAfterCases.map((c, i) => (
-          <div key={i} className={`ba-card rv${i % 2 ? ' d1' : ''}`}>
-            <div className="ba-images">
-              <div className="ba-img before-bg"><span>{c.beforeEmoji}</span><div className="ba-label">ÎNAINTE</div></div>
-              <div className="ba-img after-bg"><span>{c.afterEmoji}</span><div className="ba-label">DUPĂ</div></div>
+          <article key={c.title} className={`case-card rv${i % 2 ? ' d1' : ''}`}>
+            <div className="case-pair">
+              <div className="case-shot"><img src={c.beforeImage} alt={`${c.title} inainte - placeholder`} /><div className="case-label">INAINTE</div></div>
+              <div className="case-shot"><img src={c.afterImage} alt={`${c.title} dupa - placeholder`} /><div className="case-label">DUPA</div></div>
             </div>
-            <div className="ba-info">
-              <div className="ba-treatment">{c.treatment}</div>
-              <h3 className="ba-title">{c.title}</h3>
-              <p className="ba-desc">{c.desc}</p>
+            <div className="case-body">
+              <small>{c.treatment}</small>
+              <h3>{c.title}</h3>
+              <p>{c.desc}</p>
             </div>
-          </div>
+          </article>
         ))}
       </div>
-      <DarkCTA title="Vrei un rezultat similar?" subtitle="Consultația inițială este gratuită. Spune-ne ce îți dorești." />
+      <DarkCTA title="Vrei o evaluare pentru cazul tau?" subtitle="Trimite-ne detalii sau suna clinica pentru o programare." />
     </div>
   );
 }

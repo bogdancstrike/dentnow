@@ -1,19 +1,19 @@
 // ── Services shown on homepage ──
 export const services = [
-  { icon: '🦷', title: 'Implanturi Dentare', desc: 'Implanturi titan premium. Soluția permanentă pentru dinți lipsă. De la 1.490 lei — ofertă specială.', link: '/tratamente#implanturi' },
-  { icon: '✨', title: 'Albire BlancOne Click', desc: 'Până la 8 nuanțe mai alb într-o oră. 390 lei față de 590 lei — promo activ.', link: '/tratamente#albire' },
-  { icon: '🎯', title: 'Ortodonție', desc: 'Aparate metalice sau alignere transparente. Corectăm dinții discret și eficient.', link: '/tratamente#ortodontie' },
-  { icon: '👑', title: 'Proteze & Coroane', desc: 'Coroane zirconiu, metalo-ceramice sau ceramice pure. Estetică și funcționalitate perfectă.', link: '/tratamente#proteze' },
-  { icon: '🛡️', title: 'Obturații & Endodonție', desc: 'Obturații estetice compozite, tratamente de canal cu lupe sau microscop Carl Zeiss.', link: '/tratamente#obturatii' },
-  { icon: '👶', title: 'Pedodonție', desc: 'Sigilări 130–170 lei, fluorurări 50 lei/arcadă. Experiențe pozitive la dentist pentru copii.', link: '/tratamente#pediatrie' },
+  { icon: '01', title: 'Implanturi Dentare', desc: 'Solutii pentru dinti lipsa, cu plan chirurgical si deviz explicat inainte de tratament.', link: '/tratamente#implanturi' },
+  { icon: '02', title: 'Igienizare GBT', desc: 'Protocol modern pentru biofilm, tartru si preventie, cu accent pe confortul pacientului.', link: '/tratamente#igienizare' },
+  { icon: '03', title: 'Albire BlancOne Click', desc: 'Albire profesionala in cabinet, cu indicatii clare si asteptari realiste.', link: '/tratamente#albire' },
+  { icon: '04', title: 'Ortodontie', desc: 'Aparate metalice sau alignere transparente, alese dupa consult si diagnostic.', link: '/tratamente#ortodontie' },
+  { icon: '05', title: 'Obturații & Endodonție', desc: 'Restaurari estetice si tratamente de canal cu lupa sau microscop, in functie de caz.', link: '/tratamente#obturatii' },
+  { icon: '06', title: 'Pedodontie', desc: 'Tratament prietenos pentru copii, cu explicatii pentru parinti si suport CAS unde se aplica.', link: '/tratamente#pediatrie' },
 ];
 
 // ── Quick services strip on homepage ──
 export const quickServices = [
-  { icon: '🦷', label: 'Implanturi', price: '1.490 lei', link: '/tratamente#implanturi' },
-  { icon: '✨', label: 'Albire', price: '390 lei', link: '/tratamente#albire' },
-  { icon: '🧹', label: 'Igienizare GBT', price: '320 lei', link: '/tratamente#igienizare' },
-  { icon: '🛡️', label: 'Obturații', price: '290 lei', link: '/tratamente#obturatii' },
+  { icon: 'Implant', label: 'Implanturi', price: '1.490 lei', link: '/tratamente#implanturi' },
+  { icon: 'Albire', label: 'Albire', price: '390 lei', link: '/tratamente#albire' },
+  { icon: 'GBT', label: 'Igienizare GBT', price: '320 lei', link: '/tratamente#igienizare' },
+  { icon: 'Obt', label: 'Obturații', price: '290 lei', link: '/tratamente#obturatii' },
 ];
 
 // ── Why DentNow ──
@@ -26,20 +26,20 @@ export const whyItems = [
 
 // ── Trust stats ──
 export const trustStats = [
-  { value: '4.8', accent: '★', label: 'Rating Google' },
-  { value: '15', accent: '+', label: 'Ani experiență' },
-  { value: '5k', accent: '+', label: 'Pacienți mulțumiți' },
-  { value: '1.490 lei', accent: '', label: 'Implant — ofertă', smallFont: true },
+  { value: '4.8/5', accent: '', label: 'Rating Google - de verificat inainte de lansare' },
+  { value: 'Urgente', accent: '', label: 'Preluare prioritara in functie de program' },
+  { value: 'CAS', accent: '', label: 'Suport pentru servicii eligibile si copii' },
+  { value: 'Deviz clar', accent: '', label: 'Costuri explicate inainte de tratament' },
 ];
 
 // ── Offers ──
 export const offers = [
-  { icon: '🦷', name: 'Implant Dentar Complet', desc: 'Implant titan premium cu ghid chirurgical digital pentru precizie maximă și recuperare rapidă.', price: '1.490 lei', oldPrice: '2.500 lei', save: '1.010 lei', badge: '-40%', features: ['Implant titan de calitate premium', 'Ghid chirurgical digital inclus', 'Coroană provizorie inclusă', 'Garanție extinsă'] },
-  { icon: '⭐', name: 'Pachet Complet — 3 în 1', desc: 'Consultație primară + igienizare GBT completă + radiografie panoramică.', price: '390 lei', oldPrice: '650 lei', save: '260 lei', badge: 'Cel mai ales', featured: true, features: ['Consultație primară completă', 'Igienizare GBT — protocolul EMS', 'Radiografie panoramică digitală', 'Plan de tratament personalizat'] },
-  { icon: '🦷', name: 'Albire BlancOne Click', desc: 'Albire profesională în cabinet. Până la 8 nuanțe mai alb într-o singură ședință.', price: '390 lei', oldPrice: '590 lei', save: '200 lei', badge: '-34%', features: ['Sistem BlancOne Click profesional', 'Până la 8 nuanțe mai alb', 'Protecție gingivală inclusă', 'Rezultat imediat vizibil'] },
-  { icon: '🦷', name: 'Igienizare GBT', desc: 'Guided Biofilm Therapy — protocolul elvețian EMS. Curățare completă, blândă și nedureroasă.', price: '320 lei', oldPrice: '400 lei', save: '80 lei', badge: '-20%', features: ['Elimină 100% biofilmul bacterian', 'Curățare subgingivală', 'Zero durere, zero disconfort', 'Rezultat imediat vizibil'] },
-  { icon: '🦷', name: 'Pachet Consultație + Igienizare', desc: 'Consultație primară completă + igienizare GBT.', price: '350 lei', oldPrice: '550 lei', save: '200 lei', badge: '-36%', features: ['Consultație completă cu radiografii', 'Igienizare GBT profesională', 'Plan de tratament inclus', 'Recomandări personalizate'] },
-  { icon: '🦷', name: 'Consultație + Radio Panoramică', desc: 'Consultație primară + radiografie panoramică digitală.', price: '190 lei', oldPrice: '250 lei', save: '60 lei', badge: '-24%', features: ['Consultație primară completă', 'Radiografie panoramică digitală', 'Evaluarea riscului de carii', 'Recomandări de tratament'] },
+  { icon: 'Implant', name: 'Implant Dentar', desc: 'Evaluare si plan pentru inlocuirea dintilor lipsa. Pretul final se confirma dupa consult.', price: '1.490 lei', oldPrice: '2.500 lei', save: '1.010 lei', badge: 'Promo verificata', features: ['Implant titan', 'Plan chirurgical explicat', 'Coroana provizorie unde se aplica', 'Deviz inainte de tratament'] },
+  { icon: '3 in 1', name: 'Pachet Consultație + Igienizare + Radiografie', desc: 'Pachet pentru pacientii care vor diagnostic, igienizare si plan clar.', price: '390 lei', oldPrice: '650 lei', save: '260 lei', badge: 'Recomandat', featured: true, features: ['Consultatie primara', 'Igienizare GBT', 'Radiografie panoramica', 'Plan de tratament'] },
+  { icon: 'Albire', name: 'Albire BlancOne Click', desc: 'Albire profesionala in cabinet, potrivita dupa evaluarea smaltului si gingiilor.', price: '390 lei', oldPrice: '590 lei', save: '200 lei', badge: 'Estetica', features: ['Sistem profesional', 'Protectie gingivala', 'Rezultat vizibil', 'Recomandari aftercare'] },
+  { icon: 'GBT', name: 'Igienizare GBT', desc: 'Guided Biofilm Therapy pentru preventie si confort.', price: '320 lei', oldPrice: '400 lei', save: '80 lei', badge: 'Preventie', features: ['Biofilm evidentiat', 'Curatare blanda', 'Recomandari de rutina', 'Control periodic'] },
+  { icon: 'Consult', name: 'Consultație + Igienizare', desc: 'Pentru pacienti noi sau control periodic cu deviz actualizat.', price: '350 lei', oldPrice: '550 lei', save: '200 lei', badge: 'Plan clar', features: ['Consultatie', 'Igienizare profesionala', 'Deviz estimativ', 'Recomandari personalizate'] },
+  { icon: 'Radio', name: 'Consultație + Radio Panoramică', desc: 'Diagnostic initial cu imagine panoramica acolo unde este indicata.', price: '190 lei', oldPrice: '250 lei', save: '60 lei', badge: 'Diagnostic', features: ['Consultatie', 'Radiografie panoramica', 'Evaluare risc carii', 'Plan de pas urmator'] },
 ];
 
 // ── Treatments / tarife ──
@@ -128,24 +128,19 @@ export const jumpNavItems = [
 
 // ── Partners ──
 export const partners = [
-  { icon: '🇨🇭', name: 'EMS Switzerland', type: 'Guided Biofilm Therapy', badge: 'Partener Oficial' },
-  { icon: '🦷', name: 'Straumann', type: 'Implanturi Dentare Premium', badge: 'Furnizor Certificat' },
-  { icon: '💎', name: 'BlancOne', type: 'Albire Dentară Profesională', badge: 'Partener Activ' },
-  { icon: '🔬', name: 'Carl Zeiss', type: 'Microscoape Chirurgicale', badge: 'Utilizator Certificat' },
-  { icon: '📡', name: 'Planmeca', type: 'Radiologie Digitală 3D CBCT', badge: 'Echipament Propriu' },
-  { icon: '🏥', name: 'CNAS / CAS', type: 'Cardul de Sănătate', badge: 'Acceptăm' },
-  { icon: '💳', name: 'Asigurări Medicale', type: 'Diverse Asigurători Privați', badge: 'Acceptăm' },
-  { icon: '🎓', name: 'UMF București', type: 'Colaborare Academică', badge: 'Partener Educațional' },
+  { icon: 'EMS', name: 'EMS Switzerland', type: 'Guided Biofilm Therapy', badge: 'Tehnologie' },
+  { icon: 'STR', name: 'Straumann', type: 'Implanturi dentare premium', badge: 'Furnizor' },
+  { icon: 'B1', name: 'BlancOne', type: 'Albire dentara profesionala', badge: 'Sistem' },
+  { icon: 'ZEISS', name: 'Carl Zeiss', type: 'Microscopie dentara', badge: 'Echipament' },
+  { icon: 'RAD', name: 'Radiologie digitala', type: 'Diagnostic imagistic', badge: 'Diagnostic' },
+  { icon: 'CAS', name: 'CNAS / CAS', type: 'Cardul de sanatate', badge: 'Eligibil' },
 ];
 
 // ── Before & After ──
 export const beforeAfterCases = [
-  { beforeEmoji: '😬', afterEmoji: '😁', treatment: 'Implantologie', title: 'Implant + Coroană Zirconiu', desc: 'Dinte lipsă înlocuit cu implant titan și coroană zirconiu. Rezultat complet natural, permanent. 1.490 lei cu oferta actuală.' },
-  { beforeEmoji: '🦷', afterEmoji: '✨', treatment: 'Estetică', title: 'Albire BlancOne Click', desc: 'Dinți cu pete de coloranți transformați în 60 minute. 7 nuanțe mai alb. 390 lei cu oferta actuală.' },
-  { beforeEmoji: '😕', afterEmoji: '😊', treatment: 'Ortodonție', title: 'Alignere Transparente', desc: 'Dinți înghesuiți corectați cu gutiere transparente în 14 luni. De la 1.250 lei/arcadă.' },
-  { beforeEmoji: '🤕', afterEmoji: '😄', treatment: 'Reabilitare Completă', title: 'Full Smile Makeover', desc: 'Implanturi multiple + coroane + albire. Transformare completă a zâmbetului în 6 luni.' },
-  { beforeEmoji: '😬', afterEmoji: '🤩', treatment: 'Estetică', title: 'Fațete Ceramice', desc: 'Dinți cu formă neregulată transformați cu fațete ceramice ultra-subțiri. Zâmbet de vedetă.' },
-  { beforeEmoji: '😐', afterEmoji: '😁', treatment: 'Igienizare + Albire', title: 'GBT + BlancOne', desc: 'Tartru subgingival eliminat complet cu GBT, urmat de albire BlancOne. Pachet de la 640 lei.' },
+  { beforeImage: '/assets/dentnow/case-implant-before.svg', afterImage: '/assets/dentnow/case-implant-after.svg', treatment: 'Implantologie', title: 'Implant + Coroana', desc: 'Placeholder ilustrativ. Inlocuieste cu fotografii reale doar dupa acordul pacientului.' },
+  { beforeImage: '/assets/dentnow/case-whitening-before.svg', afterImage: '/assets/dentnow/case-whitening-after.svg', treatment: 'Estetica', title: 'Albire BlancOne Click', desc: 'Exemplu vizual de structura pentru pagina, nu rezultat clinic real.' },
+  { beforeImage: '/assets/dentnow/case-ortho-before.svg', afterImage: '/assets/dentnow/case-ortho-after.svg', treatment: 'Ortodontie', title: 'Corectie aliniere', desc: 'Card pregatit pentru caz real documentat si aprobat pentru publicare.' },
 ];
 
 // ── Ebooks ──
@@ -160,11 +155,9 @@ export const ebooks = [
 
 // ── News ──
 export const newsItems = [
-  { cat: 'Ofertă', title: 'Implant la 1.490 lei — promo extins până la finalul anului', date: 'Noiembrie 2024', link: '/oferte' },
-  { cat: 'Tehnologie', title: 'Noul microscop Carl Zeiss — precizie maximă la tratamentele de canal', date: 'Octombrie 2024', link: '/tratamente#endodontie' },
-  { cat: 'Program', title: 'DentNow deschide sâmbăta 09:00–15:00 pentru pacienții ocupați', date: 'Octombrie 2024', link: '/' },
-  { cat: 'CAS', title: 'Copiii beneficiază de servicii gratuite — DentNow lucrează cu Cardul de Sănătate', date: 'Septembrie 2024', link: '/tratamente' },
-  { cat: 'Resurse', title: '6 e-bookuri gratuite disponibile acum — descarcă ghidurile medicilor DentNow', date: 'Septembrie 2024', link: '/ebook' },
+  { cat: 'Actualizare', title: 'Pagina de noutati trebuie aprobata de clinica inainte de lansare', date: 'Iulie 2026', link: '/noutati' },
+  { cat: 'Program', title: 'Program afisat: Luni-Vineri 09:00-19:00, Sambata 09:00-15:00', date: 'Iulie 2026', link: '/#contact' },
+  { cat: 'Pacienti', title: 'Sectiunile de oferte si preturi includ data ultimei actualizari', date: 'Iulie 2026', link: '/tratamente' },
 ];
 
 // ── Quiz questions ──
