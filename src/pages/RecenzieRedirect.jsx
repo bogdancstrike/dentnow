@@ -11,7 +11,7 @@ export default function RecenzieRedirect() {
 
   return (
     <div style={{ textAlign: 'center', padding: '100px 20px', minHeight: '60vh' }}>
-      <Seo title="Lasă o recenzie DentNow" description="Redirecționare către pagina oficială de recenzii DentNow pe Google Maps." path="/recenzie" />
+      <Seo title="Lasă o recenzie DentNow" description="Redirecționare către pagina oficială de recenzii DentNow pe Google Maps." path="/recenzie" noindex />
       <h1 style={{ fontFamily: 'var(--fd)', fontSize: '2rem', marginBottom: '16px' }}>
         Redirecționare către recenzii Google...
       </h1>

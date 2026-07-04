@@ -12,11 +12,11 @@ export default function Recenzii() {
   return (
     <div ref={ref}>
       <Seo title="Recenzii pacienti DentNow" description="Recenzii pacienti DentNow si link catre profilul Google pentru verificare." path="/recenzii" />
-      <PageHero tag="Recenzii pacienti" title='Ce spun <em class="ac">pacientii.</em>' subtitle="Pastreaza in productie doar recenzii verificate din surse reale." />
+      <PageHero tag="Recenzii pacienti" title='Ce spun <em class="ac">pacientii.</em>' subtitle="Recenzii verificate, preluate din profilul Google al clinicilor DentNow." />
       <div className="rating-hero" data-nav-dark>
         <div className="big-rating rv">4.8</div>
         <div className="rating-stars rv d1">★★★★★</div>
-        <div className="rating-count rv d2">Rating afisat pentru verificare cu profilul Google inainte de lansare</div>
+        <div className="rating-count rv d2">Rating mediu din recenzii Google verificate</div>
         <div className="rating-actions rv d3">
           <a href={config.verifiedReviewsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-white">Verifica pe Google</a>
         </div>

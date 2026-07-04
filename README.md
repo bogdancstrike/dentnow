@@ -86,7 +86,7 @@ Toate datele clinicii sunt externalizate în `.env` — zero hardcodări în cod
 |-----------|-----------|---------|
 | `VITE_PHONE` | Număr telefon format internațional | `+40720509802` |
 | `VITE_PHONE_DISPLAY` | Număr telefon afișat | `0720 509 802` |
-| `VITE_EMAIL` | Email clinică | `contact@dentnow.ro` |
+| `VITE_EMAIL` | Email clinică | `office@dentnow.ro` |
 | `VITE_WHATSAPP_URL` | Link WhatsApp pre-completat | `https://wa.me/40720509802?text=...` |
 | `VITE_ADDRESS_STREET` | Adresă scurtă | `Str. Râmnicu Vâlcea 29` |
 | `VITE_ADDRESS_DETAIL` | Detalii adresă | `Parter, Ap. 01 · București` |

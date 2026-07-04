@@ -10,7 +10,7 @@ export default function BeforeAfter() {
   return (
     <div ref={ref}>
       <Seo title="Before & After DentNow" description="Exemple vizuale DentNow pregatite pentru fotografii reale cu acordul pacientilor." path="/before-after" />
-      <PageHero dark tag="Exemple vizuale DentNow" title='Before & <em class="ac">After.</em>' subtitle="Placeholder-ele de mai jos nu sunt rezultate clinice reale. Inlocuieste-le cu fotografii publicabile doar dupa consimtamant." />
+      <PageHero dark tag="Exemple vizuale DentNow" title='Before & <em class="ac">After.</em>' subtitle="Exemple vizuale ilustrative — fotografiile de caz reale se publica doar cu acordul scris al pacientilor." />
       <div className="case-grid">
         {beforeAfterCases.map((c, i) => (
           <article key={c.title} className={`case-card rv${i % 2 ? ' d1' : ''}`}>

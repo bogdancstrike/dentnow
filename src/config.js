@@ -13,7 +13,7 @@ const defaultSchedule = [
 const config = {
   phone: import.meta.env.VITE_PHONE || '+40720509802',
   phoneDisplay: import.meta.env.VITE_PHONE_DISPLAY || '0720 509 802',
-  email: import.meta.env.VITE_EMAIL || 'contact@dentnow.ro',
+  email: import.meta.env.VITE_EMAIL || 'office@dentnow.ro',
   whatsappUrl:
     import.meta.env.VITE_WHATSAPP_URL ||
     'https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow',

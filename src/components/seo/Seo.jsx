@@ -45,7 +45,7 @@ function upsertJsonLd(data) {
   el.textContent = JSON.stringify(data);
 }
 
-export default function Seo({ title, description, path = '/', image = '/assets/dentnow/og-dentnow.svg', jsonLd }) {
+export default function Seo({ title, description, path = '/', image = '/assets/dentnow/og-dentnow.png', jsonLd, noindex = false }) {
   useEffect(() => {
     const absoluteUrl = new URL(path, config.social.website).toString();
     const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
@@ -55,6 +55,7 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
 
     // Standard Meta
     upsertMeta('meta[name="description"]', { name: 'description', content: description });
+    upsertMeta('meta[name="robots"]', { name: 'robots', content: noindex ? 'noindex, nofollow' : 'index, follow' });
 
     // OpenGraph Meta
     upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: siteName });
@@ -92,7 +93,11 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
     let currentAcc = '';
     pathParts.forEach((part, idx) => {
       currentAcc += `/${part}`;
-      const readableName = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
+      const readableName = part
+        .split('-')
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
       breadcrumbItems.push({
         '@type': 'ListItem',
         position: idx + 2,
@@ -158,7 +163,7 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
     };
 
     upsertJsonLd(fullSchema);
-  }, [title, description, path, image, jsonLd]);
+  }, [title, description, path, image, jsonLd, noindex]);
 
   return null;
 }

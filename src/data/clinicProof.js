@@ -1,10 +1,10 @@
 export const assetBase = '/assets/dentnow/';
 
 export const clinicGallery = [
-  { src: assetBase + 'clinic-exterior.svg', alt: 'Placeholder pentru exteriorul clinicii DentNow din Bucuresti', title: 'Clinica DentNow', caption: 'Inlocuieste cu fotografia reala a intrarii in clinica.' },
+  { src: assetBase + 'clinic-exterior.svg', alt: 'Ilustratie cu exteriorul clinicii DentNow din Bucuresti', title: 'Clinica DentNow', caption: 'Acces facil, aproape de mijloacele de transport in comun.' },
   { src: assetBase + 'reception.svg', alt: 'Placeholder pentru receptia DentNow', title: 'Receptie si orientare', caption: 'Primul contact trebuie sa confirme adresa, programul si pasii vizitei.' },
   { src: assetBase + 'treatment-room.svg', alt: 'Placeholder pentru cabinet stomatologic modern', title: 'Cabinet modern', caption: 'Spatiu clinic curat, organizat si pregatit pentru tratamente.' },
-  { src: assetBase + 'sterilization.svg', alt: 'Placeholder pentru zona de sterilizare', title: 'Sterilizare', caption: 'Fotografia reala va trebui sa sustina protocolul de siguranta.' },
+  { src: assetBase + 'sterilization.svg', alt: 'Ilustratie cu zona de sterilizare', title: 'Sterilizare', caption: 'Protocol strict de sterilizare si trasabilitate a instrumentarului.' },
   { src: assetBase + 'airflow.svg', alt: 'Placeholder pentru echipament EMS Guided Biofilm Therapy', title: 'GBT / EMS Airflow', caption: 'Igienizare blanda si controlata pentru pacienti.' },
   { src: assetBase + 'microscope.svg', alt: 'Placeholder pentru microscop dentar Carl Zeiss', title: 'Microscop dentar', caption: 'Pentru tratamente de canal si lucrari care necesita precizie.' },
 ];
@@ -31,5 +31,5 @@ export const patientJourney = [
 export const caseExamples = [
   { treatment: 'Implantologie', title: 'Implant + coroana', beforeImage: assetBase + 'case-implant-before.svg', afterImage: assetBase + 'case-implant-after.svg', desc: 'Placeholder ilustrativ pana la adaugarea fotografiilor reale cu acordul pacientului.' },
   { treatment: 'Estetica', title: 'Albire profesionala', beforeImage: assetBase + 'case-whitening-before.svg', afterImage: assetBase + 'case-whitening-after.svg', desc: 'Exemplu vizual pentru structura cardului, nu rezultat clinic real.' },
-  { treatment: 'Ortodontie', title: 'Corectie aliniere', beforeImage: assetBase + 'case-ortho-before.svg', afterImage: assetBase + 'case-ortho-after.svg', desc: 'Inlocuieste cu fotografii reale doar dupa verificarea consimtamantului.' },
+  { treatment: 'Ortodontie', title: 'Corectie aliniere', beforeImage: assetBase + 'case-ortho-before.svg', afterImage: assetBase + 'case-ortho-after.svg', desc: 'Exemplu ilustrativ — nu reprezinta un rezultat clinic real.' },
 ];

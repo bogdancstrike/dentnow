@@ -137,9 +137,9 @@ export const partners = [
 
 // ── Before & After ──
 export const beforeAfterCases = [
-  { beforeImage: '/assets/dentnow/case-implant-before.svg', afterImage: '/assets/dentnow/case-implant-after.svg', treatment: 'Implantologie', title: 'Implant + Coroana', desc: 'Placeholder ilustrativ. Inlocuieste cu fotografii reale doar dupa acordul pacientului.' },
-  { beforeImage: '/assets/dentnow/case-whitening-before.svg', afterImage: '/assets/dentnow/case-whitening-after.svg', treatment: 'Estetica', title: 'Albire BlancOne Click', desc: 'Exemplu vizual de structura pentru pagina, nu rezultat clinic real.' },
-  { beforeImage: '/assets/dentnow/case-ortho-before.svg', afterImage: '/assets/dentnow/case-ortho-after.svg', treatment: 'Ortodontie', title: 'Corectie aliniere', desc: 'Card pregatit pentru caz real documentat si aprobat pentru publicare.' },
+  { beforeImage: '/assets/dentnow/case-implant-before.svg', afterImage: '/assets/dentnow/case-implant-after.svg', treatment: 'Implantologie', title: 'Implant + Coroana', desc: 'Exemplu ilustrativ — fotografiile reale se publica doar cu acordul pacientului.' },
+  { beforeImage: '/assets/dentnow/case-whitening-before.svg', afterImage: '/assets/dentnow/case-whitening-after.svg', treatment: 'Estetica', title: 'Albire BlancOne Click', desc: 'Exemplu ilustrativ — nu reprezinta un rezultat clinic real.' },
+  { beforeImage: '/assets/dentnow/case-ortho-before.svg', afterImage: '/assets/dentnow/case-ortho-after.svg', treatment: 'Ortodontie', title: 'Corectie aliniere', desc: 'Exemplu ilustrativ — cazurile reale sunt documentate si aprobate inainte de publicare.' },
 ];
 
 // ── Ebooks ──

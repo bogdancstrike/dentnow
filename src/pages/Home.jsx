@@ -37,11 +37,13 @@ export default function Home() {
             <TrustStrip items={trustStats} />
           </div>
           <div className="hero-media-panel">
-            <img src="/assets/dentnow/treatment-room.svg" alt="Placeholder pentru cabinetul DentNow" />
-            <div className="hero-media-note">
-              <strong>Fotografie temporara</strong>
-              <span>Inlocuieste cu fotografia reala a cabinetului in `public/assets/dentnow`.</span>
-            </div>
+            <img src="/assets/dentnow/treatment-room.svg" alt="Ilustrație cabinet stomatologic DentNow" />
+            {import.meta.env.DEV && (
+              <div className="hero-media-note">
+                <strong>Fotografie temporara</strong>
+                <span>Inlocuieste cu fotografia reala a cabinetului in `public/assets/dentnow`.</span>
+              </div>
+            )}
           </div>
         </div>
       </section>
