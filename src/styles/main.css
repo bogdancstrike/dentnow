@@ -618,6 +618,7 @@ button:disabled { opacity: .8; }
 .legal-page { max-width: 800px; margin: 60px auto 88px; padding: 0 48px; color: var(--muted-text); line-height: 1.8; }
 .legal-section { margin-bottom: 32px; }
 .legal-section h2 { font-family: var(--fd); font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0 0 14px; }
+.legal-section p { margin: 0 0 14px; }
 .legal-section ul { margin: 0 0 16px 24px; }
 .legal-section li { margin-bottom: 8px; }
 .modal-box { background: var(--surface-raised); color: var(--text-primary); }

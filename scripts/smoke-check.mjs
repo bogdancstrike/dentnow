@@ -20,6 +20,9 @@ const routes = [
   '/protetica-zirconiu',
   '/urgente-dentare-bucuresti',
   '/decontat-cas',
+  '/gdpr',
+  '/confidentialitate',
+  '/termeni',
   '/recenzie'
 ];
 const port = 4174;
