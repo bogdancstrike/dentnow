@@ -41,6 +41,17 @@
         "module_name": "src.api.health",
         "method_name": "readiness"
       }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "admin_me",
+      "model_name": "Empty",
+      "request_method": ["GET"],
+      "api_url": "/v1/admin/me",
+      "exec_method": {
+        "module_name": "src.api.me",
+        "method_name": "me"
+      }
     }
   ]
 }

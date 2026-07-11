@@ -23,9 +23,13 @@ def test_all_slice1_tables_exist(db_engine):
 
 
 def test_alembic_is_at_head(db_engine):
+    from alembic.config import Config as AlembicConfig
+    from alembic.script import ScriptDirectory
+
     with db_engine.connect() as conn:
         version = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
-    assert version == "0001"
+    script = ScriptDirectory.from_config(AlembicConfig("alembic.ini"))
+    assert version == script.get_current_head()
 
 
 def test_foreign_keys_are_indexed(db_engine):

@@ -11,5 +11,6 @@ single registration point.
 from src.site import models as _site_models  # noqa: F401
 from src.audit import models as _audit_models  # noqa: F401
 from src.integrations import models as _integration_models  # noqa: F401
+from src.iam import models as _iam_models  # noqa: F401
 
-# Later tasks append: clinics, catalog, editorial, media, iam.
+# Later tasks append: clinics, catalog, editorial, media.
