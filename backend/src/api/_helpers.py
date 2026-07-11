@@ -6,16 +6,36 @@ mechanics: Pydantic validation, session scope, and ETag headers.
 """
 from __future__ import annotations
 
-from typing import Any, Type
+from functools import wraps
+from typing import Any, Callable, Type
 
-from flask import jsonify, make_response
+from flask import g, jsonify, make_response
 from flask import request as flask_request
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 
 from src.core.db import session_scope
-from src.core.errors import ValidationError
+from src.core.errors import DentNowError, ValidationError
 from src.core.pagination import parse_page
+
+
+def public_endpoint(fn: Callable) -> Callable:
+    """Wrap an anonymous/preview handler so a DentNowError becomes the JSON envelope
+    with the right status (flask-restx would otherwise surface it as a 500).
+    """
+
+    @wraps(fn)
+    def wrapper(app, operation, request, **kwargs):
+        try:
+            return fn(app, operation, request, **kwargs)
+        except DentNowError as err:
+            body = err.to_dict()
+            cid = getattr(g, "correlation_id", None)
+            if cid:
+                body["correlation_id"] = cid
+            return body, err.status_code
+
+    return wrapper
 
 
 def _validate(model: Type[BaseModel], data: dict | None) -> dict:

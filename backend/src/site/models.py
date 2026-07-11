@@ -186,6 +186,7 @@ class SitePublication(Base):
         UniqueConstraint("version", name="uq_site_publications_version"),
         CheckConstraint("jsonb_typeof(snapshot) = 'object'", name="ck_site_publications_snapshot_object"),
         Index("ix_site_publications_published_at", "published_at"),
+        Index("ix_site_publications_content_hash", "content_hash"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid7)

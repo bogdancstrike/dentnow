@@ -2039,6 +2039,240 @@
     },
     {
       "namespace": "api",
+      "operation_name": "publications_validate",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/publications/validate",
+      "exec_method": {
+        "module_name": "src.api.publications_admin",
+        "method_name": "publications_validate"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "publications_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/publications",
+      "exec_method": {
+        "module_name": "src.api.publications_admin",
+        "method_name": "publications_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "publications_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/publications",
+      "exec_method": {
+        "module_name": "src.api.publications_admin",
+        "method_name": "publications_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "publications_activate",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/publications/<publication_id>/activate",
+      "exec_method": {
+        "module_name": "src.api.publications_admin",
+        "method_name": "publications_activate"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "publications_restore",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/publications/<publication_id>/restore-workspace",
+      "exec_method": {
+        "module_name": "src.api.publications_admin",
+        "method_name": "publications_restore"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "previews_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/previews",
+      "exec_method": {
+        "module_name": "src.api.publications_admin",
+        "method_name": "previews_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_bootstrap",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/bootstrap",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "bootstrap"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_page_by_path",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/pages/by-path",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "page_by_path"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_articles",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/articles",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "articles_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_article_detail",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/articles/<slug>",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "article_detail"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_sitemap",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/sitemap.xml",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "sitemap"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "preview_session_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/preview/session",
+      "exec_method": {
+        "module_name": "src.api.previews",
+        "method_name": "preview_session_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "preview_session_revoke",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/preview/session",
+      "exec_method": {
+        "module_name": "src.api.previews",
+        "method_name": "preview_session_revoke"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "preview_bootstrap",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/preview/bootstrap",
+      "exec_method": {
+        "module_name": "src.api.previews",
+        "method_name": "preview_bootstrap"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "preview_page_by_path",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/preview/pages/by-path",
+      "exec_method": {
+        "module_name": "src.api.previews",
+        "method_name": "preview_page_by_path"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "preview_articles",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/preview/articles",
+      "exec_method": {
+        "module_name": "src.api.previews",
+        "method_name": "preview_articles"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "preview_article_detail",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/preview/articles/<slug>",
+      "exec_method": {
+        "module_name": "src.api.previews",
+        "method_name": "preview_article_detail"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "preview_media",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/preview/media/<asset_id>/<variant>",
+      "exec_method": {
+        "module_name": "src.api.previews",
+        "method_name": "preview_media"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "principals_list",
       "model_name": "Empty",
       "request_method": [
