@@ -178,7 +178,7 @@ backend/
     catalog/                    # treatments, prices, offers, technology, partners
     editorial/                  # articles, news, reviews, cases, ebooks, legal, quiz
     media/                      # metadata, variants, storage port, MinIO adapter
-    leads/                      # optional website contact requests and retention
+    integrations/               # versioned domain events, outbox, adapter ports
     audit/                      # immutable mutation ledger
     api/                        # thin qf handlers only
   tests/
@@ -195,6 +195,16 @@ api/qf handlers -> application services -> domain rules and repository ports
 ```
 
 Handlers parse the request, call one service, and serialize a response. They do not contain SQL queries, permission rules, publication logic, or object-storage logic. Domain/application tests use in-memory ports where useful; PostgreSQL and MinIO behavior is covered by integration tests.
+
+### 7.1 Extension and external-integration boundary
+
+Future CRM, appointment, email/SMS, analytics, offer-registration, or patient-portal integrations must not be called directly from controllers or domain entities. Each integration implements an application-owned port and translates the external vendor model in an anti-corruption adapter.
+
+Use cases emit small, versioned domain events such as `site.publication.activated.v1`, `offer.published.v1`, and `clinic.updated.v1`. Events are inserted into `integration_outbox` in the same PostgreSQL transaction as the business change. A future relay can deliver them over HTTP/webhooks, Kafka, or a vendor SDK with idempotency and retries; qf ETL remains disabled until an actual asynchronous use case justifies enabling it.
+
+Inbound integrations terminate at versioned adapter endpoints, verify signatures, enforce idempotency keys, and translate into commands understood by the owning bounded context. External IDs live in `integration_bindings`, never in core entity primary keys. No vendor SDK is imported by `site`, `clinics`, `catalog`, or `editorial` domain code.
+
+Patient/offer registration is intentionally not implemented in the first release. When required, it becomes a separate `patient_engagement` bounded context with its own tables/repositories, permissions, consent purpose/version, field-level PII encryption, retention/deletion/export workflows, and redacted audit policy. Content editors do not gain access to that context. If future input contains clinical or health records rather than ordinary contact/offer-registration data, it requires a separate regulatory threat model and may warrant a separately deployed service/database; the CMS schema is not an EHR foundation.
 
 ## 8. qf integration constraints
 
@@ -394,7 +404,7 @@ Database checks enforce non-negative amounts, valid ranges, currency format, `en
 
 Article/legal content is stored as Markdown and converted through an allowlisted sanitizer. Arbitrary stored HTML from the current `dangerouslySetInnerHTML` fields is not accepted.
 
-### 11.5 Media, audit, and contact requests
+### 11.5 Media, audit, and integration events
 
 | Table | Purpose |
 | --- | --- |
@@ -403,9 +413,11 @@ Article/legal content is stored as Markdown and converted through an allowlisted
 | `content_media_links` | Workspace references and semantic usage (`cover`, `before`, `portrait`, etc.) |
 | `media_consents` | Patient-case consent reference, scope, obtained/expiry/revocation dates, private evidence media FK |
 | `audit_events` | Append-only actor, action, entity, redacted before/after JSONB, IP, user agent, correlation ID, timestamp |
-| `contact_requests` | Optional low-volume website inquiry; clinic/service/source, encrypted contact fields, consent version/time, workflow status, retention deadline |
+| `integration_outbox` | Versioned domain event, aggregate reference, payload, availability/attempt state, creation/publication times |
+| `integration_bindings` | Provider/type/external ID to internal entity mapping; unique provider/type/external ID |
+| `integration_deliveries` | Optional delivery attempt/result ledger used only when a relay/integration is enabled |
 
-Indexes are added to every FK, all live slugs/paths, status/order access paths, publication version/time, media checksum, audit entity/time, and contact status/time. Partial unique indexes ignore soft-deleted rows. Partitioning is unnecessary at expected scale.
+Indexes are added to every FK, all live slugs/paths, status/order access paths, publication version/time, media checksum, audit entity/time, and pending outbox availability. Partial unique indexes ignore soft-deleted rows. Partitioning is unnecessary at expected scale.
 
 ## 12. API design
 
@@ -433,7 +445,6 @@ All responses use JSON except media and sitemap responses. Dates are ISO-8601 UT
 | `GET /api/v1/public/articles/<slug>` | Published article detail |
 | `GET /api/v1/public/media/<asset_id>/<variant>` | Cacheable media bytes only if referenced by the active publication |
 | `GET /api/v1/public/sitemap.xml` | Routes/articles from the active publication |
-| `POST /api/v1/public/contact-requests` | Optional rate-limited, consented inquiry submission |
 
 Public JSON includes `release_version` and an ETag. `If-None-Match` returns `304`. A page response is always assembled from a single immutable publication; it cannot combine old global data with new page data.
 
@@ -450,7 +461,7 @@ Resource families:
 - `offers`, `offer-features`, `offer-clinics`, `offer-treatments`;
 - `articles`, `news`, `reviews`, `case-studies`, `ebooks`, `legal-documents`;
 - `quizzes`, `quiz-questions`, `quiz-options`, `quiz-result-bands`;
-- `media`, `media-consents`, `contact-requests`, `audit-events`;
+- `media`, `media-consents`, `audit-events`;
 - `previews` and `publications`.
 
 Special commands:
@@ -523,7 +534,7 @@ Navigation groups:
 - Pages, menus, SEO, and site settings;
 - Articles, news, reviews, cases, ebooks, and quiz;
 - Media library and patient consent;
-- GDPR/legal and optional contact requests;
+- GDPR/legal and audit history;
 - Audit history.
 
 CRUD screens use server-side pagination/filtering, stable `rowKey="id"`, drawer/modal forms with unsaved-change protection, optimistic concurrency errors, explicit upload retry, accessible validation summaries, and permission-aware actions. Backend enforcement remains authoritative.
@@ -649,8 +660,8 @@ The public site does not require a public MinIO Ingress because media is deliver
 - Admin/API responses use `Cache-Control: no-store`; public content uses ETags and short cache revalidation.
 - Upload and request body limits exist at nginx and Flask layers.
 - Audit before/after values redact bearer tokens, object-store credentials, consent evidence, and contact PII.
-- Public contact forms, if enabled, do not request clinical history. The site is not an electronic health record or patient-management system.
-- Contact requests record the exact consent-text version and have a configured deletion deadline.
+- No patient or offer-registration data is collected in the first release. Telephone and WhatsApp remain external contact actions.
+- A future registration context must record the exact consent purpose/text version, encrypt PII, enforce retention, and remain inaccessible to ordinary content editors. The CMS is not an electronic health record or patient-management system.
 - Patient before/after images cannot be published without current consent metadata and an approved usage scope.
 - Legal documents are versioned and require publisher approval; software defaults are not presented as legal approval.
 
@@ -706,7 +717,7 @@ Content migration preserves source wording for parity but does not certify medic
 ## 23. Non-goals for the first release
 
 - Electronic health records, treatment charts, prescriptions, or clinical document management.
-- Appointment-calendar optimization or integration with a practice-management system.
+- Patient accounts, offer registrations, appointment-calendar optimization, or integration with a practice-management system.
 - Arbitrary administrator-authored JavaScript, CSS, raw HTML, or new component types.
 - Multi-brand/multi-tenant SaaS isolation. DentNow is one site with multiple clinic locations.
 - Kafka, Redis, asynchronous qf ETL workers, or a microservice split.
@@ -722,7 +733,7 @@ These do not block implementation of the platform, but they block approval of pa
 - verified clinic hours, prices, offer validity, CAS rules, doctor credentials, review source/date/rating, and medical claims;
 - consent evidence and permitted use for real before/after patient images;
 - the external destination and retention policy for MinIO media backup;
-- whether website contact requests are persisted or contact remains telephone/WhatsApp-only.
+- requirements, lawful basis, consent wording, roles, and retention for a future patient/offer-registration capability.
 
 ## 25. Acceptance criteria
 
