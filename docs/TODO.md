@@ -18,12 +18,12 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 
 ---
 
-## Task 1 — Move frontend into `frontend/` (commit: `chore: organize frontend as a monorepo component`)
-- [ ] Step 1: Baseline — `git status`, gitleaks scan, `npm ci`, lint, vite build to tmp
-- [ ] Step 2: `git mv` frontend-owned files into `frontend/`; `.env` → `frontend/content-source.env`
-- [ ] Step 3: Update path-sensitive scripts, root README, temp workflow `context: ./frontend`
-- [ ] Step 4: Verify pure move (`npm --prefix frontend ci/lint/build/smoke`)
-- [ ] Step 5: Commit
+## Task 1 — Move frontend into `frontend/` (commit: `chore: organize frontend as a monorepo component`) ✅ DONE
+- [x] Step 1: Baseline — git status clean, fallback secret scan (no gitleaks) clean, npm ci ok, lint exit 0, vite build to scratchpad ok (101 modules)
+- [x] Step 2: `git mv` src/public/scripts + config files into `frontend/`; `.env` → `frontend/content-source.env` (verified clinic content, no secrets)
+- [x] Step 3: README commands → `npm --prefix frontend …`; docker-publish.yml `context: ./frontend`; scripts use cwd-relative paths (work as-is)
+- [x] Step 4: Pure move verified — build hashes identical to baseline (`index-DsOQmZvi.css`, `index-DeAmoGHe.js`); lint/smoke pass
+- [x] Step 5: Committed `7cb29f1` (on branch `feat/backend-admin-platform`)
 
 ## Task 2 — Typed frontend foundation + public runtime config (`feat(frontend): add typed runtime and split app entry`)
 - [ ] Step 1: runtime-config tests (relative API base, malformed JSON, missing admin coord)
