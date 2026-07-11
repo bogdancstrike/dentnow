@@ -1,0 +1,46 @@
+{
+  "namespaces": [
+    {
+      "name": "api",
+      "description": "DentNow Content API"
+    }
+  ],
+  "models": {
+    "Empty": {}
+  },
+  "endpoints": [
+    {
+      "namespace": "api",
+      "operation_name": "health",
+      "model_name": "Empty",
+      "request_method": ["GET"],
+      "api_url": "/health",
+      "exec_method": {
+        "module_name": "src.api.health",
+        "method_name": "health_check"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "liveness",
+      "model_name": "Empty",
+      "request_method": ["GET"],
+      "api_url": "/liveness",
+      "exec_method": {
+        "module_name": "src.api.health",
+        "method_name": "liveness"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "readiness",
+      "model_name": "Empty",
+      "request_method": ["GET"],
+      "api_url": "/readiness",
+      "exec_method": {
+        "module_name": "src.api.health",
+        "method_name": "readiness"
+      }
+    }
+  ]
+}
