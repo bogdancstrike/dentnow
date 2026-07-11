@@ -52,7 +52,7 @@
 │   │   ├── integrations/
 │   │   ├── media/
 │   │   └── site/
-│   └── tests/{unit,integration,contract}/
+│   └── tests/{unit,integration,contract,architecture,compose}/
 ├── frontend/
 │   ├── Dockerfile
 │   ├── package.json
@@ -71,6 +71,10 @@
 ├── keycloak/
 │   ├── configure-dentnow.sh
 │   └── realm-local.json
+├── ops/
+│   ├── backup-compose.sh
+│   ├── restore-compose.sh
+│   └── verify-backup.sh
 ├── docs/
 ├── docker-compose.yml
 ├── .env.example
@@ -85,7 +89,8 @@
 - Move: `src/` → `frontend/src/`
 - Move: `public/` → `frontend/public/`
 - Move: `scripts/` → `frontend/scripts/`
-- Move: `package.json`, `package-lock.json`, `index.html`, `vite.config.js`, `eslint.config.js`, `nginx.conf`, `Dockerfile` → `frontend/`
+- Move: `package.json`, `package-lock.json`, `index.html`, `vite.config.js`, `eslint.config.js`, `nginx.conf`, `Dockerfile`, `.dockerignore` → `frontend/`
+- Move: `.env` → `frontend/content-source.env` (migration input only; never loaded by Vite)
 - Modify: `.gitignore`, `.dockerignore`, `README.md`, `.github/workflows/docker-publish.yml`
 - Test: existing frontend build/lint/smoke commands from `frontend/`
 
@@ -104,7 +109,7 @@
 
 - [ ] **Step 2: Move frontend-owned files without redesigning them**
 
-  Use `git mv` for tracked paths. Keep `.github/`, `docs/`, `.gitignore`, orchestration files, and the root `README.md` at repository root. Rename `frontend/vite.config.js` to `frontend/vite.config.ts` only after Task 2 introduces TypeScript.
+  Use `git mv` for tracked paths. Preserve the current tracked clinic values as `frontend/content-source.env`, whose name prevents automatic Vite loading; Task 13 consumes and deletes it after the canonical seed is verified. Keep `.github/`, `docs/`, `.gitignore`, orchestration files, and the root `README.md` at repository root. Rename `frontend/vite.config.js` to `frontend/vite.config.ts` only after Task 2 introduces TypeScript.
 
 - [ ] **Step 3: Update path-sensitive scripts and documentation**
 
@@ -176,7 +181,7 @@
   Add development packages:
 
   ```text
-  @playwright/test, @testing-library/jest-dom, @testing-library/react,
+  @ant-design/cli, @playwright/test, @testing-library/jest-dom, @testing-library/react,
   @testing-library/user-event, @types/dompurify, @types/react,
   @types/react-dom, jsdom, msw, typescript, vitest
   ```
@@ -198,6 +203,8 @@
   ```
 
   Read `window.__DENTNOW__`, normalize trailing slashes, and validate admin fields only when the admin bundle is requested. Do not add phones, addresses, social links, or other business fallbacks.
+
+  Configure TypeScript with `strict`, `noEmit`, `jsx: "react-jsx"`, `allowJs: true`, and `checkJs: false` so new API/admin code is strict while the existing JSX can migrate route by route instead of requiring an unsafe all-at-once rewrite.
 
 - [ ] **Step 4: Split public and admin entry decisions**
 
@@ -248,6 +255,8 @@
   Commit the checksum to `backend/dist/SHA256SUMS`. Imports must use `framework`, not `qf`.
 
 - [ ] **Step 2: Write failing qf contract tests**
+
+  Define runtime requirements for Flask/RESTX, Gunicorn/gevent/psycogreen, SQLAlchemy/psycopg2/Alembic, Pydantic, python-jose/cryptography, requests, boto3, Pillow, Bleach, markdown-it-py, prometheus-client, and python-dotenv. Also install `colorama`, the Redis Python client, and `kafka-python<3` because qf imports its ETL modules eagerly even when `enable_etl=False`; this does not add Redis or Kafka services. Development requirements include pytest/coverage, Ruff, mypy, request/boto stubs, and migration/test helpers.
 
   Assert that:
 
@@ -319,6 +328,7 @@
 **Files:**
 
 - Create: `docker-compose.yml`, `.env.example`, `Makefile`
+- Create: `backend/Dockerfile`, `backend/.dockerignore`
 - Create: `backend/docker/postgres/01-create-keycloak.sh`
 - Create: `backend/docker/minio/dentnow-policy.json`, `backend/docker/minio/init.sh`
 - Create: `keycloak/configure-dentnow.sh`, `keycloak/realm-local.json`
@@ -331,13 +341,17 @@
 
 - [ ] **Step 2: Define persistent services and health checks**
 
-  Pin PostgreSQL 18, the same MinIO/`mc` releases used by the inspected homelab chart, and Keycloak 26.x. Create named volumes `postgres-data`, `minio-data`, and `keycloak-data`. Keep PostgreSQL and S3 internal by default; expose Keycloak and frontend browser ports.
+  Pin PostgreSQL 18, the same MinIO/`mc` releases used by the inspected homelab chart, and Keycloak 26.x. Create named volumes `postgres-data` and `minio-data`; Keycloak persists in its dedicated PostgreSQL database. Keep PostgreSQL and S3 internal by default; expose Keycloak and frontend browser ports.
 
-- [ ] **Step 3: Create isolated databases and identities**
+- [ ] **Step 3: Create the reusable backend image and utility services**
+
+  Add the Python 3.12 multi-stage backend image now so every later migration/integration command runs in the same environment as deployment. Compose defines `migrate`, `seed`, and `api` from this build; the first two are one-shot utility services and may reference commands added by later tasks. During implementation, use `docker compose run --rm --build ...` so each task tests the current backend source.
+
+- [ ] **Step 4: Create isolated databases and identities**
 
   PostgreSQL initializes database/user `dentnow` for the API and database/user `keycloak` for Keycloak. Credentials come from `.env`. The shell script uses fixed SQL identifiers and psql variables for password values; it never interpolates an arbitrary identifier.
 
-- [ ] **Step 4: Bootstrap private MinIO storage idempotently**
+- [ ] **Step 5: Bootstrap private MinIO storage idempotently**
 
   `minio-init` must:
 
@@ -351,7 +365,7 @@
 
   Root MinIO credentials are used only by the one-shot init container. The API receives only application credentials.
 
-- [ ] **Step 5: Bootstrap realm `doncik` idempotently**
+- [ ] **Step 6: Bootstrap realm `doncik` idempotently**
 
   `configure-dentnow.sh` waits for Keycloak, signs in with `kcadm.sh`, creates realm `doncik` only when absent, and upserts:
 
@@ -363,7 +377,9 @@
 
   Redirect URIs and web origins come from `PUBLIC_APP_URL`; direct access grants and implicit flow remain disabled.
 
-- [ ] **Step 6: Validate Compose infrastructure**
+  `realm-local.json` is the reproducible local/test fixture for an empty Keycloak database. `configure-dentnow.sh` is the authoritative idempotent updater and must never replace or re-import an existing `doncik` realm wholesale.
+
+- [ ] **Step 7: Validate Compose infrastructure**
 
   Run:
 
@@ -378,9 +394,1127 @@
 
   Expected: all probes pass. Repeat both init services and expect success with no duplicate resources.
 
+- [ ] **Step 8: Commit**
+
+  ```bash
+  git add docker-compose.yml .env.example Makefile backend/Dockerfile backend/.dockerignore backend/docker keycloak .gitignore
+  git commit -m "feat(compose): provision postgres minio and keycloak"
+  ```
+
+## Task 5: Add database, transaction, error, and migration foundations
+
+**Files:**
+
+- Create: `backend/alembic.ini`, `backend/migrations/env.py`, `backend/migrations/script.py.mako`
+- Create: `backend/src/core/db.py`, `backend/src/core/pagination.py`, `backend/src/core/etag.py`, `backend/src/core/clock.py`
+- Create: `backend/src/site/models.py`, `backend/src/audit/models.py`, `backend/src/integrations/models.py`
+- Create: `backend/src/models_all.py`
+- Create: `backend/migrations/versions/0001_site_audit_outbox.py`
+- Modify: `backend/src/config.py`, `backend/src/api/health.py`
+- Test: `backend/tests/integration/test_migrations.py`, `backend/tests/unit/test_etags.py`, `backend/tests/unit/test_outbox.py`
+
+- [ ] **Step 1: Write failing persistence tests**
+
+  Test migration from an empty PostgreSQL database, downgrade/upgrade round trip, UTC timestamps, UUIDv7 IDs, indexed foreign keys, optimistic ETag parsing, append-only audit behavior, and an outbox row committed in the same transaction as a sample site mutation.
+
+  Run:
+
+  ```bash
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_etags.py backend/tests/unit/test_outbox.py -q
+  docker compose run --rm --build migrate alembic upgrade head
+  ```
+
+  Expected: FAIL because persistence modules and migrations do not exist.
+
+- [ ] **Step 2: Implement shared SQLAlchemy infrastructure**
+
+  Follow the tested `testing_platform/backend/src/core/db.py` transaction boundary: one cached engine, `pool_pre_ping`, bounded pool settings, `expire_on_commit=False`, rollback on exception, and no domain imports from `core`. Add isolation selection for repeatable-read publication transactions.
+
+- [ ] **Step 3: Implement the first normalized schema slice**
+
+  Create the architecture-defined site/publication foundation:
+
+  ```text
+  site_state, site_links, navigation_menus, navigation_items,
+  pages, page_sections, page_seo, site_publications,
+  preview_sessions, audit_events,
+  integration_outbox, integration_bindings, integration_deliveries
+  ```
+
+  Add all live-path uniqueness, JSON-object checks, status checks, foreign-key indexes, outbox pending index, and immutable-publication safeguards. `site_publications.snapshot` and event payloads are JSONB; core relations are not collapsed into JSON. Media foreign keys and `publication_media` are added in Task 10 after `media_assets` exists.
+
+- [ ] **Step 4: Register complete metadata and Alembic config**
+
+  `models_all.py` imports every model module. Alembic reads `Config.DATABASE_URL` and `Base.metadata`; migration scripts are deterministic and never use `Base.metadata.create_all()` in application startup.
+
+- [ ] **Step 5: Complete readiness**
+
+  `/api/readiness` executes `SELECT 1` and a MinIO bucket stat through ports that can be stubbed in tests. It returns `503` with dependency names but never credentials or raw DSNs.
+
+- [ ] **Step 6: Verify migrations and constraints**
+
+  Run:
+
+  ```bash
+  docker compose up -d postgres minio
+  docker compose run --rm --build migrate alembic upgrade head
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit backend/tests/integration/test_migrations.py -q
+  docker compose run --rm --build migrate alembic check
+  ```
+
+  Expected: migration reaches head, tests pass, and Alembic reports no model/schema drift.
+
 - [ ] **Step 7: Commit**
 
   ```bash
-  git add docker-compose.yml .env.example Makefile backend/docker keycloak .gitignore
-  git commit -m "feat(compose): provision postgres minio and keycloak"
+  git add backend
+  git commit -m "feat(backend): add postgres schema and migration foundation"
   ```
+
+## Task 6: Implement Keycloak JWT verification and backend authorization
+
+**Files:**
+
+- Create: `backend/src/iam/principal.py`, `backend/src/iam/token_verifier.py`, `backend/src/iam/decorators.py`, `backend/src/iam/service.py`, `backend/src/iam/models.py`
+- Create: `backend/src/api/me.py`
+- Create: `backend/migrations/versions/0002_admin_principal_scopes.py`
+- Modify: `backend/maps/endpoint.json`, `backend/src/models_all.py`, `backend/src/core/correlation.py`
+- Test: `backend/tests/unit/test_token_verifier.py`, `backend/tests/unit/test_authorization.py`, `backend/tests/contract/test_admin_auth_boundary.py`
+
+- [ ] **Step 1: Write failing token and role tests**
+
+  Generate an in-test RSA key/JWKS and cover valid token, unknown `kid`, bad signature, expired token, wrong issuer, wrong audience, missing bearer token, missing role, admin implication, editor/publisher separation, and clinic-scope denial.
+
+  Run:
+
+  ```bash
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_token_verifier.py backend/tests/unit/test_authorization.py -q
+  ```
+
+  Expected: FAIL because IAM modules do not exist.
+
+- [ ] **Step 2: Implement split public/internal Keycloak coordinates**
+
+  Configuration must expose:
+
+  ```text
+  KEYCLOAK_PUBLIC_URL, KEYCLOAK_INTERNAL_URL, KEYCLOAK_REALM=doncik,
+  KEYCLOAK_ISSUER, KEYCLOAK_JWKS_URL, KEYCLOAK_AUDIENCE=dentnow-api,
+  JWKS_CACHE_TTL
+  ```
+
+  Fetch JWKS internally, validate the public issuer and audience, cache by `kid`, and refresh once on an unknown key to support Keycloak rotation.
+
+- [ ] **Step 3: Implement principal and permission policy**
+
+  Map only the four `dentnow_*` realm roles. `dentnow_admin` implies all capabilities. Store Keycloak subject/last-seen metadata and explicit clinic scopes without storing passwords. Decorators inject `principal` into the exact qf handler signature and return the common JSON error envelope.
+
+- [ ] **Step 4: Register `/api/v1/admin/me` and prove the boundary**
+
+  Public routes must return `200` without a token. `/api/v1/admin/me` returns `401` without a token, `403` without a DentNow role, and a redacted principal/roles/scopes payload with a valid token.
+
+- [ ] **Step 5: Restrict CORS and headers**
+
+  Allow configured local origins only, answer `OPTIONS`, echo `X-Correlation-Id`, and include `Authorization, Content-Type, If-Match, X-Correlation-Id` in allowed headers. Production same-origin operation does not use wildcard CORS.
+
+- [ ] **Step 6: Verify IAM**
+
+  Run:
+
+  ```bash
+  docker compose run --rm --build migrate alembic upgrade head
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_token_verifier.py backend/tests/unit/test_authorization.py backend/tests/contract/test_admin_auth_boundary.py -q
+  ```
+
+  Expected: all IAM tests pass.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add backend
+  git commit -m "feat(auth): protect admin api with keycloak roles"
+  ```
+
+## Task 7: Implement site settings, navigation, pages, and clinic CRUD
+
+**Files:**
+
+- Create: `backend/src/site/schemas.py`, `backend/src/site/repository.py`, `backend/src/site/service.py`, `backend/src/site/serializers.py`
+- Create: `backend/src/clinics/models.py`, `backend/src/clinics/schemas.py`, `backend/src/clinics/repository.py`, `backend/src/clinics/service.py`, `backend/src/clinics/serializers.py`
+- Create: `backend/src/api/site_admin.py`, `backend/src/api/clinics_admin.py`
+- Create: `backend/migrations/versions/0003_clinics_people.py`
+- Modify: `backend/maps/endpoint.json`, `backend/src/models_all.py`
+- Test: `backend/tests/unit/test_site_service.py`, `backend/tests/unit/test_clinic_service.py`, `backend/tests/integration/test_site_clinic_crud.py`
+
+- [ ] **Step 1: Write failing domain and API tests**
+
+  Cover site singleton update, unique live page path, valid registered template/block types, navigation cycle prevention, broken target rejection, three-clinic CRUD, contacts, unique weekday hours, transit/FAQ ordering, doctor-clinic mapping, soft delete, ETag/`If-Match`, audit creation, and clinic-manager scope.
+
+- [ ] **Step 2: Implement clinic/person schema**
+
+  Add `clinics`, `clinic_contacts`, `clinic_hours`, `clinic_transit_items`, `clinic_faqs`, `doctors`, `doctor_clinics`, and `admin_principal_clinics` exactly as defined in the architecture. Normalize phone values while retaining display values; validate coordinates, URLs, time ranges, and contact kinds.
+
+- [ ] **Step 3: Implement explicit services and serializers**
+
+  Repositories perform persistence only. Services enforce permissions, scope, ordering, conflict rules, audit writes, outbox event creation, and workspace-version increments. Serializers expose stable API names and ISO timestamps, never ORM instances.
+
+- [ ] **Step 4: Register administration endpoints**
+
+  Add list/get/create/patch/delete routes for site links, menus/items, pages/sections/SEO, clinics and their child resources, doctors, and doctor-clinic mappings. Use Pydantic request parsing and qf `Empty` models for complex payloads. Lists use `page`, `page_size`, `q`, `sort`, and `order` with allowlisted sort columns.
+
+- [ ] **Step 5: Verify CRUD and concurrency**
+
+  Run:
+
+  ```bash
+  docker compose run --rm --build migrate alembic upgrade head
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_site_service.py backend/tests/unit/test_clinic_service.py backend/tests/integration/test_site_clinic_crud.py -q
+  ```
+
+  Expected: all tests pass, including stale ETag `409` and cross-clinic `403`.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add backend
+  git commit -m "feat(cms): add site page and clinic management"
+  ```
+
+## Task 8: Implement treatments, prices, offers, technology, and partner CRUD
+
+**Files:**
+
+- Create: `backend/src/catalog/models.py`, `backend/src/catalog/schemas.py`, `backend/src/catalog/repository.py`, `backend/src/catalog/service.py`, `backend/src/catalog/serializers.py`
+- Create: `backend/src/api/catalog_admin.py`
+- Create: `backend/migrations/versions/0004_catalog_offers.py`
+- Modify: `backend/maps/endpoint.json`, `backend/src/models_all.py`
+- Test: `backend/tests/unit/test_catalog_service.py`, `backend/tests/integration/test_catalog_crud.py`
+
+- [ ] **Step 1: Write failing catalog rule tests**
+
+  Cover unique slugs, category/order behavior, exact/from/range/on-request prices, non-negative and ordered ranges, currency validation, clinic availability, offer start/end rules, expired-offer exclusion, features, treatment links, technology/partner rights metadata, scope authorization, ETags, audit, and outbox events.
+
+- [ ] **Step 2: Add normalized catalog schema and constraints**
+
+  Implement every catalog table listed in architecture section 11.3 with indexed FKs and checks. Do not store formatted values such as `1.490 lei` as the authoritative price; serializers format `NUMERIC` plus currency/price kind for the frontend locale.
+
+- [ ] **Step 3: Implement services and qf handlers**
+
+  Add server-paginated CRUD for categories, treatments, prices, FAQs, clinic mappings, offers, features, offer mappings, technologies, and partners. A clinic manager may edit only records scoped to an assigned clinic; shared/global catalog edits require editor/admin.
+
+- [ ] **Step 4: Verify catalog behavior**
+
+  Run:
+
+  ```bash
+  docker compose run --rm --build migrate alembic upgrade head
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_catalog_service.py backend/tests/integration/test_catalog_crud.py -q
+  ```
+
+  Expected: tests pass and database checks reject invalid prices/date windows independently of API validation.
+
+- [ ] **Step 5: Commit**
+
+  ```bash
+  git add backend
+  git commit -m "feat(cms): add treatments prices offers and partners"
+  ```
+
+## Task 9: Implement editorial, legal, review, case, ebook, and quiz CRUD
+
+**Files:**
+
+- Create: `backend/src/editorial/models.py`, `backend/src/editorial/schemas.py`, `backend/src/editorial/repository.py`, `backend/src/editorial/service.py`, `backend/src/editorial/serializers.py`, `backend/src/editorial/rich_text.py`
+- Create: `backend/src/api/editorial_admin.py`
+- Create: `backend/migrations/versions/0005_editorial_legal_quiz.py`
+- Modify: `backend/maps/endpoint.json`, `backend/src/models_all.py`
+- Test: `backend/tests/unit/test_rich_text.py`, `backend/tests/unit/test_editorial_service.py`, `backend/tests/integration/test_editorial_crud.py`
+
+- [ ] **Step 1: Write failing sanitization and editorial tests**
+
+  Cover scripts, event attributes, `javascript:` links, iframes, raw style, malformed Markdown, unique slugs, exact review dates/ratings, review verification metadata, legal version/effective date, case disclaimer/consent state, ebook download relation, quiz question/option ordering, score-band overlap/gaps, ETags, audit, and roles.
+
+- [ ] **Step 2: Implement safe rich text**
+
+  Store Markdown source, render with a fixed Markdown feature set, and sanitize with an explicit Bleach tag/attribute/protocol allowlist. Publication runs the same sanitizer again. Page headings stay plain text. Return sanitized HTML only in explicit `rendered_html` fields.
+
+- [ ] **Step 3: Add normalized editorial schema**
+
+  Implement `articles`, `news_items`, `reviews`, `case_studies`, `ebooks`, `legal_documents`, `quizzes`, `quiz_questions`, `quiz_options`, and `quiz_result_bands`. Keep media FKs nullable until Task 10, then add/validate the relationships in its migration.
+
+- [ ] **Step 4: Register explicit CRUD handlers**
+
+  Expose server-paginated resources and nested quiz operations. Legal approval fields and case consent state require publisher/admin. Relative review dates are forbidden; the frontend derives relative display from an exact date.
+
+- [ ] **Step 5: Verify editorial APIs**
+
+  Run:
+
+  ```bash
+  docker compose run --rm --build migrate alembic upgrade head
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_rich_text.py backend/tests/unit/test_editorial_service.py backend/tests/integration/test_editorial_crud.py -q
+  ```
+
+  Expected: tests pass and malicious stored content never appears in `rendered_html`.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add backend
+  git commit -m "feat(cms): add editorial legal and quiz management"
+  ```
+
+## Task 10: Implement private MinIO media management and consent gates
+
+**Files:**
+
+- Create: `backend/src/media/models.py`, `backend/src/media/schemas.py`, `backend/src/media/ports.py`
+- Create: `backend/src/media/minio_storage.py`, `backend/src/media/image_processor.py`, `backend/src/media/service.py`, `backend/src/media/serializers.py`
+- Create: `backend/src/api/media_admin.py`, `backend/src/api/media_public.py`
+- Create: `backend/migrations/versions/0006_media_assets.py`
+- Modify: `backend/src/editorial/models.py`, `backend/src/models_all.py`, `backend/maps/endpoint.json`
+- Test: `backend/tests/unit/test_media_service.py`, `backend/tests/unit/test_image_processor.py`, `backend/tests/integration/test_minio_media.py`
+
+- [ ] **Step 1: Write failing media/security tests**
+
+  Cover allowed raster formats, real MIME sniffing, maximum bytes/pixels, decompression bombs, EXIF removal, random object keys, SHA-256, variant dimensions, duplicate upload behavior, alt-text requirement, private bucket policy, public-reference check, preview-token check, PDF disposition, unsupported SVG/HTML rejection, consent evidence privacy, and deletion blocked by workspace/publication references.
+
+- [ ] **Step 2: Implement storage and processing ports**
+
+  Domain/application code depends on `ObjectStoragePort` and `ImageProcessorPort`. The boto3 MinIO adapter configures explicit endpoint, region, path-style addressing, timeouts, and application credentials. No S3 object URL or credential leaks into a public serializer.
+
+- [ ] **Step 3: Implement media schema**
+
+  Add `media_assets`, `media_variants`, `content_media_links`, `publication_media`, and `media_consents`; add validated FKs from doctor/article/news/case/ebook/SEO/partner/technology records. Store opaque object keys, original display filename, MIME, dimensions, checksum, rights/alt/caption/focal metadata, readiness, and soft-delete state.
+
+- [ ] **Step 4: Implement streaming upload and variants**
+
+  Stream to a bounded temporary file, identify/decode, re-encode, upload original plus `thumbnail`, `card`, and `hero` variants, then commit metadata. On failure, delete newly uploaded objects or record them for orphan cleanup. Never hold an unbounded request in memory.
+
+- [ ] **Step 5: Implement media delivery rules**
+
+  Admin content requires bearer authorization. Public content is served only when the asset appears in the active publication. Preview content requires the matching unexpired preview token. Emit correct `Content-Type`, ETag, `Content-Length`, range behavior where supported, safe disposition, and immutable cache headers for published variants.
+
+- [ ] **Step 6: Verify against real MinIO**
+
+  Run:
+
+  ```bash
+  docker compose up -d postgres minio
+  docker compose run --rm minio-init
+  docker compose run --rm --build migrate alembic upgrade head
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_media_service.py backend/tests/unit/test_image_processor.py backend/tests/integration/test_minio_media.py -q
+  ```
+
+  Expected: all tests pass; MinIO application credentials cannot access any non-DentNow bucket.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add backend
+  git commit -m "feat(media): manage private minio assets and consent"
+  ```
+
+## Task 11: Implement deterministic preview, publication, rollback, and public APIs
+
+**Files:**
+
+- Create: `backend/src/site/snapshot_contract.py`, `backend/src/site/snapshot_builder.py`, `backend/src/site/publication_validator.py`, `backend/src/site/publication_service.py`
+- Create: `backend/src/api/public_content.py`, `backend/src/api/publications_admin.py`, `backend/src/api/previews.py`
+- Create: `backend/migrations/versions/0007_publication_guards.py`
+- Modify: `backend/maps/endpoint.json`, `backend/src/media/service.py`
+- Test: `backend/tests/unit/test_snapshot_builder.py`, `backend/tests/unit/test_publication_validator.py`, `backend/tests/integration/test_publication_flow.py`, `backend/tests/contract/test_public_api.py`
+
+- [ ] **Step 1: Write failing snapshot/publication tests**
+
+  Cover deterministic canonical JSON/hash, stable ordering, one-release consistency, route uniqueness, broken navigation, missing clinic fields, invalid prices/offers, missing legal docs, unsafe rich text, missing alt/rights/consent, advisory-lock serialization, repeatable-read behavior, unchanged-workspace publish, active-pointer atomicity, rollback, restore-workspace, preview expiration/revocation, ETags, `304`, and media reference materialization.
+
+- [ ] **Step 2: Define and version `SiteSnapshotV1`**
+
+  Use Pydantic discriminated unions for page sections and an explicit top-level schema:
+
+  ```python
+  class SiteSnapshotV1(BaseModel):
+      schema_version: Literal[1]
+      site: SitePublic
+      links: list[LinkPublic]
+      navigation: dict[str, list[NavigationItemPublic]]
+      clinics: list[ClinicPublic]
+      pages_by_path: dict[str, PagePublic]
+      treatments: list[TreatmentPublic]
+      offers: list[OfferPublic]
+      editorial: EditorialPublic
+      media: dict[str, MediaPublic]
+  ```
+
+  Unknown block kinds and fields are rejected. Serialization sorts all unordered collections by stable business keys.
+
+- [ ] **Step 3: Implement validation and atomic publish**
+
+  Under a PostgreSQL advisory lock and repeatable-read transaction, validate the complete workspace, insert immutable snapshot/media links, update the active pointer, write audit, and enqueue `site.publication.activated.v1` in `integration_outbox`. Validation-only returns all field/entity errors without mutating state.
+
+- [ ] **Step 4: Implement previews and rollback**
+
+  Hash a 256-bit random preview token, freeze a snapshot, set 15-minute expiry, and expose `no-store` preview JSON/media. Activation of an older compatible publication changes only the live pointer; restore-workspace is separate and requires admin confirmation/role.
+
+- [ ] **Step 5: Implement public read surface**
+
+  Register architecture section 12.1 routes for bootstrap, page-by-path, article list/detail, media, and sitemap. Every response comes from one active publication, carries `release_version`, and supports content-hash ETags. Public endpoints never fall back to workspace rows.
+
+- [ ] **Step 6: Verify publication contracts**
+
+  Run:
+
+  ```bash
+  docker compose run --rm --build migrate alembic upgrade head
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_snapshot_builder.py backend/tests/unit/test_publication_validator.py backend/tests/integration/test_publication_flow.py backend/tests/contract/test_public_api.py -q
+  ```
+
+  Expected: all tests pass, including rollback of content and media as one unit.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add backend
+  git commit -m "feat(publishing): add previews immutable releases and public api"
+  ```
+
+## Task 12: Formalize the future integration boundary without collecting patient data
+
+**Files:**
+
+- Create: `backend/src/integrations/events.py`, `backend/src/integrations/ports.py`, `backend/src/integrations/outbox.py`, `backend/src/integrations/serializers.py`
+- Create: `backend/docs/integration-contracts.md`
+- Test: `backend/tests/unit/test_domain_events.py`, `backend/tests/architecture/test_dependency_rules.py`
+
+- [ ] **Step 1: Write failing event/dependency tests**
+
+  Assert stable event envelope/versioning, idempotency ID, actor/correlation metadata, redacted payload rules, transactional insertion, and that `site`, `clinics`, `catalog`, and `editorial` do not import vendor SDKs or adapter modules.
+
+- [ ] **Step 2: Define the event envelope and current events**
+
+  The envelope contains event ID, type with `.v1` suffix, aggregate type/ID, occurred time, schema version, correlation ID, and a minimal non-PII payload. Implement events for publication activation, clinic update, treatment update, and offer publish/expire.
+
+- [ ] **Step 3: Define outbound/inbound ports**
+
+  Document HTTP/webhook/Kafka/vendor adapters as replaceable implementations, external-ID binding rules, signed inbound requests, idempotency, retry/dead-letter semantics, and provider-specific anti-corruption mapping. Do not implement a relay, webhook receiver, patient table, registration route, or qf ETL worker in this release.
+
+- [ ] **Step 4: Add the future patient-engagement guardrail**
+
+  `integration-contracts.md` must require a separate bounded context, encrypted PII, purpose/versioned consent, retention/export/delete, stricter roles, redacted audit, and a new threat/regulatory assessment before any offer/patient registration endpoint is enabled. Explicitly prohibit adding patient fields to CMS content tables.
+
+- [ ] **Step 5: Verify boundaries**
+
+  Run:
+
+  ```bash
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_domain_events.py backend/tests/architecture/test_dependency_rules.py -q
+  ```
+
+  Expected: tests pass and no current public endpoint accepts patient/registration data.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add backend
+  git commit -m "feat(integrations): add versioned outbox extension boundary"
+  ```
+
+## Task 13: Export and seed every current content source
+
+**Files:**
+
+- Create: `frontend/scripts/export-current-content.mjs`
+- Create: `backend/seeds/current-site.json`, `backend/seeds/current-assets.json`
+- Create: `backend/scripts/seed_current_site.py`, `backend/scripts/verify_seed_parity.py`
+- Delete after verified export: `frontend/content-source.env`
+- Create: `backend/tests/integration/test_seed_idempotency.py`, `backend/tests/integration/test_seed_parity.py`
+- Read/migrate: all current files listed in architecture section 3
+
+- [ ] **Step 1: Write the parity manifest and failing tests**
+
+  The expected minimum inventory is:
+
+  ```json
+  {
+    "clinics": 3,
+    "phone_lines": 2,
+    "services": 6,
+    "offers": 6,
+    "treatment_categories": 10,
+    "treatment_price_rows": 20,
+    "partners": 6,
+    "case_studies": 3,
+    "ebooks": 6,
+    "news_items": 3,
+    "quiz_questions": 7,
+    "quiz_options": 28,
+    "articles": 17,
+    "reviews": 9
+  }
+  ```
+
+  Tests also require all App routes, location details/FAQs/transit, four treatment landing pages, emergency/CAS content, three legal documents, navigation variants, section copy, SEO, and every referenced DentNow asset.
+
+- [ ] **Step 2: Export centralized JavaScript data deterministically**
+
+  The Node exporter imports `frontend/src/data/*.js`, `frontend/src/config.js`, and the migration-only `frontend/content-source.env` in a controlled build-time environment and writes normalized JSON. It does not scrape JSX with regex. Delete `content-source.env` after the committed seed fixture and parity tests contain every mapped value.
+
+- [ ] **Step 3: Add explicit mappings for page-local content**
+
+  Move page-local datasets into the seed fixture with a `source_path` field used only by parity reports. Resolve duplicate clinic/contact/schedule records into one canonical entity while verifying every current displayed value maps to a target field or an intentional reviewed replacement.
+
+- [ ] **Step 4: Seed database and MinIO idempotently**
+
+  The Python seed imports only when no seeded site exists, uploads assets with checksums/variants, creates normalized rows, marks unverified claims as requiring review, and creates the initial publication. Re-running returns a no-change summary and never overwrites admin edits.
+
+- [ ] **Step 5: Verify the complete migration**
+
+  Run:
+
+  ```bash
+  docker compose run --rm --build migrate alembic upgrade head
+  docker compose run --rm --build seed
+  docker compose run --rm --build seed
+  docker compose run --rm --build api python scripts/verify_seed_parity.py
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/integration/test_seed_idempotency.py backend/tests/integration/test_seed_parity.py -q
+  ```
+
+  Expected: first seed creates content, second reports no changes, parity reports zero unmapped content paths and zero missing media objects.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add backend frontend
+  git commit -m "feat(migration): seed current dentnow content and media"
+  ```
+
+## Task 14: Refactor the public React site to render only backend data
+
+**Files:**
+
+- Create: `frontend/src/api/publicClient.ts`, `frontend/src/api/publicContracts.ts`
+- Create: `frontend/src/public-site/SiteDataProvider.tsx`, `frontend/src/public-site/SiteRouter.tsx`, `frontend/src/public-site/blockRegistry.tsx`
+- Create: `frontend/src/public-site/renderers/` for every supported template/block
+- Move/adapt: existing `frontend/src/pages`, `components`, `hooks`, and styles into `frontend/src/public-site/`
+- Delete after parity: `frontend/src/data/`, business fallbacks in `frontend/src/config.js`, and page-local content constants
+- Test: `frontend/tests/public-site/*.test.tsx`, `frontend/tests/no-hardcoded-content.test.ts`, `frontend/e2e/public-routes.spec.ts`
+
+- [ ] **Step 1: Write failing provider and no-fallback tests**
+
+  Use MSW to cover bootstrap/page success, `304`, loading, API unavailable, unknown route, empty optional section, stale release refresh, and preview snapshot. The guard test scans frontend runtime modules for imports from retired content files and known clinic values such as phone/address/price literals.
+
+- [ ] **Step 2: Implement typed public API clients and query keys**
+
+  Public requests have no bearer token. Query keys include active release/version; page results from one version cannot be combined with bootstrap from another. On a mismatch, invalidate and refetch as a unit.
+
+- [ ] **Step 3: Convert every route to a pure renderer**
+
+  Cover home, treatments/tariffs, treatment detail, offers, article index/detail, reviews/redirect, cases, news, quiz, partners, ebooks, clinic/location aliases, emergency, CAS, GDPR/privacy/terms, and 404. Components receive contract props or context selectors; they do not import business data.
+
+- [ ] **Step 4: Replace unsafe and duplicated behavior**
+
+  Render plain headings without HTML injection, render sanitized rich text through one defensive component, derive review relative dates from exact dates, derive prices from numeric contracts, derive JSON-LD facts from backend SEO, and derive phone/WhatsApp/contact actions from selected clinic data.
+
+- [ ] **Step 5: Remove retired data only after route parity passes**
+
+  Delete `frontend/src/data`, page-local datasets, Vite content variables, static sitemap generation, and bundled content-asset references. Keep UI-only icons/styles and explicit loading/error copy in code.
+
+- [ ] **Step 6: Verify all public routes anonymously**
+
+  Run:
+
+  ```bash
+  npm --prefix frontend run typecheck
+  npm --prefix frontend run test -- --run
+  npm --prefix frontend run lint
+  npm --prefix frontend run build
+  npm --prefix frontend run e2e -- public-routes.spec.ts
+  ```
+
+  Expected: every current route renders from mocked/real API data; no test or runtime import depends on retired content modules; no Keycloak redirect occurs.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add frontend
+  git commit -m "feat(frontend): render public site from published api data"
+  ```
+
+## Task 15: Add the Keycloak-authenticated admin shell
+
+**Files:**
+
+- Create: `frontend/src/admin/auth/keycloak.ts`, `frontend/src/admin/auth/AdminAuthBoundary.tsx`, `frontend/src/admin/auth/permissions.ts`
+- Create: `frontend/src/admin/api/adminClient.ts`, `frontend/src/admin/api/adminContracts.ts`, `frontend/src/admin/api/queryKeys.ts`
+- Create: `frontend/src/admin/AdminApp.tsx`, `frontend/src/admin/layout/AdminLayout.tsx`, `frontend/src/admin/theme.ts`
+- Create: `frontend/src/admin/pages/OverviewPage.tsx`, `frontend/src/admin/pages/AccessDeniedPage.tsx`
+- Modify: `frontend/src/App.tsx`
+- Test: `frontend/tests/admin/auth.test.tsx`, `frontend/tests/admin/admin-client.test.ts`, `frontend/e2e/admin-auth.spec.ts`
+
+- [ ] **Step 1: Write failing route/auth/client tests**
+
+  Cover public startup without Keycloak, `/admin` login-required startup, PKCE S256 options, token refresh within 30 seconds, in-memory token use, bearer attachment only to admin requests, 401 relogin, 403 access page, logout to `/`, restoration of the requested admin URL, and absence of admin routes for principals with no DentNow role.
+
+- [ ] **Step 2: Implement lazy Keycloak initialization**
+
+  Create Keycloak only from the admin bundle using runtime client `dentnow-admin-spa`, realm `doncik`, and configured browser URL. Use `onLoad: "login-required"`, `pkceMethod: "S256"`, and `checkLoginIframe: false`. Never persist access/refresh tokens in local/session storage.
+
+- [ ] **Step 3: Implement the admin API client**
+
+  Refresh before requests, attach bearer/correlation/`If-Match`, parse the common error envelope, retain response ETags, and expose cancellation through `AbortSignal`. A 409 returns a typed version-conflict result rather than a generic toast.
+
+- [ ] **Step 4: Build the shell with one Ant Design provider**
+
+  Before component work, inspect official APIs:
+
+  ```bash
+  npm --prefix frontend exec -- antd info ConfigProvider --format json
+  npm --prefix frontend exec -- antd info Layout --format json
+  npm --prefix frontend exec -- antd info Menu --format json
+  npm --prefix frontend exec -- antd info App --format json
+  ```
+
+  Use one `ConfigProvider` plus Ant `App` inside the lazy admin root, token-based theming, responsive sidebar/drawer navigation, header identity/logout, publication status placeholder, and accessible skip/main landmarks. Do not target `.ant-*` selectors.
+
+- [ ] **Step 5: Load `/admin/me` before rendering protected navigation**
+
+  Derive allowed route/menu/action presentation from effective backend permissions and clinic scopes. Backend authorization remains authoritative.
+
+- [ ] **Step 6: Verify auth behavior**
+
+  Run:
+
+  ```bash
+  npm --prefix frontend run test -- --run tests/admin/auth.test.tsx tests/admin/admin-client.test.ts
+  npm --prefix frontend run typecheck
+  npm --prefix frontend exec -- antd lint src/admin --format json
+  npm --prefix frontend run e2e -- admin-auth.spec.ts
+  ```
+
+  Expected: public route has no login redirect; `/admin` completes realm `doncik` login and an authorized principal sees the shell.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add frontend
+  git commit -m "feat(admin): add keycloak protected administration shell"
+  ```
+
+## Task 16: Build reusable admin CRUD foundations and site/clinic/catalog screens
+
+**Files:**
+
+- Create: `frontend/src/admin/components/ResourceTable.tsx`, `ResourceDrawer.tsx`, `VersionConflictDialog.tsx`, `UnsavedChangesGuard.tsx`, `FieldErrorSummary.tsx`
+- Create: `frontend/src/admin/components/ClinicScopePicker.tsx`, `PriceEditor.tsx`, `OrderedListEditor.tsx`, `RichTextEditor.tsx`
+- Create: `frontend/src/admin/features/site/`, `clinics/`, `catalog/`, `offers/`
+- Modify: `frontend/src/admin/AdminApp.tsx`, `frontend/src/admin/layout/AdminLayout.tsx`
+- Test: `frontend/tests/admin/resource-table.test.tsx`, `frontend/tests/admin/site-clinic-catalog.test.tsx`
+
+- [ ] **Step 1: Query the exact Ant Design APIs and write failing component tests**
+
+  Run before implementation:
+
+  ```bash
+  npm --prefix frontend exec -- antd info Table --format json
+  npm --prefix frontend exec -- antd info Form --format json
+  npm --prefix frontend exec -- antd info Drawer --format json
+  npm --prefix frontend exec -- antd info Modal --format json
+  npm --prefix frontend exec -- antd info Select --format json
+  npm --prefix frontend exec -- antd info InputNumber --format json
+  ```
+
+  Tests cover server paging/sorting/filtering, stable `rowKey="id"`, remote Select with local filtering disabled, loading/empty/error, create/edit/delete, ETag conflict, field/server errors, unsaved-close warning, ordered children, keyboard focus return, and permission-disabled actions.
+
+- [ ] **Step 2: Implement shared CRUD mechanics without hiding domain forms**
+
+  `ResourceTable` owns unified server query state and selection. `ResourceDrawer` owns lifecycle and accessible errors. Domain feature folders own their schemas/forms; do not create a metadata engine that accepts arbitrary field definitions or raw HTML.
+
+- [ ] **Step 3: Implement site/page/navigation screens**
+
+  Add site settings/links, menu tree/items, page list, page template/route/SEO editor, and typed section ordering/editor. Validate route and menu targets before save and surface publication warnings inline.
+
+- [ ] **Step 4: Implement clinic/team screens**
+
+  Add clinic details, contacts, weekly hours, transit, FAQs, doctor profiles, doctor-clinic assignment, and clinic-principal scope administration visible only to `dentnow_admin`.
+
+- [ ] **Step 5: Implement catalog/offer screens**
+
+  Add treatment categories, treatments, structured prices, FAQs, clinic availability, offers/features/validity, offer mappings, technologies, and partners. Price UI sends numeric/price-kind contracts rather than formatted strings.
+
+- [ ] **Step 6: Verify admin slice**
+
+  Run:
+
+  ```bash
+  npm --prefix frontend run test -- --run tests/admin/resource-table.test.tsx tests/admin/site-clinic-catalog.test.tsx
+  npm --prefix frontend run typecheck
+  npm --prefix frontend run lint
+  npm --prefix frontend exec -- antd lint src/admin --format json
+  ```
+
+  Expected: tests and Ant Design lint pass with no broad internal-selector overrides.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add frontend
+  git commit -m "feat(admin): manage site clinics catalog and offers"
+  ```
+
+## Task 17: Build editorial, legal, quiz, media, and audit administration
+
+**Files:**
+
+- Create: `frontend/src/admin/features/editorial/`, `legal/`, `quiz/`, `media/`, `audit/`
+- Create: `frontend/src/admin/components/MediaPicker.tsx`, `MediaUpload.tsx`, `ConsentStatus.tsx`, `AuditDiff.tsx`
+- Modify: `frontend/src/admin/AdminApp.tsx`, `frontend/src/admin/layout/AdminLayout.tsx`
+- Test: `frontend/tests/admin/editorial-media.test.tsx`, `frontend/tests/admin/legal-quiz-audit.test.tsx`, `frontend/e2e/admin-crud.spec.ts`
+
+- [ ] **Step 1: Query Upload/Image component APIs and write failing tests**
+
+  ```bash
+  npm --prefix frontend exec -- antd info Upload --format json
+  npm --prefix frontend exec -- antd info Image --format json
+  npm --prefix frontend exec -- antd info DatePicker --format json
+  npm --prefix frontend exec -- antd info Tabs --format json
+  npm --prefix frontend exec -- antd info Descriptions --format json
+  ```
+
+  Cover explicit controlled upload state, progress/failure/retry/cancel, alt/rights validation, media selection, private consent evidence, before/after pairing, Markdown preview, exact review date/rating/source, legal approval controls, quiz band validation, and redacted audit diffs.
+
+- [ ] **Step 2: Implement editorial screens**
+
+  Add articles, news, reviews, case studies, and ebooks with safe Markdown editing, media picking, status/review metadata, and relevant nested relations. Do not expose a raw HTML editor.
+
+- [ ] **Step 3: Implement legal and quiz screens**
+
+  Add versioned GDPR/privacy/terms/cookie documents with effective date/approval, and quiz/question/option/result-band ordered editors with live score-range validation.
+
+- [ ] **Step 4: Implement media and consent library**
+
+  Add server-paginated grid/list, filters for kind/readiness/rights/alt/consent, upload queue, metadata edit, variants preview, usage references, safe delete explanation, and consent status/evidence controls. Browser uploads go only to the authenticated API.
+
+- [ ] **Step 5: Implement audit explorer**
+
+  Add actor/action/entity/time filters and a redacted before/after view. Audit is read-only and available only to admin/publisher as defined by backend policy.
+
+- [ ] **Step 6: Verify all CRUD families end to end**
+
+  Run:
+
+  ```bash
+  npm --prefix frontend run test -- --run tests/admin/editorial-media.test.tsx tests/admin/legal-quiz-audit.test.tsx
+  npm --prefix frontend run typecheck
+  npm --prefix frontend exec -- antd lint src/admin --format json
+  npm --prefix frontend run e2e -- admin-crud.spec.ts
+  ```
+
+  Expected: an authorized admin can create/read/update/delete every in-scope content family and receives meaningful conflicts/validation errors.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add frontend
+  git commit -m "feat(admin): manage editorial legal quiz media and audit"
+  ```
+
+## Task 18: Add QTP-style `cmdk` rapid navigation and quick actions
+
+**Files:**
+
+- Create: `backend/src/site/search_service.py`, `backend/src/api/admin_search.py`
+- Modify: `backend/maps/endpoint.json`
+- Create: `frontend/src/admin/components/CommandPalette.tsx`, `frontend/src/admin/components/commandRegistry.tsx`
+- Modify: `frontend/src/admin/layout/AdminLayout.tsx`, `frontend/src/admin/AdminApp.tsx`, admin styles
+- Test: `backend/tests/unit/test_admin_search.py`, `frontend/tests/admin/command-palette.test.tsx`, `frontend/e2e/admin-command-palette.spec.ts`
+
+- [ ] **Step 1: Write failing permission-scoped search tests**
+
+  Backend tests cover minimum two-character query, per-group result cap, stable ranking, resource type/ID/title/route result contract, clinic scope, role filtering, soft-deleted exclusion, and no sensitive/private consent payload.
+
+- [ ] **Step 2: Implement `/api/v1/admin/search`**
+
+  Search clinics, pages, treatments, offers, doctors, articles, news, reviews, ebooks, and media using indexed case-insensitive fields. Return only resources the principal may read. Keep the response small and versioned; no patient/registration search exists.
+
+- [ ] **Step 3: Port the proven QTP interaction pattern**
+
+  Implement:
+
+  ```text
+  Ctrl+K / Cmd+K global toggle
+  header search trigger and custom open event
+  query reset on open
+  180 ms debounce
+  remote search enabled at 2+ characters
+  shouldFilter=false for mixed static/dynamic groups
+  looped keyboard navigation and Escape close
+  small cached result groups
+  ```
+
+  Use `Command.Dialog`, `Command.Input`, `Command.List`, `Command.Group`, `Command.Item`, and `Command.Empty` as in QTP.
+
+- [ ] **Step 4: Register permission-aware commands**
+
+  Groups include admin pages, create actions, quick views (unpublished, expired offers, missing alt/consent, review required), backend results, and safe actions (validate, refresh preview, open live site, theme, logout). Publish/rollback commands open a confirmation dialog; they never mutate immediately on selection.
+
+- [ ] **Step 5: Test keyboard and search behavior**
+
+  Run:
+
+  ```bash
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_admin_search.py -q
+  npm --prefix frontend run test -- --run tests/admin/command-palette.test.tsx
+  npm --prefix frontend run e2e -- admin-command-palette.spec.ts
+  ```
+
+  Expected: full workflow works without a mouse, unauthorized commands/results are absent, and rapid typing does not send a request per keystroke.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add backend frontend
+  git commit -m "feat(admin): add cmdk navigation and quick actions"
+  ```
+
+## Task 19: Add actual-renderer preview, validation, publish, and rollback UX
+
+**Files:**
+
+- Create: `frontend/src/public-site/PreviewApp.tsx`
+- Create: `frontend/src/admin/features/publication/PublicationBar.tsx`, `PreviewPane.tsx`, `ValidationReport.tsx`, `PublicationHistory.tsx`
+- Modify: `frontend/src/App.tsx`, `frontend/src/admin/AdminApp.tsx`, `frontend/src/admin/layout/AdminLayout.tsx`
+- Test: `frontend/tests/admin/publication.test.tsx`, `frontend/tests/public-site/preview.test.tsx`, `frontend/e2e/preview-publish-rollback.spec.ts`
+
+- [ ] **Step 1: Write failing preview/publication tests**
+
+  Cover preview creation/expiry/revocation, same renderer contract, current admin route selection, desktop/tablet/mobile widths, preview media, `noindex`/`no-store`, validation errors linked to editors, unpublished workspace indicator, publish role, confirmation, active version refresh, history, rollback, and restore-workspace separation.
+
+- [ ] **Step 2: Implement preview route and pane**
+
+  `/preview/:token` renders `PreviewApp` with no Keycloak initialization and no admin controls. It can read only the frozen preview snapshot/media. The admin pane embeds it same-origin, provides route/viewport controls, and creates a new preview after relevant saves rather than pretending unsaved form state is persisted.
+
+- [ ] **Step 3: Implement publication controls**
+
+  The persistent admin header shows active publication, workspace version, unpublished state, and last publisher/time. Validate presents all errors/warnings. Publish and rollback require explicit confirmation and permission. After activation, invalidate public/admin query caches and verify the reported active hash/version.
+
+- [ ] **Step 4: Verify end-to-end**
+
+  Run:
+
+  ```bash
+  npm --prefix frontend run test -- --run tests/admin/publication.test.tsx tests/public-site/preview.test.tsx
+  npm --prefix frontend run e2e -- preview-publish-rollback.spec.ts
+  ```
+
+  Expected: a draft edit appears in preview but not public, publish switches the full site, and rollback restores the previous full snapshot/media set.
+
+- [ ] **Step 5: Commit**
+
+  ```bash
+  git add frontend
+  git commit -m "feat(admin): preview publish and roll back site releases"
+  ```
+
+## Task 20: Build production images and complete the one-command Compose stack
+
+**Files:**
+
+- Modify: `backend/Dockerfile`, `backend/.dockerignore`
+- Create: `frontend/Dockerfile`
+- Create: `frontend/nginx/default.conf.template`, `frontend/docker-entrypoint.d/40-runtime-config.sh`
+- Modify: `docker-compose.yml`, `.env.example`, `.gitignore`, `frontend/.dockerignore`, `Makefile`
+- Test: `backend/tests/compose/test_stack.sh`, `frontend/scripts/smoke-check.mjs`
+
+- [ ] **Step 1: Write a failing full-stack smoke test**
+
+  From a browser/client perspective verify:
+
+  ```text
+  GET / -> 200 SPA
+  GET /tratamente -> 200 SPA fallback
+  GET /api/health -> 200 with build revision
+  GET /api/v1/public/bootstrap -> 200 without auth
+  GET /sitemap.xml -> XML from active publication
+  GET /admin -> 200 SPA then Keycloak login in browser test
+  GET /api/v1/admin/me -> 401 without token
+  representative published media -> 200 and cache headers
+  ```
+
+- [ ] **Step 2: Build the backend image**
+
+  Use a Python 3.12 multi-stage image. Install `backend/dist/qf-1.0.5-py3-none-any.whl` plus runtime requirements into the builder, copy only backend runtime files, run as a non-root user, and start `gunicorn -c gunicorn.conf.py wsgi:app`. Add OCI source/revision/version labels and a process health check.
+
+- [ ] **Step 3: Build the frontend image and nginx gateway**
+
+  Use Node 20 for `npm ci`/build and nginx Alpine for runtime. nginx must:
+
+  - proxy `/api/` to `${API_UPSTREAM}` without stripping `/api`;
+  - proxy exact `/sitemap.xml` to the public sitemap API;
+  - serve `robots.txt`, runtime config, and the SPA;
+  - use `try_files $uri $uri/ /index.html` for browser routes;
+  - never cache `config.js` or `index.html`;
+  - cache fingerprinted assets immutably;
+  - allow bounded admin media uploads;
+  - preserve correlation/forwarded headers and proxy timeouts;
+  - apply security headers without blocking same-origin preview or approved Google Maps frames.
+
+  The entrypoint renders `window.__DENTNOW__` from public environment variables without putting secrets in JavaScript.
+
+- [ ] **Step 4: Complete all Compose application services**
+
+  Add `migrate`, `seed`, `api`, and `frontend` to the data/identity services. Required order is:
+
+  ```text
+  postgres/minio/keycloak healthy
+    -> minio-init/keycloak-config complete
+    -> migrate complete
+    -> seed complete
+    -> api healthy
+    -> frontend healthy
+  ```
+
+  `migrate` and `seed` use the exact backend image/build. Set restart policies for long-lived services, stop grace periods, read-only root filesystem/tmpfs where compatible, named volumes, internal network aliases, and resource limits.
+
+  Do not set `container_name`; Compose project names must isolate normal deployments, CI, and destructive clean-volume rehearsals.
+
+- [ ] **Step 5: Remove tracked environment content and secrets**
+
+  Add `.env` and secret-file patterns to `.gitignore`. Verify the old tracked `.env` was moved and its migration-only copy was deleted in Task 13; clinic values now originate in `backend/seeds/current-site.json`. `.env.example` contains safe local values and clear required production variables, including generated PostgreSQL/MinIO/Keycloak secrets.
+
+- [ ] **Step 6: Verify clean-volume bootstrap and persistence**
+
+  Run:
+
+  ```bash
+  docker compose -p dentnow-rehearsal down -v --remove-orphans
+  docker compose -p dentnow-rehearsal config --quiet
+  docker compose -p dentnow-rehearsal up --build -d
+  docker compose -p dentnow-rehearsal ps
+  COMPOSE_PROJECT_NAME=dentnow-rehearsal bash backend/tests/compose/test_stack.sh
+  docker compose -p dentnow-rehearsal restart postgres minio keycloak api frontend
+  COMPOSE_PROJECT_NAME=dentnow-rehearsal bash backend/tests/compose/test_stack.sh
+  docker compose -p dentnow-rehearsal down -v --remove-orphans
+  ```
+
+  Expected: one command reaches healthy state, one-shot services exit `0`, smoke passes before and after restart, and the active publication/media/admin identity persist.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add backend frontend docker-compose.yml .env.example .gitignore Makefile
+  git commit -m "feat(deploy): deliver complete docker compose stack"
+  ```
+
+## Task 21: Add SEO delivery, security hardening, observability, and recovery tools
+
+**Files:**
+
+- Create: `backend/src/core/metrics.py`, `backend/src/core/security.py`, `backend/src/core/redaction.py`
+- Create: `ops/backup-compose.sh`, `ops/restore-compose.sh`, `ops/verify-backup.sh`
+- Modify: `backend/wsgi.py`, `backend/src/site/publication_service.py`, `frontend/nginx/default.conf.template`, `frontend/public/robots.txt`
+- Test: `backend/tests/unit/test_redaction.py`, `backend/tests/contract/test_security_headers.py`, `backend/tests/integration/test_sitemap.py`, `backend/tests/compose/test_backup_restore.sh`
+
+- [ ] **Step 1: Write failing security/SEO/recovery tests**
+
+  Cover CSP/header presence, admin/preview no-store, public ETag/cache, sitemap paths and XML escaping, robots sitemap location, no token/credential/consent/PII in logs/audit, upload/body limits, correlation IDs, metrics labels without high-cardinality paths, PostgreSQL dump, MinIO mirror/checksum verification, and restore into empty volumes.
+
+- [ ] **Step 2: Complete publication-driven SEO**
+
+  Generate sitemap, canonical paths, navigation-visible routes, article routes, and structured-data facts exclusively from the active publication. The frontend applies per-route metadata and sanitized JSON-LD. `robots.txt` points to same-origin `/sitemap.xml`; admin/preview paths are disallowed/noindexed.
+
+- [ ] **Step 3: Add security middleware and headers**
+
+  Configure CSP, `frame-ancestors 'self'`, MIME sniff protection, strict referrer policy, permissions policy, HTTPS HSTS only when `PUBLIC_APP_URL` is HTTPS, safe media dispositions, request/upload limits, and redaction. Do not restore the obsolete whole-host oauth2-proxy annotations or place auth in front of public paths.
+
+- [ ] **Step 4: Add logs, metrics, and optional traces**
+
+  Emit structured method/template/status/duration/correlation/release/actor logs without bodies/tokens. Expose Prometheus counters/histograms for requests, publications, validation, uploads, DB/MinIO health, and outbox backlog. Wire optional qf/OpenTelemetry export through environment values.
+
+- [ ] **Step 5: Add Compose backup/restore tools**
+
+  Backup creates timestamped PostgreSQL roles/globals plus separate custom-format dumps for the `dentnow` and `keycloak` databases, a MinIO `mc mirror --preserve` directory outside named volumes, a manifest of object/database checksums and versions, and the non-secret Keycloak realm/client/role configuration needed for idempotent reconstruction. Restore requires explicit empty-target confirmation and verifies media checksums against PostgreSQL metadata.
+
+- [ ] **Step 6: Verify hardening and recovery**
+
+  Run:
+
+  ```bash
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_redaction.py backend/tests/contract/test_security_headers.py backend/tests/integration/test_sitemap.py -q
+  bash backend/tests/compose/test_backup_restore.sh
+  ```
+
+  Expected: security/SEO tests pass and a clean-volume restore reproduces the active publication and representative media checksum.
+
+- [ ] **Step 7: Commit**
+
+  ```bash
+  git add backend frontend ops
+  git commit -m "feat(platform): harden observe and back up dentnow"
+  ```
+
+## Task 22: Complete the cross-stack automated test matrix
+
+**Files:**
+
+- Expand: `backend/tests/{unit,integration,contract,architecture,compose}/`
+- Expand: `frontend/tests/`, `frontend/e2e/`
+- Create: `frontend/playwright.config.ts`, `frontend/tests/msw/handlers.ts`
+- Modify: backend/frontend test configuration and `Makefile`
+
+- [ ] **Step 1: Add missing backend coverage**
+
+  Ensure unit/integration/contract suites cover every role/resource family, clinic scope, invalid/stale writes, sanitization, publication/rollback, MinIO, migrations, outbox, public anonymity, admin authorization, error envelopes, and dependency rules. Enforce a meaningful coverage floor on domain/application modules, excluding generated migrations.
+
+- [ ] **Step 2: Add missing frontend coverage**
+
+  Cover every public template, admin navigation/form/resource family, media, permission state, conflicts, `cmdk`, preview/publish, loading/error/empty, reduced motion, keyboard interaction, and responsive critical routes.
+
+- [ ] **Step 3: Add full real-service Playwright journeys**
+
+  At minimum:
+
+  1. anonymous visitor traverses every route without login;
+  2. `/admin` logs into realm `doncik` and restores deep link;
+  3. admin edits clinic/treatment/offer/article/legal/quiz data;
+  4. admin uploads media and completes rights/alt metadata;
+  5. draft is absent publicly, visible in preview, then visible after publish;
+  6. rollback restores the previous publication;
+  7. clinic manager is denied another clinic;
+  8. command palette navigates, searches, opens a create flow, validates, and logs out;
+  9. no patient/offer-registration submission endpoint exists.
+
+- [ ] **Step 4: Create root verification targets**
+
+  `Makefile` exposes `frontend-check`, `backend-check`, `compose-up`, `compose-smoke`, `e2e`, `backup-test`, and `check` (all required checks).
+
+- [ ] **Step 5: Run the full matrix**
+
+  ```bash
+  make check
+  ```
+
+  Expected: frontend lint/type/test/build, backend lint/type/unit/integration/contract/migration, Compose smoke, and Playwright all pass.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add backend frontend Makefile
+  git commit -m "test: cover public admin media and publication flows"
+  ```
+
+## Task 23: Replace GitHub CI with paired frontend/backend pipelines
+
+**Files:**
+
+- Create: `.github/workflows/ci.yml`
+- Replace: `.github/workflows/docker-publish.yml`
+- Modify: `backend/.dockerignore`, `frontend/.dockerignore`, `README.md`
+
+- [ ] **Step 1: Add pull-request checks**
+
+  `ci.yml` runs frontend and backend checks in parallel, then a Compose integration job that builds the pair, starts clean volumes, runs migrations/seed/smoke/Playwright, and uploads useful logs/reports on failure. Cache npm and pip/build layers by their respective lock/manifests.
+
+- [ ] **Step 2: Publish two immutable images only after checks**
+
+  On `main`/`master`, publish:
+
+  ```text
+  bogdancstrike/dentnow-frontend:<branch>-<short-sha>
+  bogdancstrike/dentnow-backend:<branch>-<short-sha>
+  ```
+
+  Also update moving `branch`/`latest` tags if desired, but Compose release examples must use the immutable paired SHA tag. Both images carry the same OCI revision label.
+
+- [ ] **Step 3: Add image and migration safety checks**
+
+  Build from `frontend/Dockerfile` and `backend/Dockerfile` with separate cache scopes. Run container vulnerability scanning, verify non-root backend execution, verify frontend config contains no secret, and refuse publish when Alembic or clean-volume bootstrap fails.
+
+- [ ] **Step 4: Validate workflow syntax and local equivalents**
+
+  Run:
+
+  ```bash
+  docker build -f backend/Dockerfile -t dentnow-backend:test backend
+  docker build -f frontend/Dockerfile -t dentnow-frontend:test frontend
+  docker compose config --quiet
+  make check
+  ```
+
+  Expected: both images build independently and the tested pair passes the full local equivalent of CI.
+
+- [ ] **Step 5: Commit**
+
+  ```bash
+  git add .github backend/.dockerignore frontend/.dockerignore README.md
+  git commit -m "ci: test and publish paired dentnow images"
+  ```
+
+## Task 24: Finish operational documentation and perform release rehearsal
+
+**Files:**
+
+- Rewrite: `README.md`
+- Modify: `docs/architecture.md`, `docs/implementation_plan.md`
+- Create: `docs/content_operations.md`, `docs/deployment_runbook.md`, `docs/recovery_runbook.md`, `docs/future_integrations.md`
+
+- [ ] **Step 1: Document the exact operator path**
+
+  README must cover prerequisites, repository layout, `.env` creation, generated secrets, `docker compose up --build -d`, initial Keycloak admin/role assignment in realm `doncik`, URLs, health, logs, migrations, seed behavior, shutdown, upgrade with paired images, and common failures.
+
+- [ ] **Step 2: Document clinic content operations**
+
+  Cover each CRUD area, media rights/alt/consent, preview, validation, publish, rollback versus restore-workspace, audit, command palette shortcuts/actions, content review flags, and the fact that save does not publish.
+
+- [ ] **Step 3: Document recovery and future integration boundaries**
+
+  Include tested backup/restore commands and checksums. Explain the outbox/adapter/external-ID contract and the separate required design for future patient/offer registration, consent, encrypted PII, retention, roles, and clinical-data risk.
+
+- [ ] **Step 4: Run a clean release rehearsal**
+
+  On disposable volumes:
+
+  ```bash
+  docker compose -p dentnow-release-rehearsal down -v --remove-orphans
+  docker compose -p dentnow-release-rehearsal up --build -d
+  COMPOSE_PROJECT_NAME=dentnow-release-rehearsal make compose-smoke
+  COMPOSE_PROJECT_NAME=dentnow-release-rehearsal make e2e
+  COMPOSE_PROJECT_NAME=dentnow-release-rehearsal make backup-test
+  docker compose -p dentnow-release-rehearsal down -v --remove-orphans
+  ```
+
+  Manually verify public desktop/mobile routes, `/admin` Keycloak login, each admin navigation group, `Cmd/Ctrl+K`, media upload, preview, publish, anonymous post-publish access, rollback, restart persistence, and logout.
+
+- [ ] **Step 5: Run the final source-of-truth checks**
+
+  ```bash
+  rg -n "0720 509 802|0723 232 263|Râmnicu Vâlcea|1\.490 lei|src/data" frontend/src
+  rg -n "patient|medical_history|offer_registration" backend/src/api backend/maps/endpoint.json
+  git status --short
+  ```
+
+  Expected: the first search finds no business-content fallback in runtime code; the second finds no enabled patient/registration endpoint; only intentional implementation changes are present.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add README.md docs
+  git commit -m "docs: add dentnow operations and deployment runbooks"
+  ```
+
+## Final acceptance gate
+
+- [ ] Root contains organized `backend/`, `frontend/`, `docs/`, `keycloak/`, `ops/`, Compose, README, Makefile, environment example, and CI; component build files are not scattered at root.
+- [ ] `docker compose up --build -d` on clean volumes reaches healthy state without manual schema/bucket/client setup.
+- [ ] All public routes and published media are anonymous; only `/admin/*` initiates Keycloak realm `doncik` login.
+- [ ] Every `/api/v1/admin/*` mutation verifies JWT audience/issuer/role and clinic scope.
+- [ ] Every current content source and media reference is represented in PostgreSQL/MinIO and parity checks pass.
+- [ ] Frontend runtime contains no clinic/business fallback data and displays explicit API error states.
+- [ ] Admin manages all website CRUD families, media, legal/GDPR, SEO/navigation, quiz, audit, and publication history.
+- [ ] Preview uses the actual public renderer; save, preview, publish, rollback, and restore-workspace have distinct behavior.
+- [ ] `Cmd/Ctrl+K` `cmdk` navigation, permission-scoped search, quick views, and safe quick actions pass keyboard/e2e tests.
+- [ ] Structured authoring data is normalized in PostgreSQL; publication snapshots are immutable; media bytes are private in MinIO.
+- [ ] No patient/offer-registration data is collected. Integration events/outbox/ports are versioned and vendor-neutral for future work.
+- [ ] Safe rich text, stored-XSS defenses, media consent gates, audit redaction, security headers, backup/restore, and observability checks pass.
+- [ ] Backend/frontend images share an immutable Git revision and pass paired Compose integration before publication.
+- [ ] The homelab k3s migration remains documented but is not required to deploy this release.

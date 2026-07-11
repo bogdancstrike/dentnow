@@ -51,9 +51,13 @@ The current site is a React 18/Vite SPA served by nginx. It has no API client, n
 | `src/components/seo/Seo.jsx` | Site name, default image, clinic schema, inferred coordinates | Backend-authored SEO plus renderer code |
 | `scripts/generate-sitemap.mjs` | Hard-coded route inventory and article parsing | Active-publication sitemap endpoint |
 | `public/assets/dentnow` | All content imagery and placeholders | MinIO media assets; only non-content UI assets remain bundled |
-| `src/lib/leadCapture.js` | WhatsApp-only lead composition | Backend-provided clinic/contact data; optional persisted contact requests |
+| `src/lib/leadCapture.js` | WhatsApp-only contact composition | Backend-provided clinic/contact data; persistence remains deferred to a future `patient_engagement` context |
 
 There is significant duplication today. Clinic data exists in both `src/config.js` and `LocationPage.jsx`; schedules and contact values also appear directly in page copy. Treatment prices occur in list data, landing pages, article bodies, reviews, and quiz recommendations. A simple replacement of `src/data/*.js` would therefore not satisfy the requirement.
+
+### 3.1 Route parity inventory
+
+The migration test treats this literal browser-route inventory as a contract. All are anonymous public routes today: `/`, `/tratamente`, `/oferte`, `/articole`, `/articole/:slug`, `/recenzii`, `/recenzie`, `/before-after`, `/noutati`, `/scor-igiena`, `/parteneri`, `/ebook`, `/locatii/:citySlug`, `/stomatologie-dristor`, `/stomatologie-baba-novac`, `/stomatologie-prelungirea-ghencea`, `/implant-dentar-bucuresti`, `/aparat-dentar-dristor`, `/albire-dentara-laser`, `/protetica-zirconiu`, `/urgente-dentare-bucuresti`, `/decontat-cas`, `/gdpr`, `/confidentialitate`, `/termeni`, and the not-found route. New backend-authored paths may be added later, but none of these paths may disappear during migration.
 
 The current deployment chart at `deployment-configs-homelab/app-charts/dentnow` has one nginx SPA image and an Argo Rollouts blue-green deployment. Its public Ingress protects the entire hostname with oauth2-proxy. That annotation must be removed so the clinic site is public. The existing shared PostgreSQL chart already provisions user/database `dentnow`. The shared MinIO chart exists but has no DentNow bucket or least-privilege DentNow identity.
 
@@ -82,6 +86,8 @@ flowchart LR
     A[Clinic administrator] -->|/admin/*| FE
     FE -->|OIDC code + PKCE| KC[Keycloak realm: doncik]
     FE -->|Bearer JWT /api/v1/admin/*| API
+    FE -->|sandboxed iframe + one-time fragment| PV[Isolated preview origin]
+    PV -->|HttpOnly preview session /api/v1/preview/*| API
     API -->|verify issuer, audience, JWKS| KC
     API --> PG[(PostgreSQL 18)]
     API --> S3[(MinIO private bucket)]
@@ -89,12 +95,13 @@ flowchart LR
     API -->|published media proxy| P
 ```
 
-The authoritative Docker Compose deployment uses same-origin routing through the frontend nginx container:
+The authoritative Docker Compose deployment uses same-origin routing for the public/admin application and a separate browser origin for preview:
 
 - `/api/*` is reverse-proxied to the `api` service.
 - `/` and every non-API path route to the frontend service.
 - `/admin/*` is still served by the frontend service; the admin application initiates Keycloak only on those routes.
-- No oauth2-proxy annotation is placed on the root public Ingress.
+- The preview origin serves only the preview SPA and proxies only `/api/v1/preview/*`. It is embedded in a sandboxed iframe and cannot read the admin origin.
+- No edge/OAuth proxy protects the public root. A future k3s Ingress likewise must not restore the current whole-host oauth2-proxy annotations.
 
 ## 6. Repository organization
 
@@ -113,8 +120,8 @@ dentnow-react/
     Dockerfile
     package.json
     package-lock.json
-    vite.config.js
-    nginx.conf
+    vite.config.ts
+    nginx/default.conf.template
     index.html
     public/
     scripts/
@@ -122,7 +129,11 @@ dentnow-react/
     tests/
   keycloak/
     realm-local.json
-    configure-dentnow-client.sh
+    configure-dentnow.sh
+  ops/
+    backup-compose.sh
+    restore-compose.sh
+    verify-backup.sh
   docs/
     architecture.md
     implementation_plan.md
@@ -167,7 +178,6 @@ backend/
   scripts/
     migrate.py
     seed_current_site.py
-    configure_keycloak.py
   src/
     config.py
     models_all.py
@@ -185,6 +195,8 @@ backend/
     unit/
     integration/
     contract/
+    architecture/
+    compose/
 ```
 
 Dependency direction:
@@ -225,7 +237,7 @@ The local wheel was inspected directly. The following details are required for a
 7. `maps/endpoint.json` must contain `namespaces`, `models`, and `endpoints`; `request_method` is a list. Complex request validation is performed with Pydantic because qf's RESTX model vocabulary is intentionally limited. File uploads use `request.files` and an empty qf model.
 8. The namespace will be `api`, producing `/api/...` routes. Versioned routes begin at `/api/v1`.
 9. Correlation/CORS and error handlers are installed on the returned Flask app, following the proven `testing_platform/backend/wsgi.py` pattern.
-10. API, database, and S3 work is synchronous and served by Gunicorn gevent workers. No scheduler, qf ETL thread, Kafka broker, or Redis instance is required.
+10. API, database, and S3 work is synchronous and served by Gunicorn gevent workers. No in-process scheduler, qf ETL thread, Kafka broker, or Redis instance is required. Retention cleanup is an idempotent, dry-run-first `gc_media.py` operations command invoked manually or by the host scheduler through `docker compose run`.
 
 ## 9. Authentication and authorization
 
@@ -240,17 +252,18 @@ Public application startup never initializes Keycloak. When the router enters `/
 5. The admin API client sends `Authorization: Bearer <token>`.
 6. Logout uses the Keycloak end-session endpoint and returns to `/`.
 
-The public client is configured with standard flow enabled, implicit and password grants disabled, exact redirect URIs for local/LAN/public hosts, and an audience mapper that adds `dentnow-api` to access tokens.
+`dentnow-admin-spa` is a public client with standard flow enabled, PKCE required, and implicit, password, service-account, and direct-access grants disabled. `dentnow-api` is a separate non-interactive resource client: every login flow and service account is disabled and the backend consumes no client secret. An audience mapper scoped to `dentnow-admin-spa` adds that resource-client ID to its access tokens. Redirect URIs and origins are exact for each local/LAN/public deployment.
 
 ### 9.2 API verification
 
-The backend fetches JWKS from the in-cluster Keycloak URL but validates the issuer against the canonical browser-visible URL, exactly as in `testing_platform/backend/src/iam/token_verifier.py`.
+The backend fetches JWKS from Keycloak's internal service URL (the Compose service now, the in-cluster service later) but validates the issuer against the canonical browser-visible URL, exactly as in `testing_platform/backend/src/iam/token_verifier.py`.
 
 Required claims:
 
 - a valid signature and non-expired token;
 - issuer `https://keycloak.doncik.ro/realms/doncik` in the deployed environment;
 - audience `dentnow-api`;
+- authorized party (`azp`) exactly `dentnow-admin-spa`;
 - a non-empty `sub`;
 - an allowed DentNow realm role for admin endpoints.
 
@@ -258,21 +271,27 @@ There is no backend password login and no access token in local storage.
 
 ### 9.3 Roles
 
-| Realm role | Capability |
-| --- | --- |
-| `dentnow_admin` | Full access, principal/clinic scopes, publish, rollback, and audit |
-| `dentnow_editor` | CRUD across site content and media; preview; cannot publish or manage access |
-| `dentnow_publisher` | Read/edit, run publication validation, publish, and roll back |
-| `dentnow_clinic_manager` | CRUD only for explicitly assigned clinics and clinic-scoped offers/team/content |
+| Capability | Admin | Editor | Publisher | Clinic manager |
+| --- | --- | --- | --- | --- |
+| Read/edit ordinary site, catalog, editorial, legal draft, and media metadata | All | All | All | Assigned-clinic resources only |
+| Preview | All routes | All routes | All routes | Assigned-clinic routes only |
+| Validate a publication | Yes | Yes | Yes | No |
+| Approve legal/case-image attestation | Yes | No | Yes | No |
+| Publish or activate an older compatible release | Yes | No | Yes | No |
+| Restore a publication into the mutable workspace | Yes | No | No | No |
+| Read audit history | Yes | No | Yes | No |
+| Manage Keycloak-principal clinic scopes | Yes | No | No | No |
 
-`dentnow_admin` implies all lower capabilities. Clinic scope is stored in `admin_principal_clinics(subject, clinic_id)` because realm roles alone cannot express per-clinic access. Every list and mutation service applies the scope; the frontend only mirrors these permissions for usability.
+`dentnow_admin` implies all lower content capabilities. Clinic scope is stored in `admin_principal_clinics(subject, clinic_id)` because realm roles alone cannot express per-clinic access. Scope applies to get/list/search, nested relations, media references, preview, and every mutation; omitting an unassigned record is preferred to revealing it. The frontend mirrors permissions only for usability. A default-deny route-map contract requires authentication and an explicit capability on every `/api/v1/admin/*` endpoint, including reads, search, media, and audit.
 
 ### 9.4 Public/admin endpoint boundary
 
 - `/api/health`, `/api/liveness`, `/api/readiness`: anonymous.
-- `/api/v1/public/*`: anonymous, read-only except a separately rate-limited contact-request endpoint if enabled.
-- `/api/v1/admin/*`: authenticated and role checked.
-- `/api/v1/preview/*`: read-only possession tokens with high entropy, narrow scope, a short expiry, `no-store`, and no navigation links.
+- `/api/v1/public/*`: anonymous and read-only. The first release has no contact, patient, appointment, or offer-registration submission endpoint.
+- `/api/v1/admin/*`: authenticated, authorized, and clinic-scoped on every method, including `GET`.
+- `/api/v1/preview/*`: no Keycloak redirect; access requires a short-lived preview session established from a one-time high-entropy possession token.
+
+Browser boundaries are equally explicit: `/admin` and `/admin/*` are the only routes that initiate Keycloak. Normal public routes remain anonymous. The isolated preview origin serves `/preview`; it is not public content and returns `401` without its possession session, but it never initiates OAuth.
 
 ## 10. Authoring and publication model
 
@@ -329,11 +348,20 @@ sequenceDiagram
 
 Preview uses the same snapshot builder and public React renderers:
 
-- `POST /api/v1/admin/previews` freezes the current workspace into an expiring preview record.
-- The response supplies a 256-bit random bearer token; only its hash is stored.
-- The admin UI displays `/preview/<token>` in a same-origin iframe with desktop/tablet/mobile viewport controls and route selection.
+- `POST /api/v1/admin/previews` freezes the permitted workspace view into an expiring preview record.
+- The response supplies a one-use 256-bit token; only its hash is stored. The admin loads the isolated preview origin with that token in the URL fragment, which is not sent in HTTP requests.
+- The preview application removes the fragment immediately and exchanges the token once at `POST /api/v1/preview/session`. The response sets a random, short-lived, host-only `HttpOnly`, `SameSite=Strict` cookie (`Secure` outside the local HTTP profile); the one-use token is then invalid.
+- Snapshot and media calls use only that cookie. The preview iframe has a distinct origin and a restrictive sandbox/CSP; preview URLs, query strings, referrers, and telemetry never contain credentials.
 - Preview snapshot and media responses use `Cache-Control: no-store`, `X-Robots-Tag: noindex`, and expire after 15 minutes.
 - A preview cannot mutate data and cannot be promoted directly; publish rebuilds and revalidates from the current workspace.
+
+### 10.4 Activation, rollback, and workspace restore semantics
+
+A publication is compatible when its `schema_version` is supported by the currently deployed backend and frontend contract. Publishing an unchanged workspace returns the existing active publication with `200` and `changed: false`; it creates no duplicate snapshot, audit event, or outbox event.
+
+Activating an older publication revalidates current media rights/consent blocks, atomically changes only `active_publication_id`, and records an audit event plus `site.publication.activated.v1` with activation reason `rollback`. Activating the already-active ID is an idempotent no-op. It never rewrites the workspace.
+
+`restore-workspace` is admin-only and leaves the live pointer unchanged. In one transaction it upserts snapshot entities by stable UUID, replaces their ordered relationships, soft-deletes workspace entities absent from the snapshot, preserves newer media bytes/references from retained publications, increments `workspace_version`, and writes `site.workspace.restored.v1` plus a redacted audit summary. The resulting draft must be validated and published separately.
 
 ## 11. PostgreSQL model
 
@@ -514,7 +542,7 @@ window.__DENTNOW__ = {
 };
 ```
 
-The file is mounted from a Kubernetes ConfigMap and served with `Cache-Control: no-store`. It contains no clinic content and no secret.
+The Compose frontend container renders this file from environment values at startup and serves it with `Cache-Control: no-store`. A future k3s deployment mounts the same contract from a ConfigMap. It contains no clinic content and no secret.
 
 ### 14.2 Public renderer
 
@@ -533,9 +561,8 @@ Navigation groups:
 - Treatments, prices, offers, technology, and partners;
 - Pages, menus, SEO, and site settings;
 - Articles, news, reviews, cases, ebooks, and quiz;
-- Media library and patient consent;
+- Media library and image-consent evidence;
 - GDPR/legal and audit history;
-- Audit history.
 
 CRUD screens use server-side pagination/filtering, stable `rowKey="id"`, drawer/modal forms with unsaved-change protection, optimistic concurrency errors, explicit upload retry, accessible validation summaries, and permission-aware actions. Backend enforcement remains authoritative.
 
@@ -591,7 +618,7 @@ The repository-level `docker-compose.yml` provides:
 | `api` | qf/Flask backend on port 5100 |
 | `frontend` | Production nginx SPA, runtime configuration, `/api` reverse proxy, and SPA fallback |
 
-Compose health conditions order startup as PostgreSQL/MinIO/Keycloak → MinIO/Keycloak bootstrap → migrations → idempotent seed → API/frontend. Named volumes persist PostgreSQL, MinIO, and Keycloak state. The `migrate`, `seed`, `minio-init`, and Keycloak bootstrap containers are restart-free one-shot services whose successful completion is required by dependent services.
+Compose health conditions order startup as PostgreSQL/MinIO/Keycloak → MinIO/Keycloak bootstrap → migrations → idempotent seed → API/frontend. Named volumes persist PostgreSQL and MinIO; Keycloak state lives in its PostgreSQL database on the PostgreSQL volume. The `migrate`, `seed`, `minio-init`, and Keycloak bootstrap containers are restart-free one-shot services whose successful completion is required by dependent services.
 
 The frontend nginx container is the browser entrypoint and makes the stack same-origin. Only its HTTP port and the browser-reachable Keycloak port/hostname need exposure. PostgreSQL and the MinIO API stay on the internal Compose network by default; an opt-in development override may bind them to loopback for inspection. MinIO Console is also an opt-in operations port.
 
@@ -636,7 +663,7 @@ Backend/database changes use expand/migrate/contract compatibility. The API rema
 - The PGO-generated `postgres-pguser-dentnow` Secret is reflected explicitly from namespace `database` to `apps`, or an equivalent SealedSecret is created in `apps`.
 - A private MinIO policy grants only the `dentnow-media` bucket. Its generated application credential is stored as a SealedSecret and reflected only to `apps`.
 - JWT verification has no client secret. The SPA client is public; API authorization uses issuer/audience/JWKS.
-- Preview-token hashing and optional contact-field encryption keys are SealedSecrets.
+- Preview-token hashing keys are SealedSecrets. Any future patient-engagement encryption key is introduced only with that separately approved context.
 - Passwords, DSNs, and S3 keys are never placed in Helm `values.yaml` or ConfigMaps.
 
 ### 17.4 Future shared MinIO integration
@@ -677,18 +704,25 @@ The public site does not require a public MinIO Ingress because media is deliver
 
 ## 20. Backup and recovery
 
-PostgreSQL is covered by the existing PGO/pgBackRest configuration, subject to its configured retention. Publication snapshots make content rollback independent of a deployment rollback.
+The Compose release includes `ops/backup-compose.sh`, `ops/restore-compose.sh`, and `ops/verify-backup.sh`. A backup is stored outside Docker named volumes and contains:
 
-MinIO is a separate recovery boundary. The homelab README states that Velero excludes namespace `minio` to avoid backing MinIO into itself. Bucket versioning protects against accidental overwrite but not node/PV loss. Before real patient/clinic media is considered durable, `dentnow-media` must be mirrored to storage outside this MinIO instance and a restore drill must verify object checksums against `media_assets.sha256`.
+- PostgreSQL roles/globals plus separate custom-format dumps of the `dentnow` and `keycloak` databases;
+- an `mc mirror --preserve` copy of the versioned `dentnow-media` bucket;
+- database/object version and checksum manifests; and
+- the non-secret Keycloak realm/client/role configuration needed to recreate identity configuration idempotently.
+
+Publication snapshots make editorial rollback independent of a deployment rollback, but they are not database backups. MinIO bucket versioning protects against accidental overwrite, not volume or node loss, so every restore drill verifies objects against `media_assets.sha256`.
+
+After migration to k3s, the PostgreSQL databases can move to the existing PGO/pgBackRest backup policy. MinIO remains a separate recovery boundary: the homelab README says Velero excludes namespace `minio` to avoid backing MinIO into itself, so `dentnow-media` still needs a mirror outside that MinIO instance.
 
 Recovery order:
 
-1. Restore PostgreSQL.
+1. Restore PostgreSQL roles/globals, then the `dentnow` and `keycloak` databases.
 2. Restore the `dentnow-media` bucket and versions.
 3. Verify database media metadata against object checksums.
-4. Restore Keycloak realm/client/role configuration or recreate it idempotently.
+4. Verify Keycloak realm/client/role configuration and recreate missing configuration idempotently.
 5. Deploy migrations, API, and frontend.
-6. Run readiness, publication, route, and representative media checks before exposing traffic.
+6. Run readiness, publication, route, login, and representative media checks before exposing traffic.
 
 ## 21. Migration and cutover
 
