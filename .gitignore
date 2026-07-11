@@ -18,3 +18,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Local compose env + generated secrets (never committed)
+.env
+.secrets/
