@@ -13,7 +13,7 @@ DentNow will become a two-deployable modular application:
 - PostgreSQL is the source of truth for all structured website content, configuration, publication history, audit history, and media metadata.
 - MinIO stores image and document bytes. Browsers never receive MinIO credentials and never upload directly with permanent credentials.
 - The authoring database is a mutable workspace. Publishing produces an immutable, validated site snapshot in PostgreSQL and atomically makes that snapshot active. Public requests only read the active snapshot.
-- `/admin` and `/admin/*` use Keycloak OIDC Authorization Code flow with PKCE against realm `doncik`. All other browser routes are public. `/api/v1/admin/*` independently verifies Keycloak bearer tokens; hiding a React route is never treated as authorization.
+- `/admin` and `/admin/*` use Keycloak OIDC Authorization Code flow with PKCE against realm `doncik`. All ordinary website routes are public; the isolated preview route uses only its short-lived possession session and never OAuth. `/api/v1/admin/*` independently verifies Keycloak bearer tokens; hiding a React route is never treated as authorization.
 - The administration UI uses React 18, TypeScript, TanStack Query, Ant Design 6, and `cmdk`. The public site keeps its current custom visual system. Both use the same public rendering components for an accurate preview.
 - qf's Kafka/ETL runtime is disabled. This website does not need Kafka or Redis in its first implementation.
 
@@ -115,13 +115,16 @@ dentnow-react/
       docker-publish.yml
   backend/
     Dockerfile
+    seeds/assets/
     ...
   frontend/
     Dockerfile
     package.json
     package-lock.json
     vite.config.ts
-    nginx/default.conf.template
+    nginx/
+      default.conf.template
+      preview.conf.template
     index.html
     public/
     scripts/
@@ -131,9 +134,11 @@ dentnow-react/
     realm-local.json
     configure-dentnow.sh
   ops/
+    init-secrets.sh
     backup-compose.sh
     restore-compose.sh
     verify-backup.sh
+  deploy/caddy/Caddyfile
   docs/
     architecture.md
     implementation_plan.md
@@ -178,6 +183,11 @@ backend/
   scripts/
     migrate.py
     seed_current_site.py
+    gc_media.py
+  seeds/
+    current-site.json
+    current-assets.json
+    assets/                       # packaged migration-only source media
   src/
     config.py
     models_all.py
@@ -316,7 +326,7 @@ Admin reads return an ETag derived from `version`. Updates and deletes require `
 Publishing performs the following under a PostgreSQL advisory lock and a repeatable-read transaction:
 
 1. Load the complete workspace visible to the publisher.
-2. Validate route uniqueness, required site/clinic fields, menu targets, price rules, offer dates, legal documents, media readiness, alt text, and patient-image consent.
+2. Validate route uniqueness, required site/clinic fields, menu targets, price rules, offer dates, legal documents, media readiness, alt text, and case-image publication attestations/delivery blocks.
 3. Build a canonical snapshot with a schema version and deterministic ordering.
 4. Hash the canonical JSON.
 5. Insert `site_publications(version, workspace_version, snapshot, content_hash, created_by, published_at)`.
@@ -580,7 +590,7 @@ Navigation groups:
 - Treatments, prices, offers, technology, and partners;
 - Pages, menus, SEO, and site settings;
 - Articles, news, reviews, cases, ebooks, and quiz;
-- Media library and image-consent evidence;
+- Media library and case-image attestations;
 - GDPR/legal and audit history;
 
 CRUD screens use server-side pagination/filtering, stable `rowKey="id"`, drawer/modal forms with unsaved-change protection, optimistic concurrency errors, explicit upload retry, accessible validation summaries, and permission-aware actions. Backend enforcement remains authoritative.
@@ -737,7 +747,8 @@ The Compose release includes `ops/backup-compose.sh`, `ops/restore-compose.sh`, 
 - PostgreSQL roles/globals plus separate custom-format dumps of the `dentnow` and `keycloak` databases;
 - every `dentnow-media` object version and delete marker captured through the S3 version APIs, with per-version object metadata;
 - database/object version and checksum manifests; and
-- the non-secret Keycloak realm/client/role configuration needed to recreate identity configuration idempotently.
+- the non-secret Keycloak realm/client/role configuration needed to recreate identity configuration idempotently; and
+- secret-version references to a separately encrypted escrow bundle, or an explicit restore-time rotation procedure for PostgreSQL roles, MinIO identities, and Keycloak bootstrap credentials. No plaintext secret appears in a manifest.
 
 Publication snapshots make editorial rollback independent of a deployment rollback, but they are not database backups. A plain `mc mirror` is explicitly insufficient because it loses version/delete-marker history. MinIO bucket versioning protects against accidental overwrite, not volume or node loss, so every restore drill reconstructs versions in chronological order and verifies them against the backup manifest and `media_assets.sha256`.
 
@@ -748,7 +759,7 @@ Recovery order:
 1. Restore PostgreSQL roles/globals, then the `dentnow` and `keycloak` databases.
 2. Restore the `dentnow-media` bucket and versions.
 3. Verify database media metadata against object checksums.
-4. Verify Keycloak realm/client/role configuration and recreate missing configuration idempotently.
+4. Restore the matching encrypted secret bundle or rotate service identities/secret files, then verify Keycloak realm/client/role configuration and recreate missing configuration idempotently.
 5. Deploy migrations, API, and frontend.
 6. Run readiness, publication, route, login, and representative media checks before exposing traffic.
 

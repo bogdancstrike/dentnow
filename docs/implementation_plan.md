@@ -40,7 +40,10 @@
 │   ├── maps/endpoint.json
 │   ├── migrations/
 │   ├── scripts/
-│   ├── seeds/current-site.json
+│   ├── seeds/
+│   │   ├── current-site.json
+│   │   ├── current-assets.json
+│   │   └── assets/
 │   ├── src/
 │   │   ├── api/
 │   │   ├── audit/
@@ -59,7 +62,9 @@
 │   ├── package-lock.json
 │   ├── tsconfig.json
 │   ├── vite.config.ts
-│   ├── nginx/default.conf.template
+│   ├── nginx/
+│   │   ├── default.conf.template
+│   │   └── preview.conf.template
 │   ├── public/config.template.json
 │   ├── playwright.config.ts
 │   ├── scripts/
@@ -67,6 +72,7 @@
 │   │   ├── admin/
 │   │   ├── api/
 │   │   ├── public-site/
+│   │   ├── preview/
 │   │   └── shared/
 │   └── tests/
 ├── keycloak/
@@ -76,6 +82,8 @@
 │   ├── backup-compose.sh
 │   ├── restore-compose.sh
 │   ├── verify-backup.sh
+│   ├── minio_versions.py
+│   ├── pre_migrate_backup.sh
 │   └── init-secrets.sh
 ├── deploy/caddy/Caddyfile
 ├── docs/
@@ -1006,6 +1014,12 @@
 
   `seed_e2e_identities.py` runs only when `SEED_E2E_USERS=true` and `ENVIRONMENT` is `local` or `test`. It reads Keycloak admin credentials from secret files, resolves the exact seeded usernames to subjects, and idempotently assigns the clinic-manager subject to one seeded clinic. It refuses production and emits no passwords/tokens. The Compose test proves admin/editor/publisher/manager/no-role assignments and a cross-clinic denial.
 
+  ```bash
+  ENVIRONMENT=test SEED_E2E_USERS=true docker compose run --rm keycloak-config
+  ENVIRONMENT=test SEED_E2E_USERS=true docker compose run --rm --build api python scripts/seed_e2e_identities.py
+  ENVIRONMENT=test SEED_E2E_USERS=true bash backend/tests/compose/test_e2e_fixtures.sh
+  ```
+
 - [ ] **Step 7: Verify auth behavior**
 
   Run:
@@ -1106,7 +1120,7 @@
   npm --prefix frontend exec -- antd info Descriptions --format json
   ```
 
-  Cover explicit controlled upload state, progress/failure/retry/cancel, alt/rights validation, media selection, private consent evidence, before/after pairing, Markdown preview, exact review date/rating/source, legal approval controls, quiz band validation, and redacted audit diffs.
+  Cover explicit controlled upload state, progress/failure/retry/cancel, alt/rights validation, media selection, de-identified before/after pairing, non-identifying publication attestation/expiry/revocation, delivery blocking, Markdown preview, exact review date/rating/source, legal approval controls, quiz band validation, and redacted audit diffs. No patient identity or consent-document upload control exists.
 
 - [ ] **Step 2: Implement editorial screens**
 
@@ -1118,7 +1132,7 @@
 
 - [ ] **Step 4: Implement media and consent library**
 
-  Add server-paginated grid/list, filters for kind/readiness/rights/alt/consent, upload queue, metadata edit, variants preview, usage references, safe delete explanation, and consent status/evidence controls. Browser uploads go only to the authenticated API.
+  Add server-paginated grid/list, filters for kind/readiness/rights/alt/attestation, upload queue, metadata edit, variants preview, usage references, safe delete explanation, attestation status, opaque external evidence reference, expiry/revocation, and delivery-block controls. Browser uploads go only to the authenticated API; no consent evidence document or patient identifier is accepted. Only publisher/admin can approve or revoke an attestation.
 
 - [ ] **Step 5: Implement audit explorer**
 
@@ -1132,7 +1146,7 @@
   npm --prefix frontend run test -- --run tests/admin/editorial-media.test.tsx tests/admin/legal-quiz-audit.test.tsx
   npm --prefix frontend run typecheck
   npm --prefix frontend exec -- antd lint src/admin --format json
-  npm --prefix frontend run e2e -- admin-crud.spec.ts
+  npm --prefix frontend run e2e -- --project=mock admin-crud.spec.ts
   ```
 
   Expected: an authorized admin can create/read/update/delete every in-scope content family and receives meaningful conflicts/validation errors.
@@ -1190,7 +1204,7 @@
   ```bash
   PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_admin_search.py -q
   npm --prefix frontend run test -- --run tests/admin/command-palette.test.tsx
-  npm --prefix frontend run e2e -- admin-command-palette.spec.ts
+  npm --prefix frontend run e2e -- --project=mock admin-command-palette.spec.ts
   ```
 
   Expected: full workflow works without a mouse, unauthorized commands/results are absent, and rapid typing does not send a request per keystroke.
@@ -1206,18 +1220,18 @@
 
 **Files:**
 
-- Create: `frontend/src/public-site/PreviewApp.tsx`
+- Create: `frontend/src/public-site/PreviewApp.tsx`, `frontend/src/preview/main.tsx`, `frontend/src/preview/session.ts`, `frontend/src/preview/messages.ts`
 - Create: `frontend/src/admin/features/publication/PublicationBar.tsx`, `PreviewPane.tsx`, `ValidationReport.tsx`, `PublicationHistory.tsx`
 - Modify: `frontend/src/App.tsx`, `frontend/src/admin/AdminApp.tsx`, `frontend/src/admin/layout/AdminLayout.tsx`
 - Test: `frontend/tests/admin/publication.test.tsx`, `frontend/tests/public-site/preview.test.tsx`, `frontend/e2e/preview-publish-rollback.spec.ts`
 
 - [ ] **Step 1: Write failing preview/publication tests**
 
-  Cover preview creation/expiry/revocation, same renderer contract, current admin route selection, desktop/tablet/mobile widths, preview media, `noindex`/`no-store`, validation errors linked to editors, unpublished workspace indicator, publish role, confirmation, active version refresh, history, rollback, and restore-workspace separation.
+  Cover one-use fragment exchange, fragment removal, HttpOnly-session contract, expiry/revocation, isolated origin, strict `postMessage` origins, iframe sandbox, same renderer contract, permission-scoped route selection, desktop/tablet/mobile widths, preview media, `noindex`/`no-store`, validation errors linked to editors, unpublished workspace indicator, publish role, confirmation, active version refresh, history, rollback consent-block revalidation, and restore-workspace separation.
 
 - [ ] **Step 2: Implement preview route and pane**
 
-  `/preview/:token` renders `PreviewApp` with no Keycloak initialization and no admin controls. It can read only the frozen preview snapshot/media. The admin pane embeds it same-origin, provides route/viewport controls, and creates a new preview after relevant saves rather than pretending unsaved form state is persisted.
+  The distinct `PREVIEW_APP_URL` serves `/preview` with no Keycloak initialization or admin controls. The admin sets the one-use token only in the iframe URL fragment. `PreviewApp` exchanges it at the exact preview-session API, clears the fragment, and then uses only the host-only HttpOnly cookie. The admin embeds the frame with a restrictive sandbox; frame/admin communicate route and viewport changes only through exact-origin `postMessage`. Preview nginx denies non-preview API paths. Relevant saves create a new frozen preview rather than pretending unsaved form state is persisted.
 
 - [ ] **Step 3: Implement publication controls**
 
@@ -1229,7 +1243,7 @@
 
   ```bash
   npm --prefix frontend run test -- --run tests/admin/publication.test.tsx tests/public-site/preview.test.tsx
-  npm --prefix frontend run e2e -- preview-publish-rollback.spec.ts
+  npm --prefix frontend run e2e -- --project=mock preview-publish-rollback.spec.ts
   ```
 
   Expected: a draft edit appears in preview but not public, publish switches the full site, and rollback restores the previous full snapshot/media set.
@@ -1246,9 +1260,9 @@
 **Files:**
 
 - Modify: `backend/Dockerfile`, `backend/.dockerignore`
-- Create: `frontend/Dockerfile`
-- Create: `frontend/nginx/default.conf.template`, `frontend/docker-entrypoint.d/40-runtime-config.sh`
-- Modify: `docker-compose.yml`, `.env.example`, `.gitignore`, `frontend/.dockerignore`, `Makefile`
+- Modify: `frontend/Dockerfile`
+- Create: `frontend/nginx/default.conf.template`, `frontend/nginx/preview.conf.template`, `frontend/docker-entrypoint.d/40-runtime-config.sh`, `deploy/caddy/Caddyfile`
+- Modify: `docker-compose.yml`, `.env.example`, `.gitignore`, `frontend/.dockerignore`, `Makefile`, `ops/init-secrets.sh`
 - Test: `backend/tests/compose/test_stack.sh`, `frontend/scripts/smoke-check.mjs`
 
 - [ ] **Step 1: Write a failing full-stack smoke test**
@@ -1263,12 +1277,13 @@
   GET /sitemap.xml -> XML from active publication
   GET /admin -> 200 SPA then Keycloak login in browser test
   GET /api/v1/admin/me -> 401 without token
+  GET preview-origin/preview -> SPA; preview API -> 401 without session
   representative published media -> 200 and cache headers
   ```
 
 - [ ] **Step 2: Build the backend image**
 
-  Use a Python 3.12 multi-stage image. Install `backend/dist/qf-1.0.5-py3-none-any.whl` plus runtime requirements into the builder, copy only backend runtime files, run as a non-root user, and start `gunicorn -c gunicorn.conf.py wsgi:app`. Add OCI source/revision/version labels and a process health check.
+  Use a Python 3.12 multi-stage image. Verify/install `backend/dist/qf-1.0.5-py3-none-any.whl` plus hash-locked runtime requirements, copy backend runtime files and the packaged `backend/seeds/assets` bundle required by the one-shot seed, run as a non-root user, and start `gunicorn -c gunicorn.conf.py wsgi:app`. Add OCI source/revision/version labels and a process health check. The image neither reads a frontend context nor needs a source checkout at runtime.
 
 - [ ] **Step 3: Build the frontend image and nginx gateway**
 
@@ -1276,19 +1291,21 @@
 
   - proxy `/api/` to `${API_UPSTREAM}` without stripping `/api`;
   - proxy exact `/sitemap.xml` to the public sitemap API;
-  - serve `robots.txt`, runtime config, and the SPA;
+  - serve `robots.txt`, `/config.json`, and the SPA;
   - use `try_files $uri $uri/ /index.html` for browser routes;
-  - never cache `config.js` or `index.html`;
+  - never cache `config.json` or `index.html`;
   - cache fingerprinted assets immutably;
   - allow bounded admin media uploads;
   - preserve correlation/forwarded headers and proxy timeouts;
-  - apply security headers without blocking same-origin preview or approved Google Maps frames.
+  - apply security headers without blocking the explicitly configured isolated preview or approved Google Maps frames.
 
-  The entrypoint renders `window.__DENTNOW__` from public environment variables without putting secrets in JavaScript.
+  The entrypoint uses `jq -n --arg` (or an equivalently real JSON serializer) to atomically generate `config.json`; tests include quotes, newlines, Unicode separators, and `</script>`. It never creates executable JavaScript and never receives secrets.
+
+  Run the same built renderer as a separate `preview` nginx service/origin. That server exposes `/preview`, proxies only `/api/v1/preview/*`, strips raw URI/referrer logging, sets its restrictive CSP/frame-ancestors policy, and denies public/admin API namespaces.
 
 - [ ] **Step 4: Complete all Compose application services**
 
-  Add `migrate`, `seed`, `api`, and `frontend` to the data/identity services. Required order is:
+  Add `migrate`, `seed`, `api`, `frontend`, `preview`, and the optional production `edge` to the data/identity services. Required order is:
 
   ```text
   postgres/minio/keycloak healthy
@@ -1296,38 +1313,39 @@
     -> migrate complete
     -> seed complete
     -> api healthy
-    -> frontend healthy
+    -> frontend/preview healthy
+    -> edge healthy (production profile)
   ```
 
-  `migrate` and `seed` use the exact backend image/build. Set restart policies for long-lived services, stop grace periods, read-only root filesystem/tmpfs where compatible, named volumes, internal network aliases, and resource limits.
+  `migrate` and `seed` use the exact backend image/build. The production Caddy edge terminates TLS and routes exact public/admin, preview, and Keycloak hosts; an explicitly configured existing trusted edge may replace it. Set restart policies for long-lived services, stop grace periods, read-only root filesystem/tmpfs where compatible, named volumes, internal network aliases, log rotation, and resource limits.
 
   Do not set `container_name`; Compose project names must isolate normal deployments, CI, and destructive clean-volume rehearsals.
 
-- [ ] **Step 5: Remove tracked environment content and secrets**
+- [ ] **Step 5: Remove tracked environment content and enforce secret boundaries**
 
-  Add `.env` and secret-file patterns to `.gitignore`. Verify the old tracked `.env` was moved and its migration-only copy was deleted in Task 13; clinic values now originate in `backend/seeds/current-site.json`. `.env.example` contains safe local values and clear required production variables, including generated PostgreSQL/MinIO/Keycloak secrets.
+  Add `.env` and `.secrets/` patterns to `.gitignore`. Verify the old tracked `.env` was audited, moved, and its migration-only copy deleted in Task 13; clinic values now originate in `backend/seeds/current-site.json`. `.env.example` contains only non-secret coordinates. `ops/init-secrets.sh` creates PostgreSQL/MinIO/Keycloak secret files; production startup refuses defaults, HTTP origins, wildcard CORS, exposed data ports, seeded users, or Keycloak dev mode. Run full-history and final-image secret scans and rotate any detected credential.
 
 - [ ] **Step 6: Verify clean-volume bootstrap and persistence**
 
   Run:
 
   ```bash
-  docker compose -p dentnow-rehearsal down -v --remove-orphans
+  ENVIRONMENT=test ALLOW_DESTRUCTIVE_TESTS=1 docker compose -p dentnow-rehearsal down -v --remove-orphans
   docker compose -p dentnow-rehearsal config --quiet
   docker compose -p dentnow-rehearsal up --build -d
   docker compose -p dentnow-rehearsal ps
   COMPOSE_PROJECT_NAME=dentnow-rehearsal bash backend/tests/compose/test_stack.sh
   docker compose -p dentnow-rehearsal restart postgres minio keycloak api frontend
   COMPOSE_PROJECT_NAME=dentnow-rehearsal bash backend/tests/compose/test_stack.sh
-  docker compose -p dentnow-rehearsal down -v --remove-orphans
+  ENVIRONMENT=test ALLOW_DESTRUCTIVE_TESTS=1 docker compose -p dentnow-rehearsal down -v --remove-orphans
   ```
 
-  Expected: one command reaches healthy state, one-shot services exit `0`, smoke passes before and after restart, and the active publication/media/admin identity persist.
+  Expected: one command reaches healthy application state, one-shot services exit `0`, smoke passes before and after restart, and the active publication/media/admin identity persist. The destructive helper refuses production and any project name not matching the disposable rehearsal pattern. A production-profile smoke additionally proves HTTPS, strict Keycloak issuer/backchannel behavior, preview-origin isolation, and that only the edge ports are published.
 
 - [ ] **Step 7: Commit**
 
   ```bash
-  git add backend frontend docker-compose.yml .env.example .gitignore Makefile
+  git add backend frontend deploy docker-compose.yml .env.example .gitignore Makefile ops/init-secrets.sh
   git commit -m "feat(deploy): deliver complete docker compose stack"
   ```
 
@@ -1336,40 +1354,42 @@
 **Files:**
 
 - Create: `backend/src/core/metrics.py`, `backend/src/core/security.py`, `backend/src/core/redaction.py`
-- Create: `ops/backup-compose.sh`, `ops/restore-compose.sh`, `ops/verify-backup.sh`
-- Modify: `backend/wsgi.py`, `backend/src/site/publication_service.py`, `frontend/nginx/default.conf.template`, `frontend/public/robots.txt`
-- Test: `backend/tests/unit/test_redaction.py`, `backend/tests/contract/test_security_headers.py`, `backend/tests/integration/test_sitemap.py`, `backend/tests/compose/test_backup_restore.sh`
+- Create: `ops/backup-compose.sh`, `ops/restore-compose.sh`, `ops/verify-backup.sh`, `ops/minio_versions.py`, `ops/pre_migrate_backup.sh`
+- Modify: `backend/wsgi.py`, `backend/src/site/publication_service.py`, `frontend/nginx/default.conf.template`, `frontend/nginx/preview.conf.template`, `frontend/public/robots.txt`
+- Test: `backend/tests/unit/test_redaction.py`, `backend/tests/unit/test_safe_structured_data.py`, `backend/tests/contract/test_security_headers.py`, `backend/tests/integration/test_sitemap.py`, `backend/tests/compose/test_backup_restore.sh`
 
 - [ ] **Step 1: Write failing security/SEO/recovery tests**
 
-  Cover CSP/header presence, admin/preview no-store, public ETag/cache, sitemap paths and XML escaping, robots sitemap location, no token/credential/consent/PII in logs/audit, upload/body limits, correlation IDs, metrics labels without high-cardinality paths, PostgreSQL dump, MinIO mirror/checksum verification, and restore into empty volumes.
+  Cover public/admin/isolated-preview CSP and headers, admin/preview no-store, public ETag/cache, consent-bound short cache/`410`, sitemap paths/XML escaping, typed/escaped JSON-LD, URL-scheme allowlists, robots location, no raw URI/query/referrer/token/credential/patient/PII in application or proxy logs/audit, audit DB immutability, upload/body limits, generic external readiness, correlation IDs, bounded log rotation, metrics labels without high-cardinality paths, both PostgreSQL databases/globals, every MinIO object version/delete marker, encrypted off-host archive hooks, and restore into empty volumes.
 
 - [ ] **Step 2: Complete publication-driven SEO**
 
-  Generate sitemap, canonical paths, navigation-visible routes, article routes, and structured-data facts exclusively from the active publication. The frontend applies per-route metadata and sanitized JSON-LD. `robots.txt` points to same-origin `/sitemap.xml`; admin/preview paths are disallowed/noindexed.
+  Generate sitemap, canonical paths, navigation-visible routes, article routes, and structured-data facts exclusively from the active publication. Build JSON-LD from typed schemas and insert safely serialized text with `<`, U+2028, and U+2029 escaping; never accept stored raw JSON-LD. `robots.txt` points to same-origin `/sitemap.xml`; admin/preview paths are disallowed/noindexed.
 
 - [ ] **Step 3: Add security middleware and headers**
 
-  Configure CSP, `frame-ancestors 'self'`, MIME sniff protection, strict referrer policy, permissions policy, HTTPS HSTS only when `PUBLIC_APP_URL` is HTTPS, safe media dispositions, request/upload limits, and redaction. Do not restore the obsolete whole-host oauth2-proxy annotations or place auth in front of public paths.
+  Configure separate public/admin and preview CSPs, exact `frame-ancestors`, MIME sniff protection, `Referrer-Policy: no-referrer` for admin/preview, permissions policy, production HSTS, safe media dispositions, URL-scheme allowlists, request/upload limits, and schema-specific redaction. Audit stores no raw IP/UA and application DB grants/triggers forbid update/delete. Do not restore the obsolete whole-host oauth2-proxy annotations or place auth in front of public paths.
 
 - [ ] **Step 4: Add logs, metrics, and optional traces**
 
-  Emit structured method/template/status/duration/correlation/release/actor logs without bodies/tokens. Expose Prometheus counters/histograms for requests, publications, validation, uploads, DB/MinIO health, and outbox backlog. Wire optional qf/OpenTelemetry export through environment values.
+  Emit structured method-template/status/duration/correlation/release/pseudonymous-actor logs without raw URIs, queries, referrers, bodies, or credentials. Set application/proxy log rotation and disk-capacity alerts. Expose internal-only Prometheus counters/histograms for requests, publications, validation, uploads, DB/MinIO health, disk capacity, and outbox backlog. Wire optional qf/OpenTelemetry export through environment values without preview/auth attributes.
 
 - [ ] **Step 5: Add Compose backup/restore tools**
 
-  Backup creates timestamped PostgreSQL roles/globals plus separate custom-format dumps for the `dentnow` and `keycloak` databases, a MinIO `mc mirror --preserve` directory outside named volumes, a manifest of object/database checksums and versions, and the non-secret Keycloak realm/client/role configuration needed for idempotent reconstruction. Restore requires explicit empty-target confirmation and verifies media checksums against PostgreSQL metadata.
+  Acquire the maintenance/advisory lock so backup cannot race publication, media mutation, or GC. Create timestamped PostgreSQL roles/globals plus separate custom-format dumps for `dentnow` and `keycloak`. `minio_versions.py` uses S3 `list_object_versions`/versioned reads to capture every byte version, metadata record, and delete marker; a plain `mc mirror` is forbidden. Encrypt/sign the archive and invoke a configured off-host copy hook. Record only secret-version references; a separately encrypted escrow bundle or tested restore-time identity rotation recreates matching PostgreSQL/MinIO/Keycloak service credentials. Restore requires explicit empty-target confirmation, reconstructs versions chronologically, and verifies checksums plus Keycloak login/roles, DentNow scopes, publications, audit/outbox, and delivery blocks. Document/alert against clinic-approved RPO/RTO.
+
+  `pre_migrate_backup.sh` obtains the migration lock, verifies free disk headroom, takes/verifies a backup before nontrivial production migrations, and refuses concurrent migration/GC/restore. Add a quarterly secret-rotation and restore rehearsal.
 
 - [ ] **Step 6: Verify hardening and recovery**
 
   Run:
 
   ```bash
-  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_redaction.py backend/tests/contract/test_security_headers.py backend/tests/integration/test_sitemap.py -q
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_redaction.py backend/tests/unit/test_safe_structured_data.py backend/tests/contract/test_security_headers.py backend/tests/integration/test_sitemap.py -q
   bash backend/tests/compose/test_backup_restore.sh
   ```
 
-  Expected: security/SEO tests pass and a clean-volume restore reproduces the active publication and representative media checksum.
+  Expected: security/SEO tests pass and a clean-volume restore reproduces login/roles/scopes, active and older publications, audit/outbox, delivery blocks, representative media versions, and delete markers.
 
 - [ ] **Step 7: Commit**
 
@@ -1384,28 +1404,29 @@
 
 - Expand: `backend/tests/{unit,integration,contract,architecture,compose}/`
 - Expand: `frontend/tests/`, `frontend/e2e/`
-- Create: `frontend/playwright.config.ts`, `frontend/tests/msw/handlers.ts`
-- Modify: backend/frontend test configuration and `Makefile`
+- Modify: `frontend/playwright.config.ts`, `frontend/tests/msw/handlers.ts`, backend/frontend test configuration, and `Makefile`
 
 - [ ] **Step 1: Add missing backend coverage**
 
-  Ensure unit/integration/contract suites cover every role/resource family, clinic scope, invalid/stale writes, sanitization, publication/rollback, MinIO, migrations, outbox, public anonymity, admin authorization, error envelopes, and dependency rules. Enforce a meaningful coverage floor on domain/application modules, excluding generated migrations.
+  Ensure unit/integration/contract suites cover every role/resource family, clinic-scoped get/list/search/nested relations, invalid/stale writes, sanitization, publication/rollback/restore semantics, consent delivery blocks, MinIO/GC, migrations, audit query/immutability, outbox, public anonymity, every-method admin default denial, wrong `azp`, error envelopes, and dependency rules. Enforce a meaningful coverage floor on domain/application modules, excluding generated migrations.
 
 - [ ] **Step 2: Add missing frontend coverage**
 
   Cover every public template, admin navigation/form/resource family, media, permission state, conflicts, `cmdk`, preview/publish, loading/error/empty, reduced motion, keyboard interaction, and responsive critical routes.
 
-- [ ] **Step 3: Add full real-service Playwright journeys**
+- [ ] **Step 3: Add deterministic fixtures and full real-service Playwright journeys**
+
+  Start a disposable Compose project with `SEED_E2E_USERS=true`, run `keycloak-config`, seed the site, then run `backend/scripts/seed_e2e_identities.py` to resolve subjects and assign the manager to exactly one clinic. Assert fixture roles/scopes before launching Playwright's existing `compose` project; never reuse production identity or volumes.
 
   At minimum:
 
   1. anonymous visitor traverses every route without login;
   2. `/admin` logs into realm `doncik` and restores deep link;
   3. admin edits clinic/treatment/offer/article/legal/quiz data;
-  4. admin uploads media and completes rights/alt metadata;
+  4. admin uploads media and completes rights/alt metadata; publisher approves a de-identified case-image attestation and revocation produces `410` even after rollback;
   5. draft is absent publicly, visible in preview, then visible after publish;
   6. rollback restores the previous publication;
-  7. clinic manager is denied another clinic;
+  7. clinic manager is denied another clinic through get, list, search, and nested mappings;
   8. command palette navigates, searches, opens a create flow, validates, and logs out;
   9. no patient/offer-registration submission endpoint exists.
 
@@ -1438,7 +1459,7 @@
 
 - [ ] **Step 1: Add pull-request checks**
 
-  `ci.yml` runs frontend and backend checks in parallel, then a Compose integration job that builds the pair, starts clean volumes, runs migrations/seed/smoke/Playwright, and uploads useful logs/reports on failure. Cache npm and pip/build layers by their respective lock/manifests.
+  `ci.yml` runs frontend and backend checks in parallel, verifies qf/requirements hashes, then a Compose integration job that builds the pair, starts disposable clean volumes with deterministic identities, runs migrations/seed/smoke/real-service Playwright, and uploads redacted logs/reports on failure. Cache npm and pip/build layers by their respective lock/manifests. Full-history secret scanning runs on the first adoption and diff/image-layer secret scans run on every change.
 
 - [ ] **Step 2: Publish two immutable images only after checks**
 
@@ -1453,7 +1474,7 @@
 
 - [ ] **Step 3: Add image and migration safety checks**
 
-  Build from `frontend/Dockerfile` and `backend/Dockerfile` with separate cache scopes. Run container vulnerability scanning, verify non-root backend execution, verify frontend config contains no secret, and refuse publish when Alembic or clean-volume bootstrap fails.
+  Build from `frontend/Dockerfile` and `backend/Dockerfile` with separate cache scopes. Run container vulnerability and image-layer secret scanning, verify non-root backend execution, verify JSON runtime config contains no secret/executable injection, and refuse publish when wheel/requirements hashes, Alembic, clean-volume bootstrap, production-profile policy, or restore smoke fails.
 
 - [ ] **Step 4: Validate workflow syntax and local equivalents**
 
@@ -1485,30 +1506,31 @@
 
 - [ ] **Step 1: Document the exact operator path**
 
-  README must cover prerequisites, repository layout, `.env` creation, generated secrets, `docker compose up --build -d`, initial Keycloak admin/role assignment in realm `doncik`, URLs, health, logs, migrations, seed behavior, shutdown, upgrade with paired images, and common failures.
+  README must cover prerequisites, repository layout, non-secret `.env` coordinates, `ops/init-secrets.sh`, local versus production/TLS-edge profiles, `docker compose up --build -d`, initial Keycloak admin/role assignment in realm `doncik`, public/admin/isolated-preview URLs, generic versus internal health, logs, backup-before-migration, seed/baseline behavior, shutdown, upgrade with paired images, secret rotation, and common failures.
 
 - [ ] **Step 2: Document clinic content operations**
 
-  Cover each CRUD area, media rights/alt/consent, preview, validation, publish, rollback versus restore-workspace, audit, command palette shortcuts/actions, content review flags, and the fact that save does not publish.
+  Cover each CRUD area, media rights/alt/non-identifying attestation and revocation blocks, preview isolation, validation, publish, rollback versus restore-workspace, audit, command palette shortcuts/actions, content review flags, and the fact that save does not publish. State the production legal/privacy gates for patient-derived case imagery and that DentNow stores no identity/consent document.
 
 - [ ] **Step 3: Document recovery and future integration boundaries**
 
-  Include tested backup/restore commands and checksums. Explain the outbox/adapter/external-ID contract and the separate required design for future patient/offer registration, consent, encrypted PII, retention, roles, and clinical-data risk.
+  Include tested encrypted/off-host backup/restore commands for PostgreSQL globals/both databases and all MinIO versions/delete markers, maintenance locking, RPO/RTO, restore rehearsal, GC coordination, and login/scope verification. Explain the outbox/adapter/external-ID contract and the separate schema/credentials/keys/roles required for future patient/offer registration, consent, encrypted PII, retention, egress, and clinical-data risk.
 
 - [ ] **Step 4: Run a clean release rehearsal**
 
   On disposable volumes:
 
   ```bash
-  docker compose -p dentnow-release-rehearsal down -v --remove-orphans
+  ENVIRONMENT=test ALLOW_DESTRUCTIVE_TESTS=1 docker compose -p dentnow-release-rehearsal down -v --remove-orphans
+  ./ops/init-secrets.sh
   docker compose -p dentnow-release-rehearsal up --build -d
   COMPOSE_PROJECT_NAME=dentnow-release-rehearsal make compose-smoke
   COMPOSE_PROJECT_NAME=dentnow-release-rehearsal make e2e
   COMPOSE_PROJECT_NAME=dentnow-release-rehearsal make backup-test
-  docker compose -p dentnow-release-rehearsal down -v --remove-orphans
+  ENVIRONMENT=test ALLOW_DESTRUCTIVE_TESTS=1 docker compose -p dentnow-release-rehearsal down -v --remove-orphans
   ```
 
-  Manually verify public desktop/mobile routes, `/admin` Keycloak login, each admin navigation group, `Cmd/Ctrl+K`, media upload, preview, publish, anonymous post-publish access, rollback, restart persistence, and logout.
+  Manually verify the literal public desktop/mobile route inventory, bare/deep `/admin` Keycloak login, each admin navigation group, `Cmd/Ctrl+K`, media upload, isolated preview, publish, anonymous post-publish access, consent revocation surviving rollback, restart persistence, and logout. Repeat policy/HTTPS checks with the production profile; destructive helpers must refuse that profile.
 
 - [ ] **Step 5: Run the final source-of-truth checks**
 
@@ -1530,16 +1552,16 @@
 ## Final acceptance gate
 
 - [ ] Root contains organized `backend/`, `frontend/`, `docs/`, `keycloak/`, `ops/`, Compose, README, Makefile, environment example, and CI; component build files are not scattered at root.
-- [ ] `docker compose up --build -d` on clean volumes reaches healthy state without manual schema/bucket/client setup.
-- [ ] All public routes and published media are anonymous; only `/admin/*` initiates Keycloak realm `doncik` login.
-- [ ] Every `/api/v1/admin/*` mutation verifies JWT audience/issuer/role and clinic scope.
+- [ ] After generated secret files and hostnames are supplied, `docker compose up --build -d` on clean volumes reaches healthy state without manual schema/bucket/client setup; the production profile supplies/tests TLS edge routing.
+- [ ] All normal public routes and published media are anonymous; only bare `/admin` and `/admin/*` initiate Keycloak realm `doncik` login. Preview is possession-session gated without OAuth.
+- [ ] Every `/api/v1/admin/*` read and write verifies JWT signature/issuer/audience/`azp`, explicit capability, and clinic scope under a route-map default-deny test.
 - [ ] Every current content source and media reference is represented in PostgreSQL/MinIO and parity checks pass.
 - [ ] Frontend runtime contains no clinic/business fallback data and displays explicit API error states.
 - [ ] Admin manages all website CRUD families, media, legal/GDPR, SEO/navigation, quiz, audit, and publication history.
-- [ ] Preview uses the actual public renderer; save, preview, publish, rollback, and restore-workspace have distinct behavior.
+- [ ] Preview uses the actual public renderer on an isolated origin with one-use fragment exchange, HttpOnly session, sandbox, no credential logs, and distinct save/preview/publish/rollback/restore behavior.
 - [ ] `Cmd/Ctrl+K` `cmdk` navigation, permission-scoped search, quick views, and safe quick actions pass keyboard/e2e tests.
 - [ ] Structured authoring data is normalized in PostgreSQL; publication snapshots are immutable; media bytes are private in MinIO.
-- [ ] No patient/offer-registration data is collected. Integration events/outbox/ports are versioned and vendor-neutral for future work.
-- [ ] Safe rich text, stored-XSS defenses, media consent gates, audit redaction, security headers, backup/restore, and observability checks pass.
+- [ ] No public contact/patient/offer-registration data or consent-document bytes are collected. De-identified patient-derived media passes the approved privacy/attestation/revocation gate. Integration events/outbox/ports are versioned and vendor-neutral for future work.
+- [ ] Safe rich text, typed/safely serialized JSON-LD and runtime config, stored-XSS defenses, media delivery blocks, audit minimization/immutability, security headers, version-aware encrypted off-host backup/restore, and observability checks pass.
 - [ ] Backend/frontend images share an immutable Git revision and pass paired Compose integration before publication.
 - [ ] The homelab k3s migration remains documented but is not required to deploy this release.
