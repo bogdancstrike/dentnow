@@ -38,6 +38,8 @@ class CrudService:
     search_columns: tuple[str, ...] = ()
     # When set, a clinic manager is limited to rows whose value is in their scopes.
     clinic_scope_column: str | None = None
+    # False for global (non-clinic) resources a clinic manager may read but not write.
+    manager_writable: bool = True
 
     def __init__(self, session: Session, principal: Principal):
         self.session = session
@@ -76,6 +78,12 @@ class CrudService:
                 # Prefer "not found" over revealing an out-of-scope record.
                 raise NotFoundError(f"{self.entity_type} not found")
 
+    def _guard_write(self) -> None:
+        if not self.manager_writable and self.principal.is_clinic_scoped:
+            raise PermissionDeniedError(
+                f"clinic managers cannot modify global {self.entity_type} records"
+            )
+
     # ── read ─────────────────────────────────────────────────────────────────
     def list(self, req: PageRequest) -> dict:
         base = select(self.model).where(self.model.deleted_at.is_(None))
@@ -105,6 +113,7 @@ class CrudService:
 
     # ── write ────────────────────────────────────────────────────────────────
     def create(self, data: dict) -> tuple[dict, str]:
+        self._guard_write()
         cid = get_correlation_id()
         obj = self.model(
             **self.to_create_kwargs(data),
@@ -125,6 +134,7 @@ class CrudService:
         return after, make_etag(obj.version)
 
     def update(self, obj_id: Any, data: dict, if_match: str | None) -> tuple[dict, str]:
+        self._guard_write()
         expected = parse_if_match(if_match)
         cid = get_correlation_id()
         obj = self._get_live(obj_id)
@@ -146,6 +156,7 @@ class CrudService:
         return after, make_etag(obj.version)
 
     def delete(self, obj_id: Any, if_match: str | None) -> None:
+        self._guard_write()
         expected = parse_if_match(if_match)
         cid = get_correlation_id()
         obj = self._get_live(obj_id)

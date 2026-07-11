@@ -12,6 +12,10 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
+# Register every model on Base.metadata so cross-table FKs resolve even when a single
+# test module is run in isolation.
+import src.models_all  # noqa: F401,E402
+
 
 @pytest.fixture(scope="session")
 def db_engine():

@@ -778,6 +778,526 @@
     },
     {
       "namespace": "api",
+      "operation_name": "categories_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/treatment-categories",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "categories_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "categories_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/treatment-categories",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "categories_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "categories_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/treatment-categories/<category_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "categories_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "categories_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/treatment-categories/<category_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "categories_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatments_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/treatments",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatments_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatments_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/treatments/<treatment_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatments_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatments_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/treatments",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatments_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatments_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/treatments/<treatment_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatments_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatments_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/treatments/<treatment_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatments_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "prices_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/treatment-prices",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "prices_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "prices_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/treatment-prices",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "prices_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "prices_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/treatment-prices/<price_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "prices_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "prices_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/treatment-prices/<price_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "prices_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatment_faqs_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/treatment-faqs",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatment_faqs_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatment_faqs_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/treatment-faqs",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatment_faqs_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatment_faqs_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/treatment-faqs/<faq_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatment_faqs_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "treatment_faqs_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/treatment-faqs/<faq_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "treatment_faqs_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offers_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/offers",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offers_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offers_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/offers/<offer_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offers_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offers_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/offers",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offers_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offers_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/offers/<offer_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offers_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offers_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/offers/<offer_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offers_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_features_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/offer-features",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_features_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_features_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/offer-features",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_features_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_features_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/offer-features/<feature_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_features_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_features_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/offer-features/<feature_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_features_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "technologies_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/technologies",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "technologies_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "technologies_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/technologies",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "technologies_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "technologies_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/technologies/<technology_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "technologies_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "technologies_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/technologies/<technology_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "technologies_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "partners_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/partners",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "partners_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "partners_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/partners",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "partners_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "partners_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/partners/<partner_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "partners_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "partners_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/partners/<partner_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "partners_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "clinic_treatments_assign",
+      "model_name": "Empty",
+      "request_method": [
+        "PUT"
+      ],
+      "api_url": "/v1/admin/clinics/<clinic_id>/treatments/<treatment_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "clinic_treatments_assign"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "clinic_treatments_remove",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/clinics/<clinic_id>/treatments/<treatment_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "clinic_treatments_remove"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_clinics_assign",
+      "model_name": "Empty",
+      "request_method": [
+        "PUT"
+      ],
+      "api_url": "/v1/admin/offers/<offer_id>/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_clinics_assign"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_clinics_remove",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/offers/<offer_id>/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_clinics_remove"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_treatments_assign",
+      "model_name": "Empty",
+      "request_method": [
+        "PUT"
+      ],
+      "api_url": "/v1/admin/offers/<offer_id>/treatments/<treatment_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_treatments_assign"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "offer_treatments_remove",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/offers/<offer_id>/treatments/<treatment_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "offer_treatments_remove"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "principals_list",
       "model_name": "Empty",
       "request_method": [

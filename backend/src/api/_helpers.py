@@ -22,9 +22,10 @@ def _validate(model: Type[BaseModel], data: dict | None) -> dict:
     try:
         return model(**(data or {})).model_dump(exclude_unset=True)
     except PydanticValidationError as exc:
+        # include_context/include_input drop non-JSON-serializable ValueError ctx.
         raise ValidationError(
             "request validation failed",
-            details={"errors": exc.errors(include_url=False)},
+            details={"errors": exc.errors(include_url=False, include_context=False, include_input=False)},
         )
 
 

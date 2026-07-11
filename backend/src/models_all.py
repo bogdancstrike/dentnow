@@ -13,5 +13,6 @@ from src.audit import models as _audit_models  # noqa: F401
 from src.integrations import models as _integration_models  # noqa: F401
 from src.iam import models as _iam_models  # noqa: F401
 from src.clinics import models as _clinic_models  # noqa: F401
+from src.catalog import models as _catalog_models  # noqa: F401
 
-# Later tasks append: catalog, editorial, media.
+# Later tasks append: editorial, media.
