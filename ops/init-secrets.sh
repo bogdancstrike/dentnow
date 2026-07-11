@@ -56,7 +56,11 @@ for entry in "${SECRETS[@]}"; do
     exit 1
   fi
   printf '%s' "$value" > "$file"
-  chmod 600 "$file"
+  # 0644 files inside the 0700 .secrets/ dir: other host users cannot traverse into
+  # the directory, while non-root container users (e.g. the backend uid 10001) can
+  # read the Compose-mounted secret. Compose v2 bind-mounts file secrets with the
+  # host file's own perms, so the directory — not the file mode — is the host guard.
+  chmod 644 "$file"
   if [[ -f "$file" && $ROTATE -eq 1 ]]; then rotated=$((rotated+1)); else created=$((created+1)); fi
 done
 
