@@ -2,6 +2,11 @@
 
 Website-ul clinic stomatologic DentNow, rescris în **React 18** cu **Vite**, structură modulară pe componente reutilizabile.
 
+> **Monorepo migration in progress.** The frontend now lives in `frontend/`; the qf/Flask
+> backend, Docker Compose stack, and admin app are being added under `backend/`, `ops/`,
+> `keycloak/`, and `docker-compose.yml` per `docs/implementation_plan.md`. Run frontend
+> commands with `npm --prefix frontend ...`. This README is rewritten in full at Task 24.
+
 ## Tehnologii
 
 - **React 18** + **React Router v6** — SPA cu client-side routing
@@ -49,29 +54,26 @@ dentnow-react/
 git clone <repo-url>
 cd dentnow-react
 
-# 2. Instalează dependențele
-npm install
+# 2. Instalează dependențele frontend
+npm --prefix frontend ci
 
-# 3. (Opțional) Creează .env.local cu valorile tale
-cp .env .env.local
-
-# 4. Pornește dev server
-npm run dev
+# 3. Pornește dev server
+npm --prefix frontend run dev
 # → http://localhost:3000
 ```
 
 ### Production Build
 
 ```bash
-npm run build
-npm run preview   # preview local al build-ului
+npm --prefix frontend run build
+npm --prefix frontend run preview   # preview local al build-ului
 ```
 
 ### Docker
 
 ```bash
-# Build imagine
-docker build -t dentnow-website .
+# Build imagine (context = frontend/)
+docker build -t dentnow-website ./frontend
 
 # Run container
 docker run -d -p 8080:80 --name dentnow dentnow-website
