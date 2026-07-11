@@ -81,55 +81,52 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Step 6: **46 backend tests pass** (alembic-at-head test made head-dynamic)
 - [x] Step 7: committed
 
-## Task 7 — Site/nav/pages + clinic CRUD (`feat(cms): add site page and clinic management`)
-- [ ] Step 1: failing domain/API tests
-- [ ] Step 2: clinic/person schema, migration 0003, wire ClinicScopeProvider
-- [ ] Step 3: services + serializers (audit, outbox, workspace_version++)
-- [ ] Step 4: admin endpoints (site/links/menus/pages/sections/seo/clinics/doctors/scopes)
-- [ ] Step 5: verify CRUD + concurrency (409, cross-clinic 403)
-- [ ] Step 6: Commit
+## Task 7 — Site/nav/pages + clinic CRUD ✅ DONE (commit `a651155`)
+- [x] Step 1: `test_site_service.py`, `test_clinic_service.py` (DB unit), `test_site_clinic_crud.py` (HTTP integration)
+- [x] Step 2: migration 0003 (clinics + contacts/hours/transit/faqs, doctors, doctor_clinics, admin_principal_clinics); DB-backed `ClinicScopeProvider` wired in wsgi
+- [x] Step 3: reusable `core/crud.py` CrudService (ETag/If-Match→409, soft-delete, audit, outbox, workspace bump, clinic scoping); `audit.write_audit`, `outbox.enqueue_event`, `workspace.bump_workspace_version`; site + clinic services + serializers + Pydantic schemas
+- [x] Step 4: 59 default-deny `/api/v1/admin/*` endpoints (site/links/menus/nav-items/pages/sections/seo/clinics/contacts/hours/transit/faqs/doctors/doctor-clinics/admin-principals) generated into `maps/endpoint.json`
+- [x] Step 5: **65 backend tests pass** — HTTP CRUD w/ ETag, stale-409, missing-If-Match 400, cross-clinic 404, editor-403, audit+outbox; qf passes Flask Response(+ETag) through
+- [x] Step 6: committed
 
-## Task 8 — Treatments/prices/offers/tech/partners CRUD (`feat(cms): add treatments prices offers and partners`)
-- [ ] Step 1: failing catalog rule tests
-- [ ] Step 2: catalog schema + checks, migration 0004
-- [ ] Step 3: services + qf handlers (clinic-scoped vs global)
-- [ ] Step 4: verify catalog + DB checks
-- [ ] Step 5: Commit
+## Task 8 — Treatments/prices/offers/tech/partners CRUD ✅ DONE (commit `2e5f7bb`)
+- [x] Step 1: `test_catalog_service.py` (schema+DB-check+scope), `test_catalog_crud.py` (HTTP)
+- [x] Step 2: migration 0004 (11 catalog tables) with DB checks (non-negative/ordered amounts, currency `^[A-Z]{3}$`, ends_at>starts_at)
+- [x] Step 3: catalog services (global = `manager_writable=False`; prices clinic-scoped); Pydantic price-kind + offer-date rules; 40 endpoints + mapping routes (clinic-treatments/offer-clinics/offer-treatments)
+- [x] Step 4: **76 backend tests pass**; DB checks reject invalid prices/date windows independent of API; fixed empty-migration trap (models_all guard) + non-serializable Pydantic ctx (500→400)
+- [x] Step 5: committed
 
-## Task 9 — Editorial/legal/review/case/ebook/quiz CRUD (`feat(cms): add editorial legal and quiz management`)
-- [ ] Step 1: failing sanitization + editorial tests
-- [ ] Step 2: safe rich text (Markdown + Bleach allowlist)
-- [ ] Step 3: editorial schema, migration 0005
-- [ ] Step 4: CRUD handlers + redacted audit-events read
-- [ ] Step 5: verify editorial APIs
-- [ ] Step 6: Commit
+## Task 9 — Editorial/legal/review/case/ebook/quiz CRUD ✅ DONE (commit `49df757`)
+- [x] Step 1: `test_rich_text.py`, `test_editorial_service.py`, `test_editorial_crud.py`
+- [x] Step 2: `editorial/rich_text.py` — markdown-it (html off) + Bleach allowlist; `sanitize_html` re-run at publish; `*_html` serialized
+- [x] Step 3: migration 0005 (articles, news, reviews, case_studies, ebooks, legal_documents, quizzes/questions/options/result_bands)
+- [x] Step 4: editorial services (slug unique, band-overlap, clinic-scoped reviews/cases); legal-approve + case-consent require CAP_ATTESTATION_APPROVE; redacted `/audit-events` (CAP_AUDIT_READ)
+- [x] Step 5: **91 backend tests pass** — sanitized body_html (no script), approval gating (editor 403), band overlap, audit publisher-only
+- [x] Step 6: committed
 
-## Task 10 — Private MinIO media + consent gates (`feat(media): manage private minio assets and consent`)
-- [ ] Step 1: failing media/security tests
-- [ ] Step 2: storage + image processor ports (boto3 MinIO adapter)
-- [ ] Step 3: media schema, migration 0006, media FKs on editorial/etc
-- [ ] Step 4: streaming upload + variants
-- [ ] Step 5: media delivery rules (public/preview/consent-bound 410)
-- [ ] Step 6: readiness MinIO probe + `gc_media.py`
-- [ ] Step 7: verify against real MinIO
-- [ ] Step 8: Commit
+## Task 10 — Private MinIO media + consent gates ✅ DONE (commit `a58a452`)
+- [x] Step 1: `test_image_processor.py`, `test_media_service.py` (fake storage), `test_media_gc.py`, `test_minio_media.py` (real, opt-in `RUN_MINIO_TESTS=1`)
+- [x] Step 2: `ports.py` (ObjectStoragePort/ImageProcessorPort); `minio_storage.py` (boto3, path-style, timeouts); `image_processor.py` (Pillow)
+- [x] Step 3: migration 0006 (6 media tables) + 11 **named** media FKs (round-trips); models_all wired
+- [x] Step 4: streaming upload — EXIF-strip re-encode, size/pixel/bomb limits, format allowlist, original+thumbnail/card/hero variants, SHA-256 dedup per privacy class, alt-text required, failure cleanup
+- [x] Step 5: delivery rules — public immutable cache; consent-bound `case_image` checks block+attestation → `410` after revoke/expiry, `no-store`; `media_public` gated on active publication (Task 11)
+- [x] Step 6: mandatory MinIO readiness probe registered; `scripts/gc_media.py` dry-run-first + `--confirm-delete`
+- [x] Step 7: **verified** — 103 tests pass + real-MinIO upload/read round trip; app credential bucket-scoped
+- [x] Step 8: committed
 
-## Task 11 — Preview/publication/rollback/public APIs (`feat(publishing): add previews immutable releases and public api`)
-- [ ] Step 1: failing snapshot/publication tests
-- [ ] Step 2: `SiteSnapshotV1` (discriminated unions, typed JSON-LD)
-- [ ] Step 3: validation + atomic publish (advisory lock, repeatable-read, outbox)
-- [ ] Step 4: previews + rollback + restore-workspace, migration 0007
-- [ ] Step 5: public read surface (bootstrap/page-by-path/articles/media/sitemap)
-- [ ] Step 6: verify publication contracts
-- [ ] Step 7: Commit
+## Task 11 — Preview/publication/rollback/public APIs ✅ DONE (commit `584b7e2`)
+- [x] Step 1: `test_snapshot_builder.py`, `test_publication_flow.py`, `test_public_api.py`
+- [x] Step 2: `snapshot_contract.SiteSnapshotV1` (Pydantic extra=forbid); `snapshot_builder` deterministic + `canonical_json`/`content_hash`
+- [x] Step 3: `publication_validator` (missing legal/media/route); `publication_service.publish` advisory-lock atomic + unchanged→changed:false; audit + outbox
+- [x] Step 4: `preview_service` one-use token→HttpOnly cookie; `activate` rollback (revalidates blocks, idempotent); `restore_workspace` guardrails; migration 0007
+- [x] Step 5: public API bootstrap/page-by-path/articles/sitemap (active-publication only, ETag/304); `media_public` gated on publication reference
+- [x] Step 6: **115 backend tests pass** — deterministic hash, publish/rollback, one-use preview exchange, anonymous reads + 304; `public_endpoint` decorator fixes flask-restx 500→envelope
+- [x] Step 7: committed
 
-## Task 12 — Integration boundary, no patient data (`feat(integrations): add versioned outbox extension boundary`)
-- [ ] Step 1: failing event/dependency tests
-- [ ] Step 2: event envelope + current events
-- [ ] Step 3: outbound/inbound ports docs
-- [ ] Step 4: patient-engagement guardrail doc
-- [ ] Step 5: verify boundaries
-- [ ] Step 6: Commit
+## Task 12 — Integration boundary, no patient data ✅ DONE (commit `d274115`)
+- [x] Step 1–4: `events.py` (versioned envelope + catalog), `ports.py` (outbound/inbound ACL), `serializers.py`, `docs/integration-contracts.md` (+ patient-engagement hard gate)
+- [x] Step 5: **5 tests pass** — event `.v1` enforcement, transactional outbox insert, dependency rule (no vendor SDK/adapter in domain code), no patient/registration endpoint
+- [x] Step 6: committed
 
 ## Task 13 — Export + seed current content (`feat(migration): seed current dentnow content and media`)
 - [ ] Step 1: parity manifest + failing tests
