@@ -114,6 +114,34 @@ class HoursUpdate(_Strict):
     closed: Optional[bool] = None
 
 
+class TransitCreate(_Strict):
+    clinic_id: str
+    label: str
+    mode: Optional[str] = None
+    detail: Optional[str] = None
+    position: int = 0
+
+
+class TransitUpdate(_Strict):
+    label: Optional[str] = None
+    mode: Optional[str] = None
+    detail: Optional[str] = None
+    position: Optional[int] = None
+
+
+class FaqCreate(_Strict):
+    clinic_id: str
+    question: str
+    answer: str
+    position: int = 0
+
+
+class FaqUpdate(_Strict):
+    question: Optional[str] = None
+    answer: Optional[str] = None
+    position: Optional[int] = None
+
+
 class DoctorCreate(_Strict):
     slug: str
     name: str

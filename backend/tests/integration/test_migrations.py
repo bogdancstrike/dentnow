@@ -59,9 +59,8 @@ def test_singleton_site_state_constraint(db_session):
     from sqlalchemy.exc import IntegrityError
     from src.site.models import SiteState
 
-    db_session.add(SiteState(id=1))
-    db_session.flush()
-    db_session.add(SiteState(id=2))  # violates ck_site_state_singleton
+    # id != 1 is rejected by ck_site_state_singleton regardless of existing rows.
+    db_session.add(SiteState(id=2))
     try:
         db_session.flush()
         raised = False

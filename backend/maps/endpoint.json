@@ -13,7 +13,9 @@
       "namespace": "api",
       "operation_name": "health",
       "model_name": "Empty",
-      "request_method": ["GET"],
+      "request_method": [
+        "GET"
+      ],
       "api_url": "/health",
       "exec_method": {
         "module_name": "src.api.health",
@@ -24,7 +26,9 @@
       "namespace": "api",
       "operation_name": "liveness",
       "model_name": "Empty",
-      "request_method": ["GET"],
+      "request_method": [
+        "GET"
+      ],
       "api_url": "/liveness",
       "exec_method": {
         "module_name": "src.api.health",
@@ -35,7 +39,9 @@
       "namespace": "api",
       "operation_name": "readiness",
       "model_name": "Empty",
-      "request_method": ["GET"],
+      "request_method": [
+        "GET"
+      ],
       "api_url": "/readiness",
       "exec_method": {
         "module_name": "src.api.health",
@@ -46,11 +52,767 @@
       "namespace": "api",
       "operation_name": "admin_me",
       "model_name": "Empty",
-      "request_method": ["GET"],
+      "request_method": [
+        "GET"
+      ],
       "api_url": "/v1/admin/me",
       "exec_method": {
         "module_name": "src.api.me",
         "method_name": "me"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "site_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/site",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "site_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "site_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/site",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "site_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "links_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/links",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "links_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "links_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/links",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "links_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "links_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/links/<link_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "links_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "links_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/links/<link_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "links_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "menus_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/navigation-menus",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "menus_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "menus_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/navigation-menus",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "menus_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "menus_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/navigation-menus/<menu_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "menus_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "menus_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/navigation-menus/<menu_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "menus_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "nav_items_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/navigation-items",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "nav_items_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "nav_items_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/navigation-items",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "nav_items_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "nav_items_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/navigation-items/<item_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "nav_items_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "nav_items_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/navigation-items/<item_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "nav_items_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "pages_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/pages",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "pages_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "pages_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/pages/<page_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "pages_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "pages_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/pages",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "pages_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "pages_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/pages/<page_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "pages_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "pages_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/pages/<page_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "pages_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "sections_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/page-sections",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "sections_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "sections_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/page-sections",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "sections_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "sections_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/page-sections/<section_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "sections_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "sections_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/page-sections/<section_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "sections_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "seo_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/page-seo",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "seo_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "seo_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/page-seo",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "seo_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "seo_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/page-seo/<seo_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "seo_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "seo_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/page-seo/<seo_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "seo_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "clinics_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/clinics",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "clinics_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "clinics_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "clinics_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "clinics_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/clinics",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "clinics_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "clinics_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "clinics_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "clinics_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "clinics_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "contacts_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/clinic-contacts",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "contacts_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "contacts_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/clinic-contacts",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "contacts_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "contacts_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/clinic-contacts/<contact_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "contacts_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "contacts_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/clinic-contacts/<contact_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "contacts_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "hours_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/clinic-hours",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "hours_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "hours_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/clinic-hours",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "hours_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "hours_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/clinic-hours/<hours_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "hours_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "hours_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/clinic-hours/<hours_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "hours_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "transit_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/clinic-transit",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "transit_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "transit_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/clinic-transit",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "transit_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "transit_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/clinic-transit/<transit_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "transit_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "transit_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/clinic-transit/<transit_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "transit_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "faqs_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/clinic-faqs",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "faqs_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "faqs_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/clinic-faqs",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "faqs_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "faqs_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/clinic-faqs/<faq_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "faqs_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "faqs_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/clinic-faqs/<faq_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "faqs_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "doctors_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/doctors",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "doctors_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "doctors_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/doctors/<doctor_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "doctors_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "doctors_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/doctors",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "doctors_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "doctors_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/doctors/<doctor_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "doctors_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "doctors_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/doctors/<doctor_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "doctors_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "doctor_clinics_assign",
+      "model_name": "Empty",
+      "request_method": [
+        "PUT"
+      ],
+      "api_url": "/v1/admin/doctors/<doctor_id>/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "doctor_clinics_assign"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "doctor_clinics_remove",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/doctors/<doctor_id>/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.clinics_admin",
+        "method_name": "doctor_clinics_remove"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "principals_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/admin-principals",
+      "exec_method": {
+        "module_name": "src.api.access_admin",
+        "method_name": "principals_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "principal_scopes_assign",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/admin-principals/<subject>/clinics",
+      "exec_method": {
+        "module_name": "src.api.access_admin",
+        "method_name": "principal_scopes_assign"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "principal_scopes_remove",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/admin-principals/<subject>/clinics/<clinic_id>",
+      "exec_method": {
+        "module_name": "src.api.access_admin",
+        "method_name": "principal_scopes_remove"
       }
     }
   ]

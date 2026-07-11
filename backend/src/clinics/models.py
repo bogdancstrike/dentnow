@@ -12,7 +12,6 @@ from sqlalchemy import (
     Numeric,
     Text,
     Time,
-    UniqueConstraint,
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -132,8 +131,8 @@ class Doctor(WorkspaceRoot, Base):
 
 class DoctorClinic(Base):
     __tablename__ = "doctor_clinics"
+    # The composite primary key (doctor_id, clinic_id) already enforces uniqueness.
     __table_args__ = (
-        UniqueConstraint("doctor_id", "clinic_id", name="uq_doctor_clinics"),
         Index("ix_doctor_clinics_doctor", "doctor_id"),
         Index("ix_doctor_clinics_clinic", "clinic_id"),
     )

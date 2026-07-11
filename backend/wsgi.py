@@ -65,6 +65,12 @@ def _build_app():
     install_flask_hooks(flask_app)
     install_flask_error_handlers(flask_app)
 
+    # Wire the DB-backed clinic-scope provider into IAM (Task 7).
+    from src.clinics.service import db_clinic_scope_provider
+    from src.iam.service import set_clinic_scope_provider
+
+    set_clinic_scope_provider(db_clinic_scope_provider)
+
     log.info(
         f"dentnow backend ready (service={Config.SERVICE_NAME} "
         f"port={Config.API_PORT} env={Config.ENVIRONMENT} rev={Config.BUILD_REVISION})"
