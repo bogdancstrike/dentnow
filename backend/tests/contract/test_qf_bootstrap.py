@@ -56,6 +56,7 @@ def test_health_routes_registered(flask_app):
 
 def test_health_handler_returns_body_status_tuple():
     from src.api.health import health_check, liveness, readiness
+    from src.core import readiness as readiness_mod
 
     body, status = health_check(None, None, None)
     assert status == 200 and body["status"] == "ok" and "service" in body
@@ -63,6 +64,19 @@ def test_health_handler_returns_body_status_tuple():
     body, status = liveness(None, None, None)
     assert status == 200 and body["status"] == "alive"
 
-    # Readiness is intentionally not-ready until DB/MinIO probes are registered.
+    # With no probes registered, readiness is not-ready and never leaks detail.
+    readiness_mod.clear_probes()
     body, status = readiness(None, None, None)
+    assert status == 503 and body == {"status": "not_ready"}
+
+    # A passing probe flips it to ready.
+    readiness_mod.register_probe("stub", lambda: None)
+    body, status = readiness(None, None, None)
+    assert status == 200 and body == {"status": "ready"}
+
+    # A failing probe forces not-ready.
+    readiness_mod.register_probe("bad", lambda: (_ for _ in ()).throw(RuntimeError("down")))
+    _body, status = readiness(None, None, None)
     assert status == 503
+    readiness_mod.clear_probes()
+    readiness_mod.register_default_probes()

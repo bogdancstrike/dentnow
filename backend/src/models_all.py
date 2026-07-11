@@ -8,5 +8,8 @@ The schema is introduced in Task 5 (site/audit/outbox) and extended by later tas
 (clinics, catalog, editorial, media, publication guards). This module stays the
 single registration point.
 """
-# Model modules are appended here as each task adds them, e.g.:
-#   from src.site import models as _site_models  # noqa: F401
+from src.site import models as _site_models  # noqa: F401
+from src.audit import models as _audit_models  # noqa: F401
+from src.integrations import models as _integration_models  # noqa: F401
+
+# Later tasks append: clinics, catalog, editorial, media, iam.

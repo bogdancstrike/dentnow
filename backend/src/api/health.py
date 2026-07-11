@@ -5,14 +5,14 @@ returning ``(body, status)``.
 
   - ``health``    — service + build identity.
   - ``liveness``  — process is up.
-  - ``readiness`` — PostgreSQL (Task 5) and the required MinIO bucket (Task 10).
-
-At this scaffold stage no dependency probe is registered yet, so readiness reports
-``not_ready`` (503). The public response never leaks dependency detail or DSNs.
+  - ``readiness`` — runs the registered dependency probes (PostgreSQL now; the
+    mandatory MinIO bucket probe is added in Task 10). The public response is only a
+    generic ready/not-ready and never leaks dependency detail or DSNs.
 """
 from __future__ import annotations
 
 from src.config import Config
+from src.core.readiness import check_readiness
 
 
 def health_check(app, operation, request, **kwargs):
@@ -28,6 +28,7 @@ def liveness(app, operation, request, **kwargs):
 
 
 def readiness(app, operation, request, **kwargs):
-    # Dependency probes (PostgreSQL, MinIO bucket) are registered in Tasks 5 and 10.
-    # Until then readiness is intentionally not-ready.
+    ok, _details = check_readiness()  # details stay internal (logs/metrics only)
+    if ok:
+        return {"status": "ready"}, 200
     return {"status": "not_ready"}, 503
