@@ -20,11 +20,9 @@ up: secrets ## Start the full stack on this host (build + detach)
 down: ## Stop the stack (keep volumes)
 	docker compose down
 
-infra-test: ## Bring up data/identity services and run the infra smoke test
+infra-test: ## Bring up the infra + init one-shots from a single `up`, then smoke-test
 	./ops/init-secrets.sh
-	docker compose up -d postgres minio keycloak
-	docker compose run --rm minio-init
-	docker compose run --rm keycloak-config
+	docker compose up -d --wait postgres-init minio-init keycloak-config
 	bash backend/tests/compose/test_infrastructure.sh
 
 frontend-check: ## Frontend typecheck + unit tests + lint + build

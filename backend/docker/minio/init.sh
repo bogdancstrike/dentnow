@@ -35,10 +35,9 @@ $MC version enable "$ALIAS/$BUCKET"
 # Private: no anonymous access
 $MC anonymous set none "$ALIAS/$BUCKET" || true
 
-# Policy (create-or-replace)
-$MC admin policy create "$ALIAS" "$POLICY_NAME" "$POLICY_FILE" 2>/dev/null \
-  || $MC admin policy remove "$ALIAS" "$POLICY_NAME" && \
-     $MC admin policy create "$ALIAS" "$POLICY_NAME" "$POLICY_FILE"
+# Policy (create-or-replace, idempotent)
+$MC admin policy remove "$ALIAS" "$POLICY_NAME" >/dev/null 2>&1 || true
+$MC admin policy create "$ALIAS" "$POLICY_NAME" "$POLICY_FILE"
 
 # Application user (create-or-update secret) + attach only the scoped policy
 $MC admin user add "$ALIAS" "$APP_KEY" "$APP_SECRET"
