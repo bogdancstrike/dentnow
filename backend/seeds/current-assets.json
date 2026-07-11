@@ -1,0 +1,124 @@
+{
+  "assets": [
+    {
+      "path": "airflow.svg",
+      "source_ref": "/assets/dentnow/airflow.svg",
+      "bytes": 2230,
+      "sha256": "ecf7d11e451a29dc43cade30b1547645469f2330b100ae427b456581c2ca342c"
+    },
+    {
+      "path": "article-prevention.svg",
+      "source_ref": "/assets/dentnow/article-prevention.svg",
+      "bytes": 2206,
+      "sha256": "f85f84c56f9655831828e7b28748823a6a51d2060380c469f1b8fcc47959a167"
+    },
+    {
+      "path": "case-implant-after.svg",
+      "source_ref": "/assets/dentnow/case-implant-after.svg",
+      "bytes": 2188,
+      "sha256": "c0577a5c29d80ad85111c4f5e617abd83cb8658c6629931cab399ca8a0b0152f"
+    },
+    {
+      "path": "case-implant-before.svg",
+      "source_ref": "/assets/dentnow/case-implant-before.svg",
+      "bytes": 2194,
+      "sha256": "9292a885b7555b491c08ea9655b3a630155f7868cc88a0de0181241a69f7b956"
+    },
+    {
+      "path": "case-ortho-after.svg",
+      "source_ref": "/assets/dentnow/case-ortho-after.svg",
+      "bytes": 2194,
+      "sha256": "81df94c6bcfe3ce8f3e1d3118e74d4841cb609d16becc94fa449a5d14e6c7db8"
+    },
+    {
+      "path": "case-ortho-before.svg",
+      "source_ref": "/assets/dentnow/case-ortho-before.svg",
+      "bytes": 2200,
+      "sha256": "77c65a3121c7799b5e1dc23764ffd0663a16d1495824a3205610dda039a1c218"
+    },
+    {
+      "path": "case-whitening-after.svg",
+      "source_ref": "/assets/dentnow/case-whitening-after.svg",
+      "bytes": 2186,
+      "sha256": "eaad56601652ee7a4239c48e83683cb4f4880fb730ed60d6c1fe32ffb2ffb0f6"
+    },
+    {
+      "path": "case-whitening-before.svg",
+      "source_ref": "/assets/dentnow/case-whitening-before.svg",
+      "bytes": 2192,
+      "sha256": "9f3d6b8efd0e90b1f75a996c8014e37a096d3dca1d48e3c740bbf07a868860e7"
+    },
+    {
+      "path": "clinic-exterior.svg",
+      "source_ref": "/assets/dentnow/clinic-exterior.svg",
+      "bytes": 2200,
+      "sha256": "d915f66d8502da802b87038d0ff4706bd144d10b98c1e727e3953bb709d4228e"
+    },
+    {
+      "path": "doctor-daria.svg",
+      "source_ref": "/assets/dentnow/doctor-daria.svg",
+      "bytes": 2178,
+      "sha256": "e615537d3f6cbc83ae3aa3a5d93e7c73e44c67cdacbdf3ba851a0c45e1cec61f"
+    },
+    {
+      "path": "doctor-diana.svg",
+      "source_ref": "/assets/dentnow/doctor-diana.svg",
+      "bytes": 2178,
+      "sha256": "f12c96839da0077ff6c3a5af8a8311fb9a9d4210c5de70d03da899bc94a483fc"
+    },
+    {
+      "path": "doctor-loredana.svg",
+      "source_ref": "/assets/dentnow/doctor-loredana.svg",
+      "bytes": 2184,
+      "sha256": "93deb519b2ffc8b24bcac723d7ce229905e73e6de9d90f7a6797cc8e51d4c30b"
+    },
+    {
+      "path": "ebook-cover.svg",
+      "source_ref": "/assets/dentnow/ebook-cover.svg",
+      "bytes": 2216,
+      "sha256": "5aa79d6e63c538ba6e2df8e5aa3f01345da79d32eea88ef24c06b3ae53ec81b0"
+    },
+    {
+      "path": "microscope.svg",
+      "source_ref": "/assets/dentnow/microscope.svg",
+      "bytes": 2220,
+      "sha256": "ebe463d77beac9da71f1a66ff64d86656bd3836c9910b0031305fef2f942698f"
+    },
+    {
+      "path": "og-dentnow.png",
+      "source_ref": "/assets/dentnow/og-dentnow.png",
+      "bytes": 157303,
+      "sha256": "9015198d4fb85ac782ed9f86998266d8f038c21b7209a10bd5d3bb9a1db6a745"
+    },
+    {
+      "path": "og-dentnow.svg",
+      "source_ref": "/assets/dentnow/og-dentnow.svg",
+      "bytes": 2204,
+      "sha256": "21b6f64a137e0fb38101a78e9231b9422db9b81995bf739201a9a718a6f1282c"
+    },
+    {
+      "path": "reception.svg",
+      "source_ref": "/assets/dentnow/reception.svg",
+      "bytes": 2214,
+      "sha256": "8771f32da6afdf5e586eec843fbe5b7ebdc3bd641cf8c905b949b22e789dfc32"
+    },
+    {
+      "path": "sterilization.svg",
+      "source_ref": "/assets/dentnow/sterilization.svg",
+      "bytes": 2200,
+      "sha256": "e4f2f7b39446471d9e4bedb1fa475cd96d11fa5fe819ea87a620ed924a9f948a"
+    },
+    {
+      "path": "team.svg",
+      "source_ref": "/assets/dentnow/team.svg",
+      "bytes": 2194,
+      "sha256": "2b84ca1ad4fe8118c0b54e711e8459e32417f0d74741fe8b6e683709115d543f"
+    },
+    {
+      "path": "treatment-room.svg",
+      "source_ref": "/assets/dentnow/treatment-room.svg",
+      "bytes": 2226,
+      "sha256": "13bfa51bc4e5c9d38500fae62958be3e9b6dba6fcdc85e084ae31743407b470f"
+    }
+  ]
+}

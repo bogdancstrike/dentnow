@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">DentNow</title>
+  <desc id="desc">Placeholder visual for DentNow: clinica stomatologica Bucuresti</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eaf7f6"/>
+      <stop offset="1" stop-color="#f4efe7"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.86"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.58"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#16333a" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <circle cx="1030" cy="120" r="230" fill="#ffffff" opacity="0.12"/>
+  <circle cx="130" cy="680" r="260" fill="#062a33" opacity="0.12"/>
+  <rect x="130" y="120" width="940" height="560" rx="46" fill="url(#glass)" filter="url(#shadow)"/>
+  <rect x="190" y="190" width="470" height="310" rx="30" fill="#f8fbfc" opacity="0.95"/>
+  <path d="M250 430 C340 300 455 285 600 430" fill="none" stroke="#0f7f8a" stroke-width="28" stroke-linecap="round" opacity="0.85"/>
+  <path d="M288 360 C320 245 410 215 470 270 C530 215 620 245 652 360 C672 432 622 514 563 520 C520 524 498 470 470 470 C442 470 420 524 377 520 C318 514 268 432 288 360Z" fill="#ffffff" stroke="#0f7f8a" stroke-width="15" opacity="0.96"/>
+  <rect x="720" y="210" width="260" height="22" rx="11" fill="#0f7f8a" opacity="0.75"/>
+  <rect x="720" y="265" width="300" height="16" rx="8" fill="#1d3340" opacity="0.35"/>
+  <rect x="720" y="310" width="250" height="16" rx="8" fill="#1d3340" opacity="0.25"/>
+  <rect x="720" y="390" width="220" height="72" rx="36" fill="#0f7f8a" opacity="0.88"/>
+  <text x="600" y="600" text-anchor="middle" font-family="Georgia, serif" font-size="56" font-weight="700" fill="#16232f">DentNow</text>
+  <text x="600" y="648" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" fill="#435466">clinica stomatologica Bucuresti</text>
+</svg>
