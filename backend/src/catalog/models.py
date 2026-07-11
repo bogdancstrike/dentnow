@@ -175,7 +175,7 @@ class Technology(WorkspaceRoot, Base):
     __table_args__ = (Index("ix_technologies_position", "position"),)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    media_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)  # FK in Task 10
+    media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_technologies_media_id"), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
@@ -186,7 +186,7 @@ class Partner(WorkspaceRoot, Base):
     name: Mapped[str] = mapped_column(Text, nullable=False)
     relationship_type: Mapped[str | None] = mapped_column(Text, nullable=True)
     badge: Mapped[str | None] = mapped_column(Text, nullable=True)
-    logo_media_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)  # FK in Task 10
+    logo_media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_partners_logo_media_id"), nullable=True)
     rights_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     link_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

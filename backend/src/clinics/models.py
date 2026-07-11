@@ -124,7 +124,7 @@ class Doctor(WorkspaceRoot, Base):
     role: Mapped[str | None] = mapped_column(Text, nullable=True)
     focus: Mapped[str | None] = mapped_column(Text, nullable=True)
     credentials: Mapped[str | None] = mapped_column(Text, nullable=True)
-    portrait_media_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)  # FK in Task 10
+    portrait_media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_doctors_portrait_media_id"), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 

@@ -174,7 +174,7 @@ class PageSeo(WorkspaceRoot, Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     canonical_path: Mapped[str | None] = mapped_column(Text, nullable=True)
     # og_media_id FK to media_assets is added in Task 10; kept nullable for now.
-    og_media_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)
+    og_media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_page_seo_og_media_id"), nullable=True)
     structured_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
 

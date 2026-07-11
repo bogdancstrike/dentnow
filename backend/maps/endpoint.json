@@ -1935,6 +1935,110 @@
     },
     {
       "namespace": "api",
+      "operation_name": "media_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/media",
+      "exec_method": {
+        "module_name": "src.api.media_admin",
+        "method_name": "media_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "media_upload",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/media/upload",
+      "exec_method": {
+        "module_name": "src.api.media_admin",
+        "method_name": "media_upload"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "media_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/media/<asset_id>",
+      "exec_method": {
+        "module_name": "src.api.media_admin",
+        "method_name": "media_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "media_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/media/<asset_id>",
+      "exec_method": {
+        "module_name": "src.api.media_admin",
+        "method_name": "media_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "media_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/media/<asset_id>",
+      "exec_method": {
+        "module_name": "src.api.media_admin",
+        "method_name": "media_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "media_consent_attest",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/media/<asset_id>/consent",
+      "exec_method": {
+        "module_name": "src.api.media_admin",
+        "method_name": "media_consent_attest"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "media_consent_revoke",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/media/<asset_id>/consent",
+      "exec_method": {
+        "module_name": "src.api.media_admin",
+        "method_name": "media_consent_revoke"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "media_public",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/media/<asset_id>/<variant>",
+      "exec_method": {
+        "module_name": "src.api.media_public",
+        "method_name": "media_public"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "principals_list",
       "model_name": "Empty",
       "request_method": [

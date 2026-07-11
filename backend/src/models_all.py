@@ -15,5 +15,6 @@ from src.iam import models as _iam_models  # noqa: F401
 from src.clinics import models as _clinic_models  # noqa: F401
 from src.catalog import models as _catalog_models  # noqa: F401
 from src.editorial import models as _editorial_models  # noqa: F401
+from src.media import models as _media_models  # noqa: F401
 
 # Later tasks append: editorial, media.

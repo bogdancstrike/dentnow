@@ -42,8 +42,16 @@ def _postgres_probe() -> None:
         conn.execute(text("SELECT 1"))
 
 
+def _minio_probe() -> None:
+    # Mandatory once media exists: readiness fails generically if the bucket is gone.
+    from src.media.service import minio_bucket_probe
+
+    minio_bucket_probe()
+
+
 def register_default_probes() -> None:
     register_probe("postgres", _postgres_probe)
+    register_probe("minio", _minio_probe)
 
 
 register_default_probes()
