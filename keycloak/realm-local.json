@@ -1,0 +1,50 @@
+{
+  "realm": "doncik",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      { "name": "dentnow_admin", "description": "Full DentNow administration" },
+      { "name": "dentnow_editor", "description": "Edit content, catalog, editorial, media metadata" },
+      { "name": "dentnow_publisher", "description": "Validate, publish, roll back, read audit" },
+      { "name": "dentnow_clinic_manager", "description": "Manage only assigned-clinic resources" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "dentnow-admin-spa",
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:3000/admin/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "protocolMappers": [
+        {
+          "name": "dentnow-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "dentnow-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "dentnow-api",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    }
+  ]
+}

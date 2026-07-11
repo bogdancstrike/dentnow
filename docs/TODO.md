@@ -37,14 +37,16 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 > `25016c5` + `fca4673` mid-work (messages differ from the plan's suggested subject but
 > content matches the verified tree). Watch for it racing future task commits.
 
-## Task 3 — Scaffold qf backend + prove contract (`feat(backend): scaffold qf api runtime`)
-- [x] Step 1: vendor wheel + checksum  *(wheel present; SHA256SUMS file still to add)*
-- [ ] Step 1b: write `backend/dist/SHA256SUMS`
-- [ ] Step 2: requirements.txt/-dev.txt + failing qf contract tests
-- [ ] Step 3: `wsgi.py` qf assembly (enable_etl=False), gevent/psycogreen patch
-- [ ] Step 4: health handlers + strict endpoint map (namespace `api`)
-- [ ] Step 5: verify qf startup + 3 health routes
-- [ ] Step 6: Commit
+## Task 3 — Scaffold qf backend + prove contract ✅ DONE (commit `ecb8384` + others)
+- [x] Step 1: wheel vendored + `backend/dist/SHA256SUMS` (verified); `.gitignore` scoped `dist/`→`frontend/dist/` so wheel is tracked
+- [x] Step 2: `requirements.txt` (DentNow-scoped: flask-restx, gunicorn/gevent/psycogreen, sqlalchemy/psycopg2/alembic, pydantic, python-jose, boto3, Pillow, bleach, markdown-it-py, prometheus; +colorama/redis/kafka-python<3 for qf import chain) + `requirements-dev.txt`; contract tests written
+- [x] Step 3: `wsgi.py` FrameworkApp(enable_etl=False, no scheduler/Kafka), gevent+psycogreen patch; `config.py` shim; `src/config.py` (added WORKER_NAME/ERROR_TOPIC/REDIS_*/SECRET_KEY that qf evaluates at import)
+- [x] Step 4: `src/api/health.py` (health/liveness ok, readiness 503 until probes), `src/core/correlation.py`, `src/core/errors.py` (envelope), `maps/endpoint.json` namespace `api`
+- [x] Step 5: venv built, qf wheel+deps installed; **10/10 contract tests pass**; routes `/api/health`, `/api/liveness`, `/api/readiness` registered
+- [x] Step 6: committed
+
+> pip hash-locking (pip-tools `--require-hashes`) deferred to Task 23 CI; floors used now for a working install.
+> `.gitignore`: `frontend/dist/`, `backend/.venv/`, `__pycache__/`, caches ignored.
 
 ## Task 4 — Postgres/MinIO/Keycloak Compose infra (`feat(compose): provision postgres minio and keycloak`)
 - [ ] Step 1: infra smoke script
