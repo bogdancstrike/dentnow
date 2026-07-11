@@ -71,18 +71,34 @@ services:
       POSTGRES_USER: "dentnow"
       POSTGRES_DB: "dentnow"
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-      KEYCLOAK_DB_PASSWORD_FILE: /run/secrets/keycloak_db_password
-    secrets: [postgres_password, keycloak_db_password]
+    secrets: [postgres_password]
     volumes:
       # postgres:18 stores data in a version subdir under /var/lib/postgresql.
       - postgres-data:/var/lib/postgresql
-      - ./backend/docker/postgres/01-create-keycloak.sh:/docker-entrypoint-initdb.d/01-create-keycloak.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dentnow -d dentnow"]
       interval: 5s
       timeout: 3s
       retries: 20
     restart: unless-stopped
+
+  # ── One-shot: provision the isolated `keycloak` database/role (idempotent) ─
+  # Runs as root in a client container so it can read the 0600 secret files (the
+  # postgres server runs initdb.d scripts as the unprivileged postgres user).
+  postgres-init:
+    image: postgres:18
+    networks: [dentnow]
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      POSTGRES_USER: "dentnow"
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      KEYCLOAK_DB_PASSWORD_FILE: /run/secrets/keycloak_db_password
+    secrets: [postgres_password, keycloak_db_password]
+    entrypoint: ["/bin/sh", "/init/01-create-keycloak.sh"]
+    volumes:
+      - ./backend/docker/postgres/01-create-keycloak.sh:/init/01-create-keycloak.sh:ro
+    restart: "no"
 
   # ── MinIO (private S3-compatible media store) ────────────────────────────
   minio:
@@ -134,6 +150,7 @@ services:
       - "127.0.0.1:${KEYCLOAK_PORT:-8080}:8080"
     depends_on:
       postgres: {condition: service_healthy}
+      postgres-init: {condition: service_completed_successfully}
     environment:
       KC_DB: "postgres"
       KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"

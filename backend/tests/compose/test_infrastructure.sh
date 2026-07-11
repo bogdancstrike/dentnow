@@ -36,15 +36,15 @@ VERS="$($DC run --rm --entrypoint /bin/sh minio-init -c "
 echo "$VERS" | grep -qi 'enabled' || fail "versioning not enabled on dentnow-media"
 ok "bucket dentnow-media exists with versioning"
 
-# 3. App credential cannot list a different bucket
+# 3. App credential is scoped: creating a bucket outside dentnow-media is denied.
 APP_SECRET="$(cat .secrets/minio_app_secret)"
 if $DC run --rm --entrypoint /bin/sh minio-init -c "
   mc alias set a http://minio:9000 ${S3_ACCESS_KEY:-dentnow-app} '${APP_SECRET}' >/dev/null 2>&1
-  mc ls a/ 2>/dev/null | grep -qv dentnow-media && mc mb a/should-not-work 2>/dev/null
-"; then
-  fail "app credential could create/list outside dentnow-media"
+  mc mb a/should-not-exist
+" >/dev/null 2>&1; then
+  fail "app credential could create a bucket outside its policy"
 fi
-ok "app credential is scoped to dentnow-media only"
+ok "app credential cannot create buckets outside dentnow-media (least privilege)"
 
 # 4. Realm discoverable
 curl -fsS "${KC_URL}/realms/${REALM}/.well-known/openid-configuration" >/dev/null \
