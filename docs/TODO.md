@@ -25,13 +25,17 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Step 4: Pure move verified — build hashes identical to baseline (`index-DsOQmZvi.css`, `index-DeAmoGHe.js`); lint/smoke pass
 - [x] Step 5: Committed `7cb29f1` (on branch `feat/backend-admin-platform`)
 
-## Task 2 — Typed frontend foundation + public runtime config (`feat(frontend): add typed runtime and split app entry`)
-- [ ] Step 1: runtime-config tests (relative API base, malformed JSON, missing admin coord)
-- [ ] Step 2: install app+test deps (antd6, tanstack-query, cmdk, keycloak-js, zod, vitest, msw, playwright, ts)
-- [ ] Step 3: runtime config loader (Zod, no content defaults), tsconfig strict+allowJs
-- [ ] Step 4: Playwright harness (mock/compose projects), App.tsx split entry (public/admin/preview)
-- [ ] Step 5: verify typecheck/test/lint/build; keycloak-js not in eager chunk
-- [ ] Step 6: Commit
+## Task 2 — Typed frontend foundation + public runtime config ✅ DONE (commits `25016c5`, `fca4673`, `78d3463`)
+- [x] Step 1: `tests/runtime-config.test.ts` — 9 tests (relative base, malformed JSON, non-2xx, weird strings, strict extra-key reject, wrong-realm reject, missing admin coords) — all pass
+- [x] Step 2: installed antd6.5, tanstack-query, cmdk, dompurify(self-typed, dropped deprecated @types/dompurify), keycloak-js, zod4, vitest3+coverage, msw, playwright, typescript7, @types/node; scripts typecheck/test/test:coverage/e2e added
+- [x] Step 3: `src/config/runtime.ts` (Zod strict, no content defaults, trailing-slash normalize, `requireAdminConfig` gate); tsconfig strict+allowJs+checkJs:false
+- [x] Step 4: `playwright.config.ts` (mock/compose); `App.tsx` split entry (preview-origin / lazy admin / public); `PublicApp.tsx`, `admin/AdminApp.tsx` + `preview/PreviewApp.tsx` placeholders; `main.tsx` loads config before mount
+- [x] Step 5: typecheck ✓, 9/9 tests ✓, lint ✓, build ✓ — AdminApp/PreviewApp are separate lazy chunks; keycloak-js **library** absent from eager chunk (only config field-name strings present); smoke ✓
+- [x] Step 6: committed
+
+> ⚠️ Note: an external auto-commit tool in this environment committed Task 2 files as
+> `25016c5` + `fca4673` mid-work (messages differ from the plan's suggested subject but
+> content matches the verified tree). Watch for it racing future task commits.
 
 ## Task 3 — Scaffold qf backend + prove contract (`feat(backend): scaffold qf api runtime`)
 - [x] Step 1: vendor wheel + checksum  *(wheel present; SHA256SUMS file still to add)*
