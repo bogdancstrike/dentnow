@@ -6,3 +6,6 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Generated runtime config (container renders it at startup)
+frontend/public/config.json
