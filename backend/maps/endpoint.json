@@ -1298,6 +1298,643 @@
     },
     {
       "namespace": "api",
+      "operation_name": "articles_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/articles",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "articles_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "articles_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/articles/<article_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "articles_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "articles_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/articles",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "articles_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "articles_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/articles/<article_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "articles_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "articles_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/articles/<article_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "articles_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "news_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/news",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "news_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "news_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/news/<news_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "news_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "news_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/news",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "news_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "news_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/news/<news_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "news_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "news_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/news/<news_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "news_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "reviews_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/reviews",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "reviews_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "reviews_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/reviews",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "reviews_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "reviews_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/reviews/<review_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "reviews_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "reviews_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/reviews/<review_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "reviews_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cases_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/case-studies",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "cases_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cases_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/case-studies/<case_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "cases_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cases_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/case-studies",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "cases_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cases_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/case-studies/<case_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "cases_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cases_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/case-studies/<case_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "cases_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "ebooks_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/ebooks",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "ebooks_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "ebooks_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/ebooks",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "ebooks_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "ebooks_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/ebooks/<ebook_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "ebooks_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "ebooks_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/ebooks/<ebook_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "ebooks_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "legal_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/legal-documents",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "legal_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "legal_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/legal-documents/<legal_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "legal_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "legal_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/legal-documents",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "legal_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "legal_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/legal-documents/<legal_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "legal_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "legal_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/legal-documents/<legal_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "legal_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quizzes_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/quizzes",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quizzes_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quizzes_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/quizzes/<quiz_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quizzes_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quizzes_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/quizzes",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quizzes_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quizzes_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/quizzes/<quiz_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quizzes_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quizzes_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/quizzes/<quiz_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quizzes_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_questions_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/quiz-questions",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_questions_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_questions_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/quiz-questions",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_questions_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_questions_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/quiz-questions/<question_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_questions_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_questions_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/quiz-questions/<question_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_questions_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_options_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/quiz-options",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_options_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_options_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/quiz-options",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_options_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_options_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/quiz-options/<option_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_options_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_options_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/quiz-options/<option_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_options_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_bands_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/quiz-result-bands",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_bands_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_bands_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/quiz-result-bands",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_bands_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_bands_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/quiz-result-bands/<band_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_bands_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "quiz_bands_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/quiz-result-bands/<band_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "quiz_bands_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "legal_approve",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/legal-documents/<legal_id>/approve",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "legal_approve"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "case_consent",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/case-studies/<case_id>/consent",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "case_consent"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "audit_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/audit-events",
+      "exec_method": {
+        "module_name": "src.api.audit_admin",
+        "method_name": "audit_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "audit_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/audit-events/<event_id>",
+      "exec_method": {
+        "module_name": "src.api.audit_admin",
+        "method_name": "audit_get"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "principals_list",
       "model_name": "Empty",
       "request_method": [
