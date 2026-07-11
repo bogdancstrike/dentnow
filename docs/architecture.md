@@ -439,8 +439,9 @@ Article/legal content is stored as Markdown and converted through an allowlisted
 | `media_assets` | Opaque ID, object key, media kind, MIME, size, dimensions, SHA-256, alt/caption/focal point, visibility/readiness, rights metadata |
 | `media_variants` | Original/thumbnail/card/hero object keys and dimensions |
 | `content_media_links` | Workspace references and semantic usage (`cover`, `before`, `portrait`, etc.) |
-| `media_consents` | Patient-case consent reference, scope, obtained/expiry/revocation dates, private evidence media FK |
-| `audit_events` | Append-only actor, action, entity, redacted before/after JSONB, IP, user agent, correlation ID, timestamp |
+| `media_consents` | Non-identifying case-image publication attestation, scope, reviewer, obtained/expiry/revocation dates, and opaque evidence reference; no patient identity or evidence document bytes |
+| `media_delivery_blocks` | Mutable deny/tombstone checked before every consent-bound media delivery and publication activation |
+| `audit_events` | Append-only actor, action, entity, schema-allowlisted/redacted before/after JSONB, pseudonymous network/client metadata, correlation ID, timestamp |
 | `integration_outbox` | Versioned domain event, aggregate reference, payload, availability/attempt state, creation/publication times |
 | `integration_bindings` | Provider/type/external ID to internal entity mapping; unique provider/type/external ID |
 | `integration_deliveries` | Optional delivery attempt/result ledger used only when a relay/integration is enabled |
@@ -483,9 +484,9 @@ Every resource family supports server-paginated list/get/create/update/delete as
 Resource families:
 
 - `site`, `links`, `navigation-menus`, `navigation-items`, `pages`, `page-sections`, `page-seo`;
-- `clinics`, `clinic-contacts`, `clinic-hours`, `clinic-transit`, `clinic-faqs`;
+- `clinics`, `clinic-contacts`, `clinic-hours`, `clinic-transit`, `clinic-faqs`, `admin-principals`, `admin-principal-clinics`;
 - `doctors`, `doctor-clinics`, `technologies`, `partners`;
-- `treatment-categories`, `treatments`, `treatment-prices`, `treatment-faqs`;
+- `treatment-categories`, `treatments`, `treatment-prices`, `treatment-faqs`, `clinic-treatments`;
 - `offers`, `offer-features`, `offer-clinics`, `offer-treatments`;
 - `articles`, `news`, `reviews`, `case-studies`, `ebooks`, `legal-documents`;
 - `quizzes`, `quiz-questions`, `quiz-options`, `quiz-result-bands`;
@@ -505,6 +506,21 @@ Special commands:
 | `POST /api/v1/admin/publications/<id>/activate` | Roll back/forward the live pointer to a compatible publication |
 | `POST /api/v1/admin/publications/<id>/restore-workspace` | Explicitly replace workspace content from a publication |
 
+### 12.3 Preview API
+
+The preview origin exposes only these backend operations through its nginx server; all other admin/public API paths are denied there:
+
+| Method and path | Purpose |
+| --- | --- |
+| `POST /api/v1/preview/session` | Consume the one-use fragment token and establish the preview cookie |
+| `GET /api/v1/preview/bootstrap` | Frozen site/navigation/clinic bootstrap |
+| `GET /api/v1/preview/pages/by-path?path=...` | Frozen page contract for an allowed route |
+| `GET /api/v1/preview/articles` and `GET /api/v1/preview/articles/<slug>` | Frozen editorial contracts |
+| `GET /api/v1/preview/media/<asset_id>/<variant>` | Frozen referenced media after current delivery-block check |
+| `DELETE /api/v1/preview/session` | Revoke the current preview session |
+
+The cookie is accepted only on this route family and preview origin. CSRF is prevented by `SameSite=Strict`, an exact origin check on session creation/revocation, and the absence of preview mutation endpoints.
+
 ## 13. Media architecture
 
 ### 13.1 Storage and delivery
@@ -514,35 +530,38 @@ Special commands:
 - The backend uses a dedicated MinIO application identity restricted to this bucket.
 - Admin uploads pass through the backend. Credentials and permanent presigned URLs are never put in the SPA.
 - Public media is proxied through the same-origin public media endpoint, which checks the active publication reference and emits the stored checksum as ETag.
-- Preview media is served only with the matching unexpired preview token.
-- Original patient-consent evidence is private and is never exposed by public or preview serializers.
+- Preview media is served only with the matching unexpired preview cookie on the isolated preview origin.
+- The first release stores only a non-identifying publication attestation and an opaque reference to evidence held in the clinic's approved records system. Patient identity and consent-document bytes are not uploaded to DentNow.
 
 ### 13.2 Validation
 
-Uploads are streamed with fixed size limits, MIME sniffing, decompression-bomb protection, filename removal, pixel limits, and SHA-256 deduplication. Images are decoded and re-encoded to remove EXIF and active metadata. Supported public formats are JPEG, PNG, WebP, and AVIF if the chosen image library supports it consistently. SVG and arbitrary HTML are not accepted through the media library. PDF is allowed only for explicitly downloadable ebooks or private consent evidence and is always sent with a safe `Content-Disposition`.
+Uploads are streamed with fixed size limits, MIME sniffing, decompression-bomb protection, filename removal, pixel limits, malware/quarantine hooks, and SHA-256 deduplication within one privacy class. Images are decoded and re-encoded to remove EXIF and active metadata. Supported public formats are JPEG, PNG, WebP, and AVIF if the chosen image library supports it consistently. SVG and arbitrary HTML are not accepted through the media library. PDF is allowed only for explicitly downloadable ebooks and is always sent with a safe `Content-Disposition`.
 
-The media library requires alt text for meaningful public images. Case-study publication additionally requires active consent metadata and a reviewer-approved disclaimer.
+The media library requires alt text for meaningful public images. Before/after and other patient-derived case imagery must be de-identified and is treated as potentially special-category personal data. Publication requires an approved lawful basis/DPIA decision, a current non-identifying consent attestation, permitted usage scope, reviewer-approved disclaimer, and no delivery block.
 
 ### 13.3 Lifecycle
 
-Soft-deleting metadata immediately removes it from new workspace selections. Binary deletion occurs only when the asset is absent from the workspace, retained publications, and active preview sessions, followed by a retention delay. Old publications are retained for at least 90 days and the most recent 20 releases.
+Soft-deleting metadata immediately removes it from new workspace selections. Binary deletion occurs only when the asset is absent from the workspace, retained publications, and active preview sessions, followed by a retention delay. Old publications are retained for at least 90 days and the most recent 20 releases. `backend/scripts/gc_media.py` computes candidates, defaults to dry-run, requires an explicit confirmation for deletion, and is invoked through an operations runbook or host scheduler; no scheduler runs inside qf.
+
+Ordinary published variants use checksum-addressed immutable caching. Consent-bound media is different: every request checks `media_delivery_blocks` and current attestation state, uses a short maximum cache lifetime, and returns `410` after expiry/revocation. Revocation creates the mutable block before any asynchronous purge/URL rotation. Publication activation and rollback revalidate these current controls, so an old snapshot cannot republish blocked imagery.
 
 ## 14. Frontend architecture
 
 ### 14.1 Runtime configuration
 
-Only infrastructure connection settings remain in `public/config.js`:
+Only infrastructure connection settings remain in `public/config.json`:
 
-```js
-window.__DENTNOW__ = {
-  apiBase: "/api",
-  keycloakUrl: "https://keycloak.doncik.ro",
-  keycloakRealm: "doncik",
-  keycloakClientId: "dentnow-admin-spa"
-};
+```json
+{
+  "apiBase": "/api",
+  "previewAppUrl": "https://preview.dentnow.example",
+  "keycloakUrl": "https://keycloak.doncik.ro",
+  "keycloakRealm": "doncik",
+  "keycloakClientId": "dentnow-admin-spa"
+}
 ```
 
-The Compose frontend container renders this file from environment values at startup and serves it with `Cache-Control: no-store`. A future k3s deployment mounts the same contract from a ConfigMap. It contains no clinic content and no secret.
+The Compose frontend container renders this file with a real JSON serializer at startup and serves it with `Cache-Control: no-store`; textual shell substitution into executable JavaScript is forbidden. A future k3s deployment mounts the same JSON contract from a ConfigMap. It contains no clinic content and no secret.
 
 ### 14.2 Public renderer
 
@@ -582,7 +601,7 @@ The palette follows the proven QTP behavior: reset on open, 180 ms debounce, a s
 
 ### 14.5 Shared preview renderer
 
-Public components do not know whether data came from the active release or a preview. Both are given the same `SiteSnapshot` contract. The admin preview iframe offers route and viewport controls and reloads when a new preview is generated. This prevents a second approximate “admin preview” implementation from drifting away from the live site.
+Public components do not know whether data came from the active release or a preview. Both are given the same `SiteSnapshot` contract. The admin embeds the separate preview origin in a sandboxed iframe, passes the one-use fragment URL only as the iframe source, and communicates viewport/route changes with origin-checked `postMessage`. The frame cannot navigate or read the admin application. This prevents both privilege sharing and a second approximate renderer from drifting away from the live site.
 
 ## 15. Safe rich text and stored-XSS prevention
 
@@ -599,11 +618,14 @@ The target rules are:
 
 ## 16. Authoritative Docker Compose deployment
 
-Docker Compose is the complete deployment mechanism for this implementation, not merely a development convenience. A clean host with Docker Engine and the repository can copy `.env.example` to `.env`, set deployment secrets/hostnames, and run the complete stack with:
+Docker Compose is the complete application-stack deployment mechanism for this implementation, not merely a development convenience. A clean host with Docker Engine and the repository generates ignored Compose secret files, chooses local or production hostnames, and starts the stack with:
 
 ```bash
+./ops/init-secrets.sh
 docker compose up --build -d
 ```
+
+The production profile includes the TLS edge; operators that already have a trusted reverse proxy may disable that service and supply the same forwarded-host/TLS contract themselves.
 
 The repository-level `docker-compose.yml` provides:
 
@@ -612,24 +634,29 @@ The repository-level `docker-compose.yml` provides:
 | `postgres` | PostgreSQL 18, persistent `dentnow` and Keycloak databases |
 | `minio` | Private S3-compatible media store and console |
 | `minio-init` | Idempotently create bucket, application policy, and local app credentials |
-| `keycloak` | Keycloak 26.x using PostgreSQL and idempotent realm `doncik` client/role bootstrap |
+| `keycloak` | Keycloak 26.1 using PostgreSQL with strict public hostname/backchannel configuration |
+| `keycloak-config` | Idempotently upsert realm `doncik`, the two DentNow clients, audience mapper, roles, and optional local-only test identities |
 | `migrate` | Run Alembic to the required schema |
 | `seed` | Idempotently migrate the audited current website into an initial workspace/publication |
 | `api` | qf/Flask backend on port 5100 |
-| `frontend` | Production nginx SPA, runtime configuration, `/api` reverse proxy, and SPA fallback |
+| `frontend` | Production nginx public/admin SPA, JSON runtime configuration, `/api` reverse proxy, and SPA fallback |
+| `preview` | Same renderer on an isolated origin; proxies only preview-session API paths |
+| `edge` (production profile) | TLS termination and host routing for public/admin, preview, and Keycloak origins |
 
-Compose health conditions order startup as PostgreSQL/MinIO/Keycloak → MinIO/Keycloak bootstrap → migrations → idempotent seed → API/frontend. Named volumes persist PostgreSQL and MinIO; Keycloak state lives in its PostgreSQL database on the PostgreSQL volume. The `migrate`, `seed`, `minio-init`, and Keycloak bootstrap containers are restart-free one-shot services whose successful completion is required by dependent services.
+Compose health conditions order startup as PostgreSQL/MinIO/Keycloak → MinIO/Keycloak bootstrap → migrations → idempotent seed → API → frontend/preview/edge. Named volumes persist PostgreSQL and MinIO; Keycloak state lives in its PostgreSQL database on the PostgreSQL volume. The `migrate`, `seed`, `minio-init`, and `keycloak-config` containers are restart-free one-shot services whose successful completion is required by dependent services.
 
-The frontend nginx container is the browser entrypoint and makes the stack same-origin. Only its HTTP port and the browser-reachable Keycloak port/hostname need exposure. PostgreSQL and the MinIO API stay on the internal Compose network by default; an opt-in development override may bind them to loopback for inspection. MinIO Console is also an opt-in operations port.
+Local mode exposes separate loopback ports for public/admin, preview, and Keycloak. The production edge is the only published service port; PostgreSQL, MinIO, API, frontend, preview, and Keycloak remain internal. An opt-in development override may bind PostgreSQL/MinIO to loopback for inspection, while MinIO Console remains operations-only.
 
-`public/config.js` is rendered at container start from environment variables, is never cached, and contains only public runtime coordinates. nginx does not cache `index.html`, runtime config, admin, or preview responses; fingerprinted frontend assets remain immutable.
+`public/config.json` is generated atomically at container start using JSON-safe serialization, is never cached, and contains only public runtime coordinates. Tests include quotes, newlines, and `</script>`-style input. nginx does not cache `index.html`, runtime config, admin, or preview responses; fingerprinted frontend assets remain immutable.
 
 The Compose deployment supports two modes without maintaining different application images:
 
-- local defaults use `http://localhost` callback/origin values and Keycloak's development HTTP mode;
-- a host deployment supplies `PUBLIC_APP_URL`, `PUBLIC_KEYCLOAK_URL`, secure generated passwords, and TLS through an external reverse proxy. Keycloak uses its PostgreSQL store in both modes.
+- local defaults use loopback HTTP origins and Keycloak's development HTTP mode;
+- the production profile requires HTTPS public/preview/Keycloak origins, strict forwarded headers, the production Keycloak start mode, no seeded users, and either the Compose TLS edge or a predeclared trusted edge.
 
-Tracked `.env.example` contains names and safe local defaults, never homelab or production credentials. `.env` and secret files are ignored. `docker compose config` must fail fast when required deployment secrets are absent outside the explicitly selected local profile.
+Tracked `.env.example` contains non-secret names and safe local coordinates, never passwords. PostgreSQL, MinIO, Keycloak bootstrap, and signing/maintenance secrets use Compose secrets and `*_FILE` variables generated under an ignored directory; production does not pass them through normal environment variables. Startup rejects missing, example, or weak values, seeded admin accounts, HTTP origins, wildcard CORS, and development Keycloak mode in production. Release CI scans full Git history and final image layers for credentials and requires rotation of anything ever committed.
+
+The Compose lock records `quay.io/keycloak/keycloak:26.1`, `quay.io/minio/minio:RELEASE.2024-12-18T13-15-44Z`, and `quay.io/minio/mc:RELEASE.2024-11-21T17-21-54Z`, matching the inspected local examples; PostgreSQL 18 and all four release images are digest-pinned when the lock is implemented. Keycloak uses its canonical browser hostname for `iss`, dynamic internal backchannel discovery for JWKS, HTTP only on the private Compose network, and trusted proxy headers only from the edge.
 
 ## 17. Future homelab k3s migration
 
@@ -649,7 +676,7 @@ When the Compose deployment is later migrated to k3s, the current `app-charts/de
 - retain the frontend blue-green Rollout and active/preview services;
 - add a `dentnow-api` Deployment and ClusterIP service;
 - add a migration Job/ArgoCD sync hook using the exact backend image version;
-- mount frontend runtime `config.js` from a ConfigMap;
+- mount frontend runtime `config.json` from a ConfigMap;
 - route `/api` to the API service and `/` to the active frontend service on LAN and public hosts;
 - remove the whole-host oauth2-proxy annotations from `dentnow-public`;
 - keep the preview hostname LAN-only and make it call the stable, backward-compatible API;
@@ -679,39 +706,40 @@ The public site does not require a public MinIO Ingress because media is deliver
 ## 18. Security and GDPR controls
 
 - Public content and administration data are separated at serializer and route level.
-- Keycloak roles are checked by application services, including clinic scope.
+- Keycloak issuer, signature, audience, `azp`, realm role, resource capability, and clinic scope are checked by application services on every admin request.
 - All mutation input uses Pydantic schemas; SQLAlchemy uses parameterized statements.
 - CORS is limited to local development origins. Production uses same-origin requests.
 - Bearer tokens stay in memory; no auth cookies are created by DentNow, so admin mutations are not cookie-CSRF based.
-- CSP restricts scripts to self, connections to self/Keycloak, frames to approved map origins and same-origin preview, and images to self/data where required.
+- CSP restricts scripts to self, connections to self/Keycloak, frames to approved map and isolated preview origins, and images to self/data where required. The preview origin has its own restrictive CSP and may be framed only by the configured admin origin.
 - Admin/API responses use `Cache-Control: no-store`; public content uses ETags and short cache revalidation.
 - Upload and request body limits exist at nginx and Flask layers.
-- Audit before/after values redact bearer tokens, object-store credentials, consent evidence, and contact PII.
-- No patient or offer-registration data is collected in the first release. Telephone and WhatsApp remain external contact actions.
+- Authored external links allow only explicit `https`, `mailto`, `tel`, and approved map/WhatsApp schemes by field type. JSON-LD is constructed only from typed schemas and inserted with a serializer that escapes `<`, U+2028, and U+2029; stored raw JSON-LD or executable markup is rejected.
+- Audit uses per-action allowlist serializers rather than generic object dumps. Raw IP addresses, full user agents, URI tokens, queries, referrers, bearer tokens, object-store credentials, and contact PII are not stored. Subject IDs and coarse/pseudonymous client metadata are personal data with restricted audit access and a configured retention policy. Database grants and triggers deny application-role update/delete of audit rows.
+- No public contact, patient, appointment, or offer-registration data is collected in the first release. Telephone and WhatsApp remain external contact actions. De-identified case imagery and its non-identifying publication attestation are a narrow content-governance exception and may still be special-category personal data; production use is gated on clinic legal/privacy approval.
 - A future registration context must record the exact consent purpose/text version, encrypt PII, enforce retention, and remain inaccessible to ordinary content editors. The CMS is not an electronic health record or patient-management system.
-- Patient before/after images cannot be published without current consent metadata and an approved usage scope.
+- Patient-derived before/after images cannot be published or reactivated without a current attestation, approved scope, no delivery block, de-identification review, and the clinic's documented lawful-basis/DPIA decision. Revocation blocks delivery independently of immutable publications.
 - Legal documents are versioned and require publisher approval; software defaults are not presented as legal approval.
 
 ## 19. Caching, availability, and observability
 
 - Public snapshot endpoints use content-hash ETags and `stale-while-revalidate`; admin and preview endpoints never cache.
-- Media returns immutable cache headers keyed by asset ID/variant/checksum. Replacing a file creates a new asset, not mutated bytes behind an immutable URL.
-- PostgreSQL is authoritative. MinIO failure makes readiness fail only when media operations are required; liveness remains process-only.
+- Ordinary media returns immutable cache headers keyed by asset ID/variant/checksum. Consent-bound media uses short revalidation because a mutable delivery block can override any publication. Replacing a file creates a new asset.
+- PostgreSQL is authoritative. Readiness always checks PostgreSQL and the required MinIO bucket; either failure returns a generic `503`. Liveness remains process-only. Dependency detail and metrics are exposed only on the internal network/logs.
 - Every response carries `X-Correlation-Id`; errors include the same ID.
-- Structured logs include method, path template, status, duration, actor subject for admin calls, publication version for public calls, and correlation ID. Tokens and request bodies are not logged.
+- Structured logs include method, allowlisted path template, status, duration, a pseudonymous actor reference for admin calls, publication version for public calls, and correlation ID. Raw URI/query/referrer values, tokens, preview credentials, and request bodies are not logged; proxy/access logs follow the same rule and rotate with bounded retention.
 - Optional qf/OpenTelemetry tracing sends API/SQL/S3 spans to the existing Jaeger endpoint.
 - Prometheus metrics cover request rate/latency/errors, publish validation failures, active publication version, upload failures, and MinIO/DB dependency health.
 
 ## 20. Backup and recovery
 
-The Compose release includes `ops/backup-compose.sh`, `ops/restore-compose.sh`, and `ops/verify-backup.sh`. A backup is stored outside Docker named volumes and contains:
+The Compose release includes `ops/backup-compose.sh`, `ops/restore-compose.sh`, and `ops/verify-backup.sh`. Backup takes an advisory maintenance lock (or briefly quiesces mutations/GC), is encrypted, copied off-host, and contains:
 
 - PostgreSQL roles/globals plus separate custom-format dumps of the `dentnow` and `keycloak` databases;
-- an `mc mirror --preserve` copy of the versioned `dentnow-media` bucket;
+- every `dentnow-media` object version and delete marker captured through the S3 version APIs, with per-version object metadata;
 - database/object version and checksum manifests; and
 - the non-secret Keycloak realm/client/role configuration needed to recreate identity configuration idempotently.
 
-Publication snapshots make editorial rollback independent of a deployment rollback, but they are not database backups. MinIO bucket versioning protects against accidental overwrite, not volume or node loss, so every restore drill verifies objects against `media_assets.sha256`.
+Publication snapshots make editorial rollback independent of a deployment rollback, but they are not database backups. A plain `mc mirror` is explicitly insufficient because it loses version/delete-marker history. MinIO bucket versioning protects against accidental overwrite, not volume or node loss, so every restore drill reconstructs versions in chronological order and verifies them against the backup manifest and `media_assets.sha256`.
 
 After migration to k3s, the PostgreSQL databases can move to the existing PGO/pgBackRest backup policy. MinIO remains a separate recovery boundary: the homelab README says Velero excludes namespace `minio` to avoid backing MinIO into itself, so `dentnow-media` still needs a mirror outside that MinIO instance.
 
@@ -723,6 +751,8 @@ Recovery order:
 4. Verify Keycloak realm/client/role configuration and recreate missing configuration idempotently.
 5. Deploy migrations, API, and frontend.
 6. Run readiness, publication, route, login, and representative media checks before exposing traffic.
+
+Production cannot be declared durable until the clinic selects documented RPO/RTO values and an off-host destination, and a restore rehearsal proves Keycloak login/roles, DentNow scopes, active/older publications, audit/outbox rows, object versions, delete markers, and consent-bound delivery blocks.
 
 ## 21. Migration and cutover
 
@@ -736,14 +766,14 @@ The migration is incremental:
 6. Enable the public API-backed renderer, publish an approved snapshot, and run the production smoke suite.
 7. Keep the previous frontend image, database publication, and application chart revision available for rollback.
 
-Content migration preserves source wording for parity but does not certify medical, price, CAS, review, testimonial, or legal claims. Those records must be visibly marked “needs review” in the workspace, and publication validation can block categories designated as requiring approval.
+Content migration preserves source wording for parity but does not certify medical, price, CAS, review, testimonial, or legal claims. Those records are visibly marked `needs_review`. On an empty database only, the seed may create one clearly labeled `migration_baseline` publication that reproduces content already public before migration; it records every warning and a system audit event but grants no approval metadata. This exception cannot be invoked after the first workspace mutation. All later publications use normal blocking rules, and production cutover requires a publisher to review/replace the baseline. Required legal types initially match the existing `gdpr`, `privacy`, and `terms` pages; `cookies` becomes mandatory only when the clinic approves that document and cookie behavior requires it.
 
 ## 22. Testing strategy
 
 - Unit tests: domain validation, permissions/scopes, price and offer rules, snapshot determinism, sanitization, media policy, consent gates, ETags, and serialization.
 - qf contract tests: endpoint map shape, handler signature, namespace paths, empty models for multipart/delete, and `enable_etl=False` startup.
 - Integration tests: PostgreSQL migrations/constraints, public snapshot isolation, publish/rollback, MinIO upload/variant/delivery/GC, and audit rows.
-- Auth tests: anonymous public access, admin `401`, wrong audience/issuer, missing role `403`, admin success, and clinic-scope denial.
+- Auth tests: anonymous public access, bare `/admin` and deep-link login, admin read/write `401`, wrong issuer/audience/`azp`, missing role/capability `403`, admin success, clinic-scoped get/list/search/nested-relation denial, and a route-map default-deny assertion for every admin endpoint.
 - Frontend tests: loading/error states, route renderers, absence of hard-coded fallbacks, admin permission states, forms, concurrency conflicts, and preview viewport behavior.
 - End-to-end tests: Keycloak login to `/admin`, every CRUD family, media upload, preview, publish, anonymous public read, sitemap, and rollback.
 - Migration parity: route inventory, entity counts, contact/location comparisons, treatment/offer price comparisons, legal document presence, media reference integrity, and no imports from retired data modules.
@@ -765,8 +795,8 @@ These do not block implementation of the platform, but they block approval of pa
 - legal operator identity, DPO/privacy contact, approved retention periods, and final GDPR/cookie wording;
 - which Keycloak users receive each DentNow role and which clinic scopes apply;
 - verified clinic hours, prices, offer validity, CAS rules, doctor credentials, review source/date/rating, and medical claims;
-- consent evidence and permitted use for real before/after patient images;
-- the external destination and retention policy for MinIO media backup;
+- lawful basis, DPIA result, de-identification process, attestation/evidence owner, revocation/erasure workflow, incident response, and permitted use for real before/after patient images;
+- the encrypted external destination, retention, RPO, and RTO for PostgreSQL/MinIO media backup;
 - requirements, lawful basis, consent wording, roles, and retention for a future patient/offer-registration capability.
 
 ## 25. Acceptance criteria
@@ -776,12 +806,13 @@ The architecture is complete when implementation can demonstrate all of the foll
 - A fresh database/MinIO environment can be migrated and seeded from commands in the repository.
 - Every current public route renders without importing clinic/business content from frontend source files.
 - Editing a workspace record does not change the public site until publish.
-- Preview uses the same renderer and displays draft content/media at multiple viewport widths.
+- Preview uses the same renderer on an isolated origin, exchanges a one-use fragment token for a short-lived HttpOnly session, and displays permitted draft content/media at multiple viewport widths.
 - Publishing is atomic; rollback switches the complete site, not individual tables.
 - Anonymous users can access every public route and published asset.
-- Visiting `/admin` authenticates through Keycloak realm `doncik`; unauthorized API mutations return `401` or `403`.
+- Visiting bare `/admin` or any `/admin/*` deep link authenticates through Keycloak realm `doncik`; every unauthorized admin API read or write returns `401` or `403`.
 - Clinic-scoped administrators cannot read or mutate another clinic's restricted data.
 - PostgreSQL contains all structured content and MinIO contains all content media bytes under least-privilege credentials.
+- Consent-bound media cannot be delivered or restored by rollback after revocation/expiry; the CMS stores no patient identity or consent-document bytes.
 - Sitemap, SEO fields, navigation, legal content, treatments, offers, clinics, media, and all editorial categories are manageable from the admin UI.
 - `Ctrl+K`/`Cmd+K` opens the admin-only `cmdk` palette; navigation, remote search, quick views, and allowed quick actions work fully by keyboard and respect backend permissions.
 - Build, lint, unit, integration, end-to-end, migration-parity, `docker compose config`, clean-volume bootstrap, restart/persistence, and Docker Compose smoke checks pass.

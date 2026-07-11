@@ -60,7 +60,8 @@
 │   ├── tsconfig.json
 │   ├── vite.config.ts
 │   ├── nginx/default.conf.template
-│   ├── public/config.template.js
+│   ├── public/config.template.json
+│   ├── playwright.config.ts
 │   ├── scripts/
 │   ├── src/
 │   │   ├── admin/
@@ -74,7 +75,9 @@
 ├── ops/
 │   ├── backup-compose.sh
 │   ├── restore-compose.sh
-│   └── verify-backup.sh
+│   ├── verify-backup.sh
+│   └── init-secrets.sh
+├── deploy/caddy/Caddyfile
 ├── docs/
 ├── docker-compose.yml
 ├── .env.example
@@ -94,22 +97,23 @@
 - Modify: `.gitignore`, `.dockerignore`, `README.md`, `.github/workflows/docker-publish.yml`
 - Test: existing frontend build/lint/smoke commands from `frontend/`
 
-- [ ] **Step 1: Record a non-mutating baseline**
+- [ ] **Step 1: Record a non-mutating baseline and audit tracked configuration**
 
   Run:
 
   ```bash
   git status --short
+  gitleaks git --redact --no-banner
   npm ci
   npm run lint
   npx vite build --outDir /tmp/dentnow-baseline
   ```
 
-  Expected: dependency installation succeeds; lint/build results are recorded before paths move. The temporary build does not rewrite `public/sitemap.xml`.
+  Expected: dependency installation succeeds; lint/build results are recorded before paths move. The temporary build does not rewrite `public/sitemap.xml`. Any credential finding stops the task, is rotated, and is removed from history using the repository's incident procedure before work continues.
 
 - [ ] **Step 2: Move frontend-owned files without redesigning them**
 
-  Use `git mv` for tracked paths. Preserve the current tracked clinic values as `frontend/content-source.env`, whose name prevents automatic Vite loading; Task 13 consumes and deletes it after the canonical seed is verified. Keep `.github/`, `docs/`, `.gitignore`, orchestration files, and the root `README.md` at repository root. Rename `frontend/vite.config.js` to `frontend/vite.config.ts` only after Task 2 introduces TypeScript.
+  Use `git mv` for tracked paths. Preserve `.env` as `frontend/content-source.env` only after the scan proves it contains current publicly displayed clinic content and no credential; the name prevents automatic Vite loading and Task 13 consumes/deletes it. Renaming does not make a secret safe or remove Git history. Keep `.github/`, `docs/`, `.gitignore`, orchestration files, and the root `README.md` at repository root. Rename `frontend/vite.config.js` to `frontend/vite.config.ts` only after Task 2 introduces TypeScript.
 
 - [ ] **Step 3: Update path-sensitive scripts and documentation**
 
@@ -150,16 +154,16 @@
 - Modify: `frontend/package.json`, `frontend/package-lock.json`
 - Create: `frontend/tsconfig.json`, `frontend/src/vite-env.d.ts`
 - Rename/modify: `frontend/vite.config.js` → `frontend/vite.config.ts`
-- Create: `frontend/public/config.template.js`
+- Create: `frontend/public/config.template.json`
 - Create: `frontend/src/config/runtime.ts`
 - Create: `frontend/src/api/http.ts`, `frontend/src/api/contracts.ts`
 - Create: `frontend/src/public-site/PublicApp.tsx`
 - Modify/rename: `frontend/src/main.jsx` → `frontend/src/main.tsx`, `frontend/src/App.jsx` → `frontend/src/App.tsx`
-- Create: `frontend/vitest.config.ts`, `frontend/tests/setup.ts`, `frontend/tests/runtime-config.test.ts`
+- Create: `frontend/vitest.config.ts`, `frontend/playwright.config.ts`, `frontend/tests/setup.ts`, `frontend/tests/msw/handlers.ts`, `frontend/tests/runtime-config.test.ts`
 
 - [ ] **Step 1: Write the runtime-config tests**
 
-  Cover relative API base, explicit Keycloak coordinates, and failure when a required admin coordinate is missing on `/admin`. Verify public startup needs only `apiBase` and does not initialize Keycloak.
+  Cover relative API base, explicit preview/Keycloak coordinates, malformed JSON, quotes/newlines/`</script>` values, and failure when a required admin coordinate is missing on bare `/admin` or `/admin/*`. Verify public startup needs only `apiBase` and does not initialize Keycloak.
 
   Run:
 
@@ -195,6 +199,7 @@
   ```ts
   export interface DentNowRuntimeConfig {
     apiBase: string;
+    previewAppUrl?: string;
     keycloakUrl?: string;
     keycloakRealm?: "doncik";
     keycloakClientId?: "dentnow-admin-spa";
@@ -202,13 +207,13 @@
   }
   ```
 
-  Read `window.__DENTNOW__`, normalize trailing slashes, and validate admin fields only when the admin bundle is requested. Do not add phones, addresses, social links, or other business fallbacks.
+  Fetch `/config.json` before mounting React, validate it with Zod, normalize trailing slashes, and validate preview/Keycloak fields only when the admin bundle is requested. The container generates JSON with a real serializer; do not use executable config or textual substitution. Do not add phones, addresses, social links, or other business fallbacks.
 
   Configure TypeScript with `strict`, `noEmit`, `jsx: "react-jsx"`, `allowJs: true`, and `checkJs: false` so new API/admin code is strict while the existing JSX can migrate route by route instead of requiring an unsafe all-at-once rewrite.
 
-- [ ] **Step 4: Split public and admin entry decisions**
+- [ ] **Step 4: Establish the browser-test harness and split entry decisions**
 
-  `App.tsx` renders `PublicApp` for normal/preview routes and lazy-loads `admin/AdminApp` only for `/admin/*`. Task 2 may use a temporary access-denied placeholder for the not-yet-created admin module, but it must not call Keycloak from public startup.
+  Configure Playwright now, before any later task writes an E2E spec. A `mock` project starts Vite and uses deterministic MSW/browser fixtures; a `compose` project targets real services and is enabled after Task 20. `App.tsx` renders `PublicApp` for normal routes and lazy-loads `admin/AdminApp` for bare `/admin` and `/admin/*`. The isolated preview entry is selected by its runtime/origin and never initializes Keycloak. Task 2 may use temporary placeholders for admin/preview modules.
 
 - [ ] **Step 5: Verify typed foundation**
 
@@ -249,14 +254,14 @@
   ```bash
   mkdir -p backend/dist
   cp /home/bogdan/workspace/dev/testing_platform/backend/dist/qf-1.0.5-py3-none-any.whl backend/dist/
-  sha256sum backend/dist/qf-1.0.5-py3-none-any.whl
+  echo "1863cd0d57043ebc67b11820d6732b70b95b03738e94ccf10d828a927c5c85ec  backend/dist/qf-1.0.5-py3-none-any.whl" | sha256sum --check
   ```
 
-  Commit the checksum to `backend/dist/SHA256SUMS`. Imports must use `framework`, not `qf`.
+  Commit the wheel and checksum to `backend/dist/SHA256SUMS`. The absolute sibling path is needed only for this one import step; after this commit, local builds and CI must not read `testing_platform`. Imports use `framework`, not `qf`.
 
 - [ ] **Step 2: Write failing qf contract tests**
 
-  Define runtime requirements for Flask/RESTX, Gunicorn/gevent/psycogreen, SQLAlchemy/psycopg2/Alembic, Pydantic, python-jose/cryptography, requests, boto3, Pillow, Bleach, markdown-it-py, prometheus-client, and python-dotenv. Also install `colorama`, the Redis Python client, and `kafka-python<3` because qf imports its ETL modules eagerly even when `enable_etl=False`; this does not add Redis or Kafka services. Development requirements include pytest/coverage, Ruff, mypy, request/boto stubs, and migration/test helpers.
+  Define runtime requirements for Flask/RESTX, Gunicorn/gevent/psycogreen, SQLAlchemy/psycopg2/Alembic, Pydantic, python-jose/cryptography, requests, boto3, Pillow, Bleach, markdown-it-py, prometheus-client, and python-dotenv. Also install `colorama`, the Redis Python client, and `kafka-python<3` because qf imports its ETL modules eagerly even when `enable_etl=False`; this does not add Redis or Kafka services. Development requirements include pytest/coverage, Ruff, mypy, request/boto stubs, and migration/test helpers. Both requirements files pin every transitive version and hash (generated reproducibly with pip-tools); CI installs with `--require-hashes` and verifies the vendored wheel checksum.
 
   Assert that:
 
@@ -299,7 +304,7 @@
   install_flask_error_handlers(app)
   ```
 
-  Apply gevent and psycogreen patches before socket/SSL/database imports, following `testing_platform/backend/wsgi.py`. No scheduler or worker is spawned.
+  Apply gevent and psycogreen patches before socket/SSL/database imports. The inspected QTP file is the provenance for this order, but the contract test and committed DentNow code are self-contained. No scheduler or worker is spawned.
 
 - [ ] **Step 4: Add health handlers and a strict endpoint map**
 
