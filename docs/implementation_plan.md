@@ -308,7 +308,7 @@
 
 - [ ] **Step 4: Add health handlers and a strict endpoint map**
 
-  Use namespace `api`. Health and liveness return process/build identity; readiness initially returns `503` until database/storage adapters exist, then Task 6 completes it.
+  Use namespace `api`. Health and liveness return process/build identity; readiness initially returns `503`. Task 5 adds PostgreSQL readiness and Task 10 adds the required MinIO bucket probe.
 
 - [ ] **Step 5: Verify qf startup**
 
@@ -332,7 +332,7 @@
 
 **Files:**
 
-- Create: `docker-compose.yml`, `.env.example`, `Makefile`
+- Create: `docker-compose.yml`, `.env.example`, `Makefile`, `ops/init-secrets.sh`
 - Create: `backend/Dockerfile`, `backend/.dockerignore`
 - Create: `backend/docker/postgres/01-create-keycloak.sh`
 - Create: `backend/docker/minio/dentnow-policy.json`, `backend/docker/minio/init.sh`
@@ -344,17 +344,17 @@
 
   It must verify PostgreSQL accepts `SELECT 1`, bucket `dentnow-media` exists with versioning, application MinIO credentials cannot list another bucket, realm `doncik` is discoverable, and both DentNow clients/roles exist.
 
-- [ ] **Step 2: Define persistent services and health checks**
+- [ ] **Step 2: Define pinned persistent services and health checks**
 
-  Pin PostgreSQL 18, the same MinIO/`mc` releases used by the inspected homelab chart, and Keycloak 26.x. Create named volumes `postgres-data` and `minio-data`; Keycloak persists in its dedicated PostgreSQL database. Keep PostgreSQL and S3 internal by default; expose Keycloak and frontend browser ports.
+  Use `quay.io/keycloak/keycloak:26.1`, `quay.io/minio/minio:RELEASE.2024-12-18T13-15-44Z`, `quay.io/minio/mc:RELEASE.2024-11-21T17-21-54Z`, and PostgreSQL 18; record resolved digests in the Compose release lock rather than using `latest`. Create named volumes `postgres-data` and `minio-data`; Keycloak persists in its dedicated PostgreSQL database. Keep PostgreSQL and S3 internal by default; local mode exposes only browser ports on loopback.
 
 - [ ] **Step 3: Create the reusable backend image and utility services**
 
   Add the Python 3.12 multi-stage backend image now so every later migration/integration command runs in the same environment as deployment. Compose defines `migrate`, `seed`, and `api` from this build; the first two are one-shot utility services and may reference commands added by later tasks. During implementation, use `docker compose run --rm --build ...` so each task tests the current backend source.
 
-- [ ] **Step 4: Create isolated databases and identities**
+- [ ] **Step 4: Create isolated databases, identities, and secret files**
 
-  PostgreSQL initializes database/user `dentnow` for the API and database/user `keycloak` for Keycloak. Credentials come from `.env`. The shell script uses fixed SQL identifiers and psql variables for password values; it never interpolates an arbitrary identifier.
+  PostgreSQL initializes database/user `dentnow` for the API and database/user `keycloak` for Keycloak. `ops/init-secrets.sh` creates mode-`0600` random files under ignored `.secrets/`; services consume Compose secrets through `*_FILE`, never normal production environment values. The shell script uses fixed SQL identifiers and psql variables for password values; it never interpolates an arbitrary identifier. It refuses weak/example secrets and refuses to overwrite existing files without an explicit rotate command.
 
 - [ ] **Step 5: Bootstrap private MinIO storage idempotently**
 
@@ -375,12 +375,16 @@
   `configure-dentnow.sh` waits for Keycloak, signs in with `kcadm.sh`, creates realm `doncik` only when absent, and upserts:
 
   - public PKCE client `dentnow-admin-spa`;
-  - bearer audience `dentnow-api`;
+  - non-interactive resource client `dentnow-api`, with all login/service-account flows disabled and no backend-consumed secret;
   - access-token audience mapper;
   - realm roles `dentnow_admin`, `dentnow_editor`, `dentnow_publisher`, `dentnow_clinic_manager`;
   - the local development admin only when `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` are set.
 
-  Redirect URIs and web origins come from `PUBLIC_APP_URL`; direct access grants and implicit flow remain disabled.
+  Redirect URIs and web origins come from `PUBLIC_APP_URL`; direct access grants and implicit flow remain disabled. Tokens issued to the SPA contain `aud=dentnow-api` and `azp=dentnow-admin-spa`.
+
+  Configure Keycloak hostname v2 explicitly: canonical `PUBLIC_KEYCLOAK_URL` determines the issuer, internal backchannel discovery permits API JWKS fetches at `http://keycloak:8080`, HTTP is private to Compose, and trusted proxy headers are enabled only behind the declared edge. Production uses `start`, strict HTTPS hostnames, and no seeded account; local mode may use `start-dev`.
+
+  When and only when `SEED_E2E_USERS=true` in a disposable local/CI project, create deterministic admin/editor/publisher/clinic-manager/no-role users with generated test passwords supplied as secret files. The later E2E fixture resolves their Keycloak subjects and assigns clinic scopes after the clinic schema exists.
 
   `realm-local.json` is the reproducible local/test fixture for an empty Keycloak database. `configure-dentnow.sh` is the authoritative idempotent updater and must never replace or re-import an existing `doncik` realm wholesale.
 
@@ -390,6 +394,7 @@
 
   ```bash
   cp .env.example .env
+  ./ops/init-secrets.sh
   docker compose config --quiet
   docker compose up -d postgres minio keycloak
   docker compose run --rm minio-init
@@ -402,7 +407,7 @@
 - [ ] **Step 8: Commit**
 
   ```bash
-  git add docker-compose.yml .env.example Makefile backend/Dockerfile backend/.dockerignore backend/docker keycloak .gitignore
+  git add docker-compose.yml .env.example Makefile backend/Dockerfile backend/.dockerignore backend/docker keycloak ops/init-secrets.sh .gitignore
   git commit -m "feat(compose): provision postgres minio and keycloak"
   ```
 
@@ -452,9 +457,9 @@
 
   `models_all.py` imports every model module. Alembic reads `Config.DATABASE_URL` and `Base.metadata`; migration scripts are deterministic and never use `Base.metadata.create_all()` in application startup.
 
-- [ ] **Step 5: Complete readiness**
+- [ ] **Step 5: Add database readiness and the dependency-probe contract**
 
-  `/api/readiness` executes `SELECT 1` and a MinIO bucket stat through ports that can be stubbed in tests. It returns `503` with dependency names but never credentials or raw DSNs.
+  `/api/readiness` executes `SELECT 1` and calls a registered dependency-probe collection that can be stubbed in tests. At this stage only PostgreSQL is registered; Task 10 registers the real MinIO bucket stat and makes it mandatory. The public response is only generic ready/not-ready; dependency names/details stay in internal logs/metrics and never include credentials or raw DSNs.
 
 - [ ] **Step 6: Verify migrations and constraints**
 
@@ -480,15 +485,15 @@
 
 **Files:**
 
-- Create: `backend/src/iam/principal.py`, `backend/src/iam/token_verifier.py`, `backend/src/iam/decorators.py`, `backend/src/iam/service.py`, `backend/src/iam/models.py`
+- Create: `backend/src/iam/principal.py`, `backend/src/iam/token_verifier.py`, `backend/src/iam/decorators.py`, `backend/src/iam/capabilities.py`, `backend/src/iam/service.py`, `backend/src/iam/models.py`
 - Create: `backend/src/api/me.py`
-- Create: `backend/migrations/versions/0002_admin_principal_scopes.py`
+- Create: `backend/migrations/versions/0002_admin_principals.py`
 - Modify: `backend/maps/endpoint.json`, `backend/src/models_all.py`, `backend/src/core/correlation.py`
 - Test: `backend/tests/unit/test_token_verifier.py`, `backend/tests/unit/test_authorization.py`, `backend/tests/contract/test_admin_auth_boundary.py`
 
 - [ ] **Step 1: Write failing token and role tests**
 
-  Generate an in-test RSA key/JWKS and cover valid token, unknown `kid`, bad signature, expired token, wrong issuer, wrong audience, missing bearer token, missing role, admin implication, editor/publisher separation, and clinic-scope denial.
+  Generate an in-test RSA key/JWKS and cover valid token, unknown `kid`, bad signature, expired token, wrong issuer, wrong audience, wrong/missing `azp`, missing bearer token, missing role, the exact capability matrix, admin implication, editor/publisher separation, and clinic-scope denial. The route-map test enumerates every `/api/v1/admin/*` method and fails if it lacks the default-deny auth/capability wrapper.
 
   Run:
 
@@ -505,18 +510,19 @@
   ```text
   KEYCLOAK_PUBLIC_URL, KEYCLOAK_INTERNAL_URL, KEYCLOAK_REALM=doncik,
   KEYCLOAK_ISSUER, KEYCLOAK_JWKS_URL, KEYCLOAK_AUDIENCE=dentnow-api,
+  KEYCLOAK_AUTHORIZED_PARTY=dentnow-admin-spa,
   JWKS_CACHE_TTL
   ```
 
-  Fetch JWKS internally, validate the public issuer and audience, cache by `kid`, and refresh once on an unknown key to support Keycloak rotation.
+  Fetch JWKS internally, validate public issuer, audience, and exact `azp`, cache by `kid`, and refresh once on an unknown key to support Keycloak rotation.
 
 - [ ] **Step 3: Implement principal and permission policy**
 
-  Map only the four `dentnow_*` realm roles. `dentnow_admin` implies all capabilities. Store Keycloak subject/last-seen metadata and explicit clinic scopes without storing passwords. Decorators inject `principal` into the exact qf handler signature and return the common JSON error envelope.
+  Map only the four `dentnow_*` realm roles into the architecture section 9.3 capability matrix. `dentnow_admin` implies all content capabilities. This migration stores only `admin_principals` Keycloak subject/last-seen metadata and never passwords; Task 7 creates `admin_principal_clinics` after `clinics` exists. Define an injectable `ClinicScopeProvider` now so unit tests can prove scope behavior without owning that later table. Decorators inject `principal` into the exact qf handler signature and return the common JSON error envelope.
 
 - [ ] **Step 4: Register `/api/v1/admin/me` and prove the boundary**
 
-  Public routes must return `200` without a token. `/api/v1/admin/me` returns `401` without a token, `403` without a DentNow role, and a redacted principal/roles/scopes payload with a valid token.
+  Public routes must return `200` without a token. Every admin read and write is denied by default. `/api/v1/admin/me` returns `401` without a token, `403` without a DentNow role, and a redacted principal/roles/scopes payload with a valid token.
 
 - [ ] **Step 5: Restrict CORS and headers**
 
@@ -546,18 +552,18 @@
 
 - Create: `backend/src/site/schemas.py`, `backend/src/site/repository.py`, `backend/src/site/service.py`, `backend/src/site/serializers.py`
 - Create: `backend/src/clinics/models.py`, `backend/src/clinics/schemas.py`, `backend/src/clinics/repository.py`, `backend/src/clinics/service.py`, `backend/src/clinics/serializers.py`
-- Create: `backend/src/api/site_admin.py`, `backend/src/api/clinics_admin.py`
+- Create: `backend/src/api/site_admin.py`, `backend/src/api/clinics_admin.py`, `backend/src/api/access_admin.py`
 - Create: `backend/migrations/versions/0003_clinics_people.py`
 - Modify: `backend/maps/endpoint.json`, `backend/src/models_all.py`
 - Test: `backend/tests/unit/test_site_service.py`, `backend/tests/unit/test_clinic_service.py`, `backend/tests/integration/test_site_clinic_crud.py`
 
 - [ ] **Step 1: Write failing domain and API tests**
 
-  Cover site singleton update, unique live page path, valid registered template/block types, navigation cycle prevention, broken target rejection, three-clinic CRUD, contacts, unique weekday hours, transit/FAQ ordering, doctor-clinic mapping, soft delete, ETag/`If-Match`, audit creation, and clinic-manager scope.
+  Cover site singleton update, unique live page path, valid registered template/block types, navigation cycle prevention, broken target rejection, three-clinic CRUD, contacts, unique weekday hours, transit/FAQ ordering, doctor-clinic mapping, soft delete, ETag/`If-Match`, audit creation, clinic-manager get/list/search/nested scope, and admin-only principal-scope CRUD.
 
 - [ ] **Step 2: Implement clinic/person schema**
 
-  Add `clinics`, `clinic_contacts`, `clinic_hours`, `clinic_transit_items`, `clinic_faqs`, `doctors`, `doctor_clinics`, and `admin_principal_clinics` exactly as defined in the architecture. Normalize phone values while retaining display values; validate coordinates, URLs, time ranges, and contact kinds.
+  Add `clinics`, `clinic_contacts`, `clinic_hours`, `clinic_transit_items`, `clinic_faqs`, `doctors`, `doctor_clinics`, and `admin_principal_clinics` exactly as defined in the architecture. This migration is the sole owner of `admin_principal_clinics` because its clinic FK now exists; wire it as the Task 6 `ClinicScopeProvider`. Normalize phone values while retaining display values; validate coordinates, URLs, time ranges, and contact kinds.
 
 - [ ] **Step 3: Implement explicit services and serializers**
 
@@ -565,7 +571,7 @@
 
 - [ ] **Step 4: Register administration endpoints**
 
-  Add list/get/create/patch/delete routes for site links, menus/items, pages/sections/SEO, clinics and their child resources, doctors, and doctor-clinic mappings. Use Pydantic request parsing and qf `Empty` models for complex payloads. Lists use `page`, `page_size`, `q`, `sort`, and `order` with allowlisted sort columns.
+  Add list/get/create/patch/delete routes for site links, menus/items, pages/sections/SEO, clinics and their child resources, doctors, and doctor-clinic mappings. Add admin-only principal listing and clinic-scope assign/remove endpoints; no endpoint creates passwords or Keycloak users. Use Pydantic request parsing and qf `Empty` models for complex payloads. Lists use `page`, `page_size`, `q`, `sort`, and `order` with allowlisted sort columns.
 
 - [ ] **Step 5: Verify CRUD and concurrency**
 
@@ -605,7 +611,7 @@
 
 - [ ] **Step 3: Implement services and qf handlers**
 
-  Add server-paginated CRUD for categories, treatments, prices, FAQs, clinic mappings, offers, features, offer mappings, technologies, and partners. A clinic manager may edit only records scoped to an assigned clinic; shared/global catalog edits require editor/admin.
+  Add server-paginated CRUD for categories, treatments, prices, FAQs, explicit `/api/v1/admin/clinic-treatments` availability mappings, offers, features, offer mappings, technologies, and partners. A clinic manager may read/search/edit only records scoped to an assigned clinic; shared/global catalog edits require editor/admin/publisher according to the capability matrix.
 
 - [ ] **Step 4: Verify catalog behavior**
 
@@ -630,18 +636,19 @@
 **Files:**
 
 - Create: `backend/src/editorial/models.py`, `backend/src/editorial/schemas.py`, `backend/src/editorial/repository.py`, `backend/src/editorial/service.py`, `backend/src/editorial/serializers.py`, `backend/src/editorial/rich_text.py`
-- Create: `backend/src/api/editorial_admin.py`
+- Create: `backend/src/audit/repository.py`, `backend/src/audit/service.py`, `backend/src/audit/serializers.py`
+- Create: `backend/src/api/editorial_admin.py`, `backend/src/api/audit_admin.py`
 - Create: `backend/migrations/versions/0005_editorial_legal_quiz.py`
 - Modify: `backend/maps/endpoint.json`, `backend/src/models_all.py`
-- Test: `backend/tests/unit/test_rich_text.py`, `backend/tests/unit/test_editorial_service.py`, `backend/tests/integration/test_editorial_crud.py`
+- Test: `backend/tests/unit/test_rich_text.py`, `backend/tests/unit/test_editorial_service.py`, `backend/tests/unit/test_audit_service.py`, `backend/tests/integration/test_editorial_crud.py`, `backend/tests/integration/test_audit_query.py`
 
 - [ ] **Step 1: Write failing sanitization and editorial tests**
 
-  Cover scripts, event attributes, `javascript:` links, iframes, raw style, malformed Markdown, unique slugs, exact review dates/ratings, review verification metadata, legal version/effective date, case disclaimer/consent state, ebook download relation, quiz question/option ordering, score-band overlap/gaps, ETags, audit, and roles.
+  Cover scripts, event attributes, unsafe URL schemes, iframes, raw style, malformed Markdown, unique slugs, exact review dates/ratings, review verification metadata, legal version/effective date, case disclaimer/attestation state, ebook download relation, quiz question/option ordering, score-band overlap/gaps, ETags, append-only/schema-redacted audit, audit pagination/filtering, and publisher/admin-only audit reads.
 
 - [ ] **Step 2: Implement safe rich text**
 
-  Store Markdown source, render with a fixed Markdown feature set, and sanitize with an explicit Bleach tag/attribute/protocol allowlist. Publication runs the same sanitizer again. Page headings stay plain text. Return sanitized HTML only in explicit `rendered_html` fields.
+  Store Markdown source, render with a fixed Markdown feature set, and sanitize with an explicit Bleach tag/attribute/protocol allowlist. All authored link fields use per-field scheme/host allowlists. Publication runs the same sanitizer again. Page headings stay plain text. Return sanitized HTML only in explicit `rendered_html` fields.
 
 - [ ] **Step 3: Add normalized editorial schema**
 
@@ -649,7 +656,7 @@
 
 - [ ] **Step 4: Register explicit CRUD handlers**
 
-  Expose server-paginated resources and nested quiz operations. Legal approval fields and case consent state require publisher/admin. Relative review dates are forbidden; the frontend derives relative display from an exact date.
+  Expose server-paginated resources and nested quiz operations. Legal approval fields and case-image attestation state require publisher/admin. Relative review dates are forbidden; the frontend derives relative display from an exact date. Add read-only, redacted `/api/v1/admin/audit-events` list/detail handlers with actor/action/entity/time filters for publisher/admin; application credentials cannot update/delete audit rows.
 
 - [ ] **Step 5: Verify editorial APIs**
 
@@ -657,7 +664,7 @@
 
   ```bash
   docker compose run --rm --build migrate alembic upgrade head
-  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_rich_text.py backend/tests/unit/test_editorial_service.py backend/tests/integration/test_editorial_crud.py -q
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_rich_text.py backend/tests/unit/test_editorial_service.py backend/tests/unit/test_audit_service.py backend/tests/integration/test_editorial_crud.py backend/tests/integration/test_audit_query.py -q
   ```
 
   Expected: tests pass and malicious stored content never appears in `rendered_html`.
@@ -676,13 +683,14 @@
 - Create: `backend/src/media/models.py`, `backend/src/media/schemas.py`, `backend/src/media/ports.py`
 - Create: `backend/src/media/minio_storage.py`, `backend/src/media/image_processor.py`, `backend/src/media/service.py`, `backend/src/media/serializers.py`
 - Create: `backend/src/api/media_admin.py`, `backend/src/api/media_public.py`
+- Create: `backend/scripts/gc_media.py`
 - Create: `backend/migrations/versions/0006_media_assets.py`
-- Modify: `backend/src/editorial/models.py`, `backend/src/models_all.py`, `backend/maps/endpoint.json`
-- Test: `backend/tests/unit/test_media_service.py`, `backend/tests/unit/test_image_processor.py`, `backend/tests/integration/test_minio_media.py`
+- Modify: `backend/src/editorial/models.py`, `backend/src/models_all.py`, `backend/src/api/health.py`, `backend/maps/endpoint.json`
+- Test: `backend/tests/unit/test_media_service.py`, `backend/tests/unit/test_image_processor.py`, `backend/tests/unit/test_media_gc.py`, `backend/tests/integration/test_minio_media.py`
 
 - [ ] **Step 1: Write failing media/security tests**
 
-  Cover allowed raster formats, real MIME sniffing, maximum bytes/pixels, decompression bombs, EXIF removal, random object keys, SHA-256, variant dimensions, duplicate upload behavior, alt-text requirement, private bucket policy, public-reference check, preview-token check, PDF disposition, unsupported SVG/HTML rejection, consent evidence privacy, and deletion blocked by workspace/publication references.
+  Cover allowed raster formats, real MIME sniffing, maximum bytes/pixels, decompression bombs, EXIF removal, random object keys, SHA-256, variant dimensions, duplicate upload behavior, alt-text requirement, private bucket policy, public-reference check, preview-cookie check, ebook PDF disposition/quarantine hook, unsupported SVG/HTML rejection, de-identified case-image attestation, delivery block on expiry/revocation, short consent-bound caching, and deletion blocked by workspace/publication/preview references.
 
 - [ ] **Step 2: Implement storage and processing ports**
 
@@ -690,17 +698,21 @@
 
 - [ ] **Step 3: Implement media schema**
 
-  Add `media_assets`, `media_variants`, `content_media_links`, `publication_media`, and `media_consents`; add validated FKs from doctor/article/news/case/ebook/SEO/partner/technology records. Store opaque object keys, original display filename, MIME, dimensions, checksum, rights/alt/caption/focal metadata, readiness, and soft-delete state.
+  Add `media_assets`, `media_variants`, `content_media_links`, `publication_media`, `media_consents`, and `media_delivery_blocks`; add validated FKs from doctor/article/news/case/ebook/SEO/partner/technology records. Consent rows store only non-identifying publication attestations and opaque references to evidence held in the clinic-approved system—never patient identity or consent-document bytes. Store opaque object keys, original display filename, MIME, dimensions, checksum, rights/alt/caption/focal metadata, readiness, privacy class, and soft-delete state.
 
 - [ ] **Step 4: Implement streaming upload and variants**
 
-  Stream to a bounded temporary file, identify/decode, re-encode, upload original plus `thumbnail`, `card`, and `hero` variants, then commit metadata. On failure, delete newly uploaded objects or record them for orphan cleanup. Never hold an unbounded request in memory.
+  Stream to a bounded temporary file, identify/decode, scan/quarantine supported downloads, re-encode images, upload original plus `thumbnail`, `card`, and `hero` variants, then commit metadata. Deduplicate only inside the same privacy class. On failure, delete newly uploaded objects or record them for orphan cleanup. Never hold an unbounded request in memory.
 
 - [ ] **Step 5: Implement media delivery rules**
 
-  Admin content requires bearer authorization. Public content is served only when the asset appears in the active publication. Preview content requires the matching unexpired preview token. Emit correct `Content-Type`, ETag, `Content-Length`, range behavior where supported, safe disposition, and immutable cache headers for published variants.
+  Admin content requires bearer authorization. Public content is served only when the asset appears in the active publication. Preview content requires the isolated-origin preview cookie. Emit correct `Content-Type`, ETag, `Content-Length`, range behavior where supported, and safe disposition. Ordinary variants are immutable; consent-bound variants check the mutable block/attestation on every request, use short revalidation, and return `410` after expiry/revocation.
 
-- [ ] **Step 6: Verify against real MinIO**
+- [ ] **Step 6: Complete readiness and explicit media garbage collection**
+
+  Register a mandatory MinIO bucket-stat probe so final readiness always fails generically when PostgreSQL or MinIO is unavailable. Implement `gc_media.py` as an idempotent command: dry-run by default, respect workspace/retained-publication/active-preview/retention references, acquire the maintenance lock, and require `--confirm-delete` for mutation. Document host cron/systemd invocation; do not add an in-process scheduler.
+
+- [ ] **Step 7: Verify against real MinIO**
 
   Run:
 
@@ -708,12 +720,13 @@
   docker compose up -d postgres minio
   docker compose run --rm minio-init
   docker compose run --rm --build migrate alembic upgrade head
-  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_media_service.py backend/tests/unit/test_image_processor.py backend/tests/integration/test_minio_media.py -q
+  PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/unit/test_media_service.py backend/tests/unit/test_image_processor.py backend/tests/unit/test_media_gc.py backend/tests/integration/test_minio_media.py -q
+  docker compose run --rm --build api python scripts/gc_media.py --dry-run
   ```
 
   Expected: all tests pass; MinIO application credentials cannot access any non-DentNow bucket.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
   ```bash
   git add backend
@@ -732,7 +745,7 @@
 
 - [ ] **Step 1: Write failing snapshot/publication tests**
 
-  Cover deterministic canonical JSON/hash, stable ordering, one-release consistency, route uniqueness, broken navigation, missing clinic fields, invalid prices/offers, missing legal docs, unsafe rich text, missing alt/rights/consent, advisory-lock serialization, repeatable-read behavior, unchanged-workspace publish, active-pointer atomicity, rollback, restore-workspace, preview expiration/revocation, ETags, `304`, and media reference materialization.
+  Cover deterministic canonical JSON/hash, stable ordering, one-release consistency, route uniqueness, broken navigation, missing clinic fields, invalid prices/offers, configured required legal types (`gdpr`, `privacy`, `terms` initially), unsafe rich text/typed JSON-LD, missing alt/rights/attestation, advisory-lock serialization, repeatable-read behavior, unchanged-workspace no-op, active-pointer atomicity, compatible/incompatible activation, current consent-block revalidation on rollback, exact restore-workspace ID/deletion/media semantics, audit/outbox reasons, one-use preview exchange/expiry/revocation, ETags, `304`, and media reference materialization.
 
 - [ ] **Step 2: Define and version `SiteSnapshotV1`**
 
@@ -752,15 +765,17 @@
       media: dict[str, MediaPublic]
   ```
 
-  Unknown block kinds and fields are rejected. Serialization sorts all unordered collections by stable business keys.
+  Unknown block kinds and fields are rejected. Serialization sorts all unordered collections by stable business keys. SEO structured data is generated from typed schemas only; the frontend receives no raw administrator-authored JSON-LD.
 
 - [ ] **Step 3: Implement validation and atomic publish**
 
-  Under a PostgreSQL advisory lock and repeatable-read transaction, validate the complete workspace, insert immutable snapshot/media links, update the active pointer, write audit, and enqueue `site.publication.activated.v1` in `integration_outbox`. Validation-only returns all field/entity errors without mutating state.
+  Under a PostgreSQL advisory lock and repeatable-read transaction, validate the complete workspace, insert immutable snapshot/media links, update the active pointer, write audit, and enqueue `site.publication.activated.v1` in `integration_outbox`. Validation-only returns all field/entity errors without mutating state. An unchanged workspace returns the current publication with `changed: false` and creates nothing. Activating an older schema-compatible release revalidates current media rights/blocks, records reason `rollback`, and leaves workspace rows unchanged.
 
 - [ ] **Step 4: Implement previews and rollback**
 
-  Hash a 256-bit random preview token, freeze a snapshot, set 15-minute expiry, and expose `no-store` preview JSON/media. Activation of an older compatible publication changes only the live pointer; restore-workspace is separate and requires admin confirmation/role.
+  Hash a 256-bit one-use preview token, freeze the principal's permitted snapshot, and set 15-minute expiry. Implement exact routes `POST /api/v1/preview/session`, `GET /api/v1/preview/bootstrap`, `GET /api/v1/preview/pages/by-path`, article list/detail, media, and `DELETE /api/v1/preview/session`. The token arrives only in the isolated preview URL fragment, is exchanged once for a host-only HttpOnly/SameSite cookie, and is then invalidated. Preview JSON/media is `no-store`/`noindex`.
+
+  `restore-workspace` is admin-only: upsert stable IDs, replace ordered relations, soft-delete rows absent from the snapshot, preserve retained media, increment workspace version, audit/enqueue `site.workspace.restored.v1`, and leave the live pointer unchanged. It requires a later normal publish.
 
 - [ ] **Step 5: Implement public read surface**
 
@@ -806,7 +821,7 @@
 
 - [ ] **Step 4: Add the future patient-engagement guardrail**
 
-  `integration-contracts.md` must require a separate bounded context, encrypted PII, purpose/versioned consent, retention/export/delete, stricter roles, redacted audit, and a new threat/regulatory assessment before any offer/patient registration endpoint is enabled. Explicitly prohibit adding patient fields to CMS content tables.
+  `integration-contracts.md` must require a separate bounded context/schema with separate database credentials, encryption keys, egress allowlists, purpose/versioned consent, retention/export/delete, stricter roles, redacted audit, and a new threat/regulatory assessment before any offer/patient registration endpoint is enabled. Clinical/health records trigger a separate service/database decision. Explicitly prohibit adding patient fields to CMS content tables.
 
 - [ ] **Step 5: Verify boundaries**
 
@@ -830,7 +845,7 @@
 **Files:**
 
 - Create: `frontend/scripts/export-current-content.mjs`
-- Create: `backend/seeds/current-site.json`, `backend/seeds/current-assets.json`
+- Create: `backend/seeds/current-site.json`, `backend/seeds/current-assets.json`, `backend/seeds/assets/`
 - Create: `backend/scripts/seed_current_site.py`, `backend/scripts/verify_seed_parity.py`
 - Delete after verified export: `frontend/content-source.env`
 - Create: `backend/tests/integration/test_seed_idempotency.py`, `backend/tests/integration/test_seed_parity.py`
@@ -859,11 +874,11 @@
   }
   ```
 
-  Tests also require all App routes, location details/FAQs/transit, four treatment landing pages, emergency/CAS content, three legal documents, navigation variants, section copy, SEO, and every referenced DentNow asset.
+  Tests also require the literal route inventory in architecture section 3.1, location details/FAQs/transit, four treatment landing pages, emergency/CAS content, the three currently required legal documents (`gdpr`, `privacy`, `terms`; cookies remain optional until configured), navigation variants, section copy, SEO, and every referenced DentNow asset.
 
 - [ ] **Step 2: Export centralized JavaScript data deterministically**
 
-  The Node exporter imports `frontend/src/data/*.js`, `frontend/src/config.js`, and the migration-only `frontend/content-source.env` in a controlled build-time environment and writes normalized JSON. It does not scrape JSX with regex. Delete `content-source.env` after the committed seed fixture and parity tests contain every mapped value.
+  The Node exporter imports `frontend/src/data/*.js`, `frontend/src/config.js`, and the migration-only `frontend/content-source.env` in a controlled build-time environment and writes normalized JSON. It does not scrape JSX with regex. Copy/move every referenced content asset from `frontend/public/assets/dentnow` into committed `backend/seeds/assets/`, and write relative paths, sizes, MIME types, and SHA-256 values to `current-assets.json`. The backend Docker context/image must include this bundle; seeding must never rely on a frontend bind mount or sibling build context. Delete `content-source.env` after the committed seed fixture and parity tests contain every mapped value.
 
 - [ ] **Step 3: Add explicit mappings for page-local content**
 
@@ -871,7 +886,7 @@
 
 - [ ] **Step 4: Seed database and MinIO idempotently**
 
-  The Python seed imports only when no seeded site exists, uploads assets with checksums/variants, creates normalized rows, marks unverified claims as requiring review, and creates the initial publication. Re-running returns a no-change summary and never overwrites admin edits.
+  The Python seed imports only when no seeded site exists, reads packaged `backend/seeds/assets`, verifies manifest checksums, uploads assets/variants, creates normalized rows, and marks unverified claims as `needs_review`. It may create one auditable `migration_baseline` publication only on a completely empty database, representing content already public before migration; this does not approve any claim and cannot be invoked after a workspace mutation. Re-running returns a no-change summary and never overwrites admin edits.
 
 - [ ] **Step 5: Verify the complete migration**
 
@@ -885,7 +900,7 @@
   PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/integration/test_seed_idempotency.py backend/tests/integration/test_seed_parity.py -q
   ```
 
-  Expected: first seed creates content, second reports no changes, parity reports zero unmapped content paths and zero missing media objects.
+  Expected: first seed creates content/media from the backend image alone, second reports no changes, parity reports zero unmapped content paths and zero missing media objects, and no frontend-volume mount is present.
 
 - [ ] **Step 6: Commit**
 
@@ -934,10 +949,10 @@
   npm --prefix frontend run test -- --run
   npm --prefix frontend run lint
   npm --prefix frontend run build
-  npm --prefix frontend run e2e -- public-routes.spec.ts
+  npm --prefix frontend run e2e -- --project=mock public-routes.spec.ts
   ```
 
-  Expected: every current route renders from mocked/real API data; no test or runtime import depends on retired content modules; no Keycloak redirect occurs.
+  Expected: every current route renders from deterministic API fixtures; no test or runtime import depends on retired content modules; no Keycloak redirect occurs. Task 22 repeats the route journey against the real Compose stack.
 
 - [ ] **Step 7: Commit**
 
@@ -954,8 +969,9 @@
 - Create: `frontend/src/admin/api/adminClient.ts`, `frontend/src/admin/api/adminContracts.ts`, `frontend/src/admin/api/queryKeys.ts`
 - Create: `frontend/src/admin/AdminApp.tsx`, `frontend/src/admin/layout/AdminLayout.tsx`, `frontend/src/admin/theme.ts`
 - Create: `frontend/src/admin/pages/OverviewPage.tsx`, `frontend/src/admin/pages/AccessDeniedPage.tsx`
+- Create: `backend/scripts/seed_e2e_identities.py`, `backend/tests/compose/test_e2e_fixtures.sh`
 - Modify: `frontend/src/App.tsx`
-- Test: `frontend/tests/admin/auth.test.tsx`, `frontend/tests/admin/admin-client.test.ts`, `frontend/e2e/admin-auth.spec.ts`
+- Test: `frontend/tests/admin/auth.test.tsx`, `frontend/tests/admin/admin-client.test.ts`, `frontend/e2e/admin-auth.spec.ts`, `backend/tests/compose/test_e2e_fixtures.sh`
 
 - [ ] **Step 1: Write failing route/auth/client tests**
 
@@ -986,7 +1002,11 @@
 
   Derive allowed route/menu/action presentation from effective backend permissions and clinic scopes. Backend authorization remains authoritative.
 
-- [ ] **Step 6: Verify auth behavior**
+- [ ] **Step 6: Add a disposable real-service identity fixture**
+
+  `seed_e2e_identities.py` runs only when `SEED_E2E_USERS=true` and `ENVIRONMENT` is `local` or `test`. It reads Keycloak admin credentials from secret files, resolves the exact seeded usernames to subjects, and idempotently assigns the clinic-manager subject to one seeded clinic. It refuses production and emits no passwords/tokens. The Compose test proves admin/editor/publisher/manager/no-role assignments and a cross-clinic denial.
+
+- [ ] **Step 7: Verify auth behavior**
 
   Run:
 
@@ -994,15 +1014,15 @@
   npm --prefix frontend run test -- --run tests/admin/auth.test.tsx tests/admin/admin-client.test.ts
   npm --prefix frontend run typecheck
   npm --prefix frontend exec -- antd lint src/admin --format json
-  npm --prefix frontend run e2e -- admin-auth.spec.ts
+  npm --prefix frontend run e2e -- --project=mock admin-auth.spec.ts
   ```
 
-  Expected: public route has no login redirect; `/admin` completes realm `doncik` login and an authorized principal sees the shell.
+  Expected: public route has no login redirect; the mocked browser contract proves bare/deep `/admin` PKCE behavior and an authorized principal sees the shell. Task 22 repeats login against real realm `doncik` and the deterministic identities.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
   ```bash
-  git add frontend
+  git add backend frontend
   git commit -m "feat(admin): add keycloak protected administration shell"
   ```
 
