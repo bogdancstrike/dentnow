@@ -48,33 +48,38 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 > pip hash-locking (pip-tools `--require-hashes`) deferred to Task 23 CI; floors used now for a working install.
 > `.gitignore`: `frontend/dist/`, `backend/.venv/`, `__pycache__/`, caches ignored.
 
-## Task 4 — Postgres/MinIO/Keycloak Compose infra (`feat(compose): provision postgres minio and keycloak`)
-- [ ] Step 1: infra smoke script
-- [ ] Step 2: pinned persistent services + healthchecks + named volumes
-- [ ] Step 3: reusable backend image + migrate/seed/api utility services
-- [ ] Step 4: isolated DBs/identities/secret files (`ops/init-secrets.sh`)
-- [ ] Step 5: idempotent MinIO bucket+policy+user
-- [ ] Step 6: idempotent realm `doncik` + two clients + audience mapper + roles
-- [ ] Step 7: validate infra (compose config, up, init, smoke, rerun idempotent)
-- [ ] Step 8: Commit
+## Task 4 — Postgres/MinIO/Keycloak Compose infra ✅ DONE (commits incl. `8eea169`)
+- [x] Step 1: `backend/tests/compose/test_infrastructure.sh` (5 checks)
+- [x] Step 2: pinned services postgres:18 / minio RELEASE.2024-12-18 / mc RELEASE.2024-11-21 / keycloak:26.1; healthchecks; named volumes `postgres-data`,`minio-data`; loopback-only ports
+- [x] Step 3: `backend/Dockerfile` (py3.12 multi-stage, non-root, wheel checksum verified); `migrate`/`seed`/`api` services build it
+- [x] Step 4: `ops/init-secrets.sh` (7 secrets, 0600, refuses weak/no-clobber); Compose secrets + `*_FILE`; keycloak DB provisioned by root one-shot `postgres-init` (keeps 0600; postgres init.d runs as unprivileged user)
+- [x] Step 5: `minio-init` → bucket versioned+private, policy `dentnow-media-rw`, app user scoped (idempotent)
+- [x] Step 6: `keycloak-config` → realm `doncik`, `dentnow-admin-spa` (PKCE), `dentnow-api` (bearer-only), audience mapper, 4 roles (idempotent; leaves existing realm intact)
+- [x] Step 7: **verified** — postgres18 data-dir fix (`/var/lib/postgresql`), non-conflicting host ports (5442/8090/5110; testing_platform holds 5432/8080/5100); single `docker compose up` brings up infra+init; smoke PASSED; re-run idempotent
+- [x] Step 8: committed
+- [x] **User req:** full app setup starts from `docker compose up` — `api` gated on full init chain; no manual `run` steps
 
-## Task 5 — DB/transaction/error/migration foundations (`feat(backend): add postgres schema and migration foundation`)
-- [ ] Step 1: failing persistence tests (migrations, ETag, outbox)
-- [ ] Step 2: shared SQLAlchemy infra (engine, tx boundary, repeatable-read)
-- [ ] Step 3: first schema slice (site_state..integration_deliveries), migration 0001
-- [ ] Step 4: models_all + alembic config
-- [ ] Step 5: DB readiness + dependency-probe contract
-- [ ] Step 6: verify migrate head + alembic check
-- [ ] Step 7: Commit
+> ⚠️ **SECURITY:** auto-committer committed `.env` + all `.secrets/*` in `4909ed1`. Untracked in `a213ffc`;
+> now gitignored. **Before any push:** rotate (`ops/init-secrets.sh --rotate`) + purge from history.
+> Secrets are local dev-only, unpushed branch — contained.
 
-## Task 6 — Keycloak JWT verification + backend authz (`feat(auth): protect admin api with keycloak roles`)
-- [ ] Step 1: failing token/role tests (in-test RSA/JWKS, capability matrix, default-deny route map)
-- [ ] Step 2: split public/internal Keycloak coords + JWKS cache
-- [ ] Step 3: principal + capability policy + injectable ClinicScopeProvider, migration 0002
-- [ ] Step 4: `/api/v1/admin/me` + boundary (401/403/200)
-- [ ] Step 5: restrict CORS/headers
-- [ ] Step 6: verify IAM
-- [ ] Step 7: Commit
+## Task 5 — DB/transaction/error/migration foundations ✅ DONE (commit `6281858`)
+- [x] Step 1: tests — `test_etags.py` (pure), `test_outbox.py` + `test_migrations.py` (DB-backed, rollback-isolated via conftest); 14 pass
+- [x] Step 2: `core/db.py` (cached engine, pool_pre_ping, `session_scope`, `serializable_scope` REPEATABLE READ, `reset_engine_for_tests`); `clock.py` (utcnow, uuid7), `etag.py`, `pagination.py`, `mixins.py` (WorkspaceRoot)
+- [x] Step 3: migration `0001_site_audit_outbox` — 13 tables (site_state singleton, links, nav menus/items, pages/sections/seo, publications immutable, preview_sessions, audit append-only, outbox/bindings/deliveries); partial-unique live indexes, indexed FKs, JSONB-object checks, pending-outbox index
+- [x] Step 4: `models_all` imports site/audit/integrations; `alembic.ini` + `migrations/env.py` (reads Config.DATABASE_URL + Base.metadata) + script.py.mako
+- [x] Step 5: `core/readiness.py` probe registry; `/api/readiness` runs postgres probe (generic 200/503, no detail leak)
+- [x] Step 6: **verified** — `alembic upgrade head` OK, `alembic check` → no drift (fixed singleton PK auto-sequence); 14 + 10 tests pass. Container `migrate` path verified (image builds, connects, runs Alembic, exit 0) after secret-perms fix (`503a8d0`).
+- [x] Step 7: committed
+
+## Task 6 — Keycloak JWT verification + backend authz ✅ DONE (commit `c028098`)
+- [x] Step 1: `test_token_verifier.py` (10), `test_authorization.py` (7), `test_admin_auth_boundary.py` (5) — in-test RSA/JWKS, capability matrix, route-map default-deny
+- [x] Step 2: `token_verifier.py` — JWKS cache by kid (single refresh on unknown), internal fetch/public issuer, +azp +sub checks; Config coords from Task 3
+- [x] Step 3: `capabilities.py` (matrix), `principal.py` (clinic scopes, admin implies all), `service.py` (claims→principal + injectable `ClinicScopeProvider` + admin_principals upsert), `decorators.py`; migration 0002 `admin_principals`
+- [x] Step 4: `/api/v1/admin/me` (401 no token / 403 no role / 200 with roles+caps+scopes); `__dentnow_protected__` stamp for default-deny test
+- [x] Step 5: CORS/headers already handle OPTIONS + `If-Match` + correlation echo (Task 3 `correlation.py`)
+- [x] Step 6: **46 backend tests pass** (alembic-at-head test made head-dynamic)
+- [x] Step 7: committed
 
 ## Task 7 — Site/nav/pages + clinic CRUD (`feat(cms): add site page and clinic management`)
 - [ ] Step 1: failing domain/API tests
