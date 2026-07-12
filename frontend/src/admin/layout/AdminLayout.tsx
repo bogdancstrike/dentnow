@@ -5,7 +5,7 @@ import type { AdminClient } from '../api/adminClient';
 import { CAP, can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
 import { OverviewPage } from '../pages/OverviewPage';
-import { ClinicsScreen } from '../features/clinics/ClinicsScreen';
+import { screenForKey } from '../features/registry';
 
 const { Header, Sider, Content } = Layout;
 
@@ -96,10 +96,12 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
           </Space>
         </Header>
         <Content style={{ margin: 24 }}>
-          {selected === 'overview' && <OverviewPage me={me} client={client} />}
-          {selected === 'clinics' && <ClinicsScreen client={client} />}
-          {selected !== 'overview' && selected !== 'clinics' && (
-            <Empty description={`Modulul „${selected}” — adăugat în Tasks 16–19`} />
+          {selected === 'overview' ? (
+            <OverviewPage me={me} client={client} />
+          ) : (
+            screenForKey(selected, client, me) ?? (
+              <Empty description={`Modulul „${selected}” — adăugat în Tasks 17–19`} />
+            )
           )}
         </Content>
       </Layout>
