@@ -13,6 +13,7 @@ import { Routes, Route } from 'react-router-dom';
 import { ToastProvider } from '../hooks/useToast';
 import { ThemeProvider } from '../hooks/useTheme';
 import { ClinicPickerProvider } from '../hooks/useClinicPicker';
+import { SiteDataProvider } from './SiteDataProvider';
 import Layout from '../components/layout/Layout';
 
 import Home from '../pages/Home';
@@ -37,9 +38,10 @@ import NotFound from '../pages/NotFound';
 
 export default function PublicApp() {
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <ClinicPickerProvider>
+    <SiteDataProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <ClinicPickerProvider>
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<Home />} />
@@ -80,8 +82,9 @@ export default function PublicApp() {
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
-        </ClinicPickerProvider>
-      </ToastProvider>
-    </ThemeProvider>
+          </ClinicPickerProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </SiteDataProvider>
   );
 }
