@@ -3,7 +3,7 @@ import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
-import { trustStats, services, quickServices } from '../data/content';
+import { trustStats, services } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReviews, publicQueryKeys } from '../api/publicClient';
@@ -59,9 +59,9 @@ export default function Home() {
       <section className="contact-section" id="contact">
         <div className="contact-heading">
           <div className="stag rv">Contact, locatii si program</div>
-          <h2 className="h2d rv d1">Cele 3 clinici DentNow din Bucuresti.</h2>
+          <h2 className="h2d rv d1">Cele {siteData.clinics.length} clinici DentNow din Bucuresti.</h2>
         </div>
-        <div className="locations-grid">
+        <div className={siteData.clinics.length >= 4 ? "locations-carousel" : "locations-grid"}>
           {siteData.clinics.map((loc, i) => {
             const phoneContact = loc.contacts.find((c) => c.kind === 'phone');
             const phoneDisplay = phoneContact?.display_value || '';
