@@ -13,6 +13,7 @@ from src.core.errors import ConflictError, NotFoundError, ValidationError
 from src.audit.service import write_audit
 from src.integrations.outbox import enqueue_event
 from src.site.models import (
+    GalleryImage,
     HomepageService,
     NavigationItem,
     NavigationMenu,
@@ -23,6 +24,7 @@ from src.site.models import (
     SiteState,
 )
 from src.site.serializers import (
+    serialize_gallery_image,
     serialize_homepage_service,
     serialize_link,
     serialize_menu,
@@ -82,6 +84,30 @@ class HomepageServiceService(CrudService):
 
     def serialize(self, obj: Any) -> dict:
         return serialize_homepage_service(obj)
+
+
+class GalleryImageService(CrudService):
+    model = GalleryImage
+    entity_type = "gallery_image"
+    event_prefix = "gallery_image"
+    sortable = ("position", "title", "created_at")
+    search_columns = ("title", "caption")
+
+    def serialize(self, obj: Any) -> dict:
+        return serialize_gallery_image(obj)
+
+    @staticmethod
+    def _coerce_media(data: dict) -> dict:
+        data = dict(data)
+        if "media_id" in data:
+            data["media_id"] = uuid.UUID(str(data["media_id"])) if data["media_id"] else None
+        return data
+
+    def to_create_kwargs(self, data: dict) -> dict:
+        return self._coerce_media(data)
+
+    def to_update_values(self, data: dict, obj: Any) -> dict:
+        return self._coerce_media(data)
 
 
 class LinkService(CrudService):

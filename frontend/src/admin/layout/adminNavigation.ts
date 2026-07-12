@@ -12,6 +12,7 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
     group: 'Clinici & echipă',
     items: [
       { slug: 'clinici', key: 'clinics', label: 'Clinici', capability: CAP.contentRead },
+      { slug: 'clinica', key: 'gallery', label: 'Galerie clinică', capability: CAP.contentRead },
       { slug: 'echipa-medicala', key: 'doctors', label: 'Echipă medicală', capability: CAP.contentRead },
     ],
   },

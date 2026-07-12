@@ -47,6 +47,15 @@ export const ClinicSchema = z.object({
   })).default([]),
 });
 
+export const GalleryImageSchema = z.object({
+  media_id: z.string().nullable().optional(),
+  image_url: z.string().nullable().optional(),
+  title: z.string(),
+  caption: z.string().nullable().optional(),
+  alt_text: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
 export const HomepageServiceSchema = z.object({
   title: z.string(),
   description: z.string().nullable().optional(),
@@ -126,6 +135,7 @@ export const BootstrapSchema = z.object({
   clinics: z.array(ClinicSchema).default([]),
   doctors: z.array(DoctorSchema).default([]),
   homepage_services: z.array(HomepageServiceSchema).default([]),
+  gallery: z.array(GalleryImageSchema).default([]),
   homepage_treatments: z.array(TreatmentSchema).default([]),
 });
 

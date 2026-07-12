@@ -8,6 +8,7 @@ import type { AdminClient } from '../api/adminClient';
 import { ClinicsScreen } from './clinics/ClinicsScreen';
 import { SiteSettingsScreen } from './site/SiteSettingsScreen';
 import { RemoteSelect } from '../components/RemoteSelect';
+import { ImageUploadField } from '../components/ImageUploadField';
 import { ResourceScreen, type ResourceConfig } from '../components/ResourceScreen';
 import type { ResourceRow } from '../components/ResourceTable';
 import type { Me } from '../auth/permissions';
@@ -126,8 +127,34 @@ const homepageServices = makeConfig({
   ),
 });
 
+const gallery = makeConfig({
+  title: 'Galerie clinică',
+  singular: 'imagine',
+  endpoint: '/v1/admin/gallery-images',
+  columns: [
+    { title: 'Titlu', dataIndex: 'title' },
+    { title: 'Descriere', dataIndex: 'caption' },
+    { title: 'Ordine', dataIndex: 'position' },
+    { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/#clinica" target="_blank" rel="noopener noreferrer">Vezi</Button> },
+  ],
+  defaults: { active: true, position: 0 },
+  form: ({ client }) => (
+    <>
+      <Item name="media_id" label="Imagine (încarcă)">
+        <ImageUploadField client={client} altText="Imagine galerie clinică" variant="hero" width={220} height={140} />
+      </Item>
+      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input placeholder="Ex: Cabinet modern" /></Item>
+      <Item name="caption" label="Descriere scurtă"><Input.TextArea rows={2} /></Item>
+      <Item name="alt_text" label="Text alternativ (accesibilitate)"><Input /></Item>
+      <Item name="position" label="Ordine"><Input type="number" min={0} /></Item>
+      <Item name="active" label="Activ" valuePropName="checked"><input type="checkbox" /></Item>
+    </>
+  ),
+});
+
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  legal, quiz, news, 'homepage-services': homepageServices,
+  legal, quiz, news, 'homepage-services': homepageServices, gallery,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {

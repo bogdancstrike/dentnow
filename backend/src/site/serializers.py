@@ -20,6 +20,22 @@ def serialize_site_state(s: Any) -> dict:
     }
 
 
+def serialize_gallery_image(g: Any) -> dict:
+    return {
+        "id": str(g.id),
+        "version": g.version,
+        "media_id": str(g.media_id) if g.media_id else None,
+        "image_url": g.image_url,
+        "title": g.title,
+        "caption": g.caption,
+        "alt_text": g.alt_text,
+        "position": g.position,
+        "active": g.active,
+        "created_at": _iso(g.created_at),
+        "updated_at": _iso(g.updated_at),
+    }
+
+
 def serialize_homepage_service(s: Any) -> dict:
     return {
         "id": str(s.id),

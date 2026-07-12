@@ -66,6 +66,26 @@ class HomepageServiceUpdate(_Strict):
     active: Optional[bool] = None
 
 
+class GalleryImageCreate(_Strict):
+    title: str
+    media_id: Optional[str] = None
+    image_url: Optional[str] = None
+    caption: Optional[str] = None
+    alt_text: Optional[str] = None
+    position: int = 0
+    active: bool = True
+
+
+class GalleryImageUpdate(_Strict):
+    title: Optional[str] = None
+    media_id: Optional[str] = None
+    image_url: Optional[str] = None
+    caption: Optional[str] = None
+    alt_text: Optional[str] = None
+    position: Optional[int] = None
+    active: Optional[bool] = None
+
+
 class MenuCreate(_Strict):
     key: str
     label: str

@@ -8,6 +8,8 @@ from src.core.db import session_scope
 from src.iam.capabilities import CAP_CONTENT_READ, CAP_CONTENT_WRITE
 from src.iam.decorators import require_capability
 from src.site.schemas import (
+    GalleryImageCreate,
+    GalleryImageUpdate,
     HomepageServiceCreate,
     HomepageServiceUpdate,
     LinkCreate,
@@ -25,6 +27,7 @@ from src.site.schemas import (
     SiteSettingsUpdate,
 )
 from src.site.service import (
+    GalleryImageService,
     HomepageServiceService,
     LinkService,
     MenuService,
@@ -74,6 +77,32 @@ def homepage_services_update(app, operation, request, principal=None, service_id
 @require_capability(CAP_CONTENT_WRITE)
 def homepage_services_delete(app, operation, request, principal=None, service_id=None, **kw):
     return do_delete(HomepageServiceService, principal, service_id)
+
+
+# ── gallery images (clinic space carousel) ───────────────────────────────────
+@require_capability(CAP_CONTENT_READ)
+def gallery_images_list(app, operation, request, principal=None, **kw):
+    return do_list(GalleryImageService, principal)
+
+
+@require_capability(CAP_CONTENT_READ)
+def gallery_images_get(app, operation, request, principal=None, image_id=None, **kw):
+    return do_get(GalleryImageService, principal, image_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def gallery_images_create(app, operation, request, principal=None, **kw):
+    return do_create(GalleryImageService, GalleryImageCreate, principal)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def gallery_images_update(app, operation, request, principal=None, image_id=None, **kw):
+    return do_update(GalleryImageService, GalleryImageUpdate, principal, image_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def gallery_images_delete(app, operation, request, principal=None, image_id=None, **kw):
+    return do_delete(GalleryImageService, principal, image_id)
 
 
 # ── links ────────────────────────────────────────────────────────────────────

@@ -2452,6 +2452,71 @@
         "module_name": "src.api.site_admin",
         "method_name": "homepage_services_delete"
       }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "gallery_images_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/gallery-images",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "gallery_images_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "gallery_images_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/gallery-images",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "gallery_images_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "gallery_images_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/gallery-images/<image_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "gallery_images_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "gallery_images_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/gallery-images/<image_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "gallery_images_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "gallery_images_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/gallery-images/<image_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "gallery_images_delete"
+      }
     }
   ]
 }

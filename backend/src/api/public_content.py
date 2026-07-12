@@ -22,6 +22,7 @@ from src.core.errors import NotFoundError
 from src.editorial.models import Article, NewsItem, Review
 from src.editorial.rich_text import render_markdown
 from src.site.models import (
+    GalleryImage,
     HomepageService,
     NavigationItem,
     NavigationMenu,
@@ -81,6 +82,19 @@ def _query_clinics(session):
         })
     clinics.sort(key=lambda x: x["slug"])
     return clinics
+
+
+def _query_gallery(session):
+    items = []
+    for g in session.scalars(_live(GalleryImage).where(GalleryImage.active.is_(True))).all():
+        items.append({
+            "media_id": str(g.media_id) if g.media_id else None,
+            "image_url": g.image_url,
+            "title": g.title, "caption": g.caption, "alt_text": g.alt_text,
+            "position": g.position,
+        })
+    items.sort(key=lambda x: x["position"])
+    return items
 
 
 def _query_homepage_services(session):
@@ -255,6 +269,7 @@ def bootstrap(app, operation, request, **kw):
         treatments_data = _query_treatments(session)
         doctors_data = _query_doctors(session)
         homepage_services = _query_homepage_services(session)
+        gallery = _query_gallery(session)
 
     homepage_treatments = [t for t in treatments_data if t.get("homepage_featured")]
     return _json_response({
@@ -265,6 +280,7 @@ def bootstrap(app, operation, request, **kw):
         "clinics": clinics_data,
         "doctors": doctors_data,
         "homepage_services": homepage_services,
+        "gallery": gallery,
         "homepage_treatments": homepage_treatments,
     })
 

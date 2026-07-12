@@ -1,8 +1,19 @@
 import { useState } from 'react';
 import { clinicGallery } from '../../data/clinicProof';
+import { useSiteData } from '../../public-site/SiteDataProvider';
+import { mediaUrl } from '../../api/publicClient';
 import './Sections.css';
 
-export default function ProofGallery({ items = clinicGallery }) {
+export default function ProofGallery({ items: itemsProp }) {
+  const { gallery } = useSiteData();
+  const items = itemsProp ?? (gallery && gallery.length > 0
+    ? gallery.map((g) => ({
+        src: g.media_id ? mediaUrl(g.media_id, 'hero') : (g.image_url || '/assets/dentnow/clinic-exterior.svg'),
+        alt: g.alt_text || g.title,
+        title: g.title,
+        caption: g.caption || '',
+      }))
+    : clinicGallery);
   const [index, setIndex] = useState(0);
   const current = items[index];
   const prev = () => setIndex((i) => (i === 0 ? items.length - 1 : i - 1));

@@ -17,7 +17,7 @@ Later follow-up requests (session 2, batch 2):
 - [x] **Location page booking** — `/locatii/:slug` bottom CTA now calls/WhatsApps the current clinic directly instead of opening the all-locations picker.
 - [ ] **Draft preview** — preview unsaved form values without going live (postMessage draft injection), discarded on exit.
 - [x] **Per-doctor page** — new `/echipa/:slug` public profile (portrait, role, credentials, focus, CTAs). Homepage team cards link to it; admin doctor „view” + editor preview now target `/echipa/:slug`.
-- [ ] **Clinic gallery CRUD** `/admin/clinica`.
+- [x] **Clinic gallery CRUD** `/admin/clinica` — new `gallery_images` table (migration 0011, seeded with the 6 placeholders), service/schema/serializer, `/v1/admin/gallery-images` endpoints, bootstrap exposure. `ProofGallery` renders from the backend (static fallback); admin screen with image upload (`ImageUploadField`), title/caption/alt/position/active.
 - [ ] **/decontat-cas CRUD** `/admin/decontat-cas`.
 
 

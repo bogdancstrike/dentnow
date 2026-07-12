@@ -215,6 +215,27 @@ class HomepageService(WorkspaceRoot, Base):
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
+class GalleryImage(WorkspaceRoot, Base):
+    """An image in the homepage "Un spatiu clinic clar" clinic gallery carousel.
+
+    Uses an uploaded media asset (`media_id`) when present, otherwise a static/external
+    `image_url` (so seeded placeholder illustrations work without a media upload).
+    """
+    __tablename__ = "gallery_images"
+    __table_args__ = (Index("ix_gallery_images_position", "position"),)
+
+    media_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_gallery_images_media_id"),
+        nullable=True,
+    )
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    caption: Mapped[str | None] = mapped_column(Text, nullable=True)
+    alt_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
 class PreviewSession(Base, TimestampMixin):
     __tablename__ = "preview_sessions"
     __table_args__ = (
