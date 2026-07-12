@@ -152,21 +152,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="quick-services" aria-label="Servicii rapide DentNow">
-        {siteData.homepage_treatments.map((t) => {
-          const minPrice = t.prices && t.prices.length > 0
-            ? new Intl.NumberFormat('ro-RO').format(t.prices[0].amount || 0) + ' ' + (t.prices[0].currency || 'lei')
-            : '';
-          return (
-            <Link to={`/tratamente#${t.slug}`} key={t.slug} className="quick-service-card">
-              <span>{t.homepage_icon || 'Tooth'}</span>
-              <strong>{t.homepage_label || t.name}</strong>
-              <small>{minPrice ? `de la ${minPrice}` : ''}</small>
-            </Link>
-          );
-        })}
-      </section>
-
       <section className="services-section" id="servicii">
         <div className="services-header">
           <div className="stag rv">Servicii DentNow</div>
