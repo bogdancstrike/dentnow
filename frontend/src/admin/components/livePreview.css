@@ -1,0 +1,101 @@
+.live-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.live-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e9ef;
+  background: #fafbfc;
+}
+
+.live-preview-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: #eef1f5;
+  overflow: auto;
+}
+
+.live-preview-frame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.live-preview-stage--mobile .live-preview-frame {
+  width: 390px;
+  max-width: 100%;
+}
+
+.live-preview-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: #f1f4f8;
+  border-bottom: 1px solid #e2e7ee;
+}
+
+.live-preview-chrome > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cfd6e0;
+}
+
+.live-preview-chrome > span:nth-child(1) { background: #ff5f57; }
+.live-preview-chrome > span:nth-child(2) { background: #febc2e; }
+.live-preview-chrome > span:nth-child(3) { background: #28c840; }
+
+.live-preview-url {
+  flex: 1;
+  margin-left: 10px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e7ee;
+  color: #64748b;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.live-preview-iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 640px;
+  border: 0;
+  background: #fff;
+}
+
+.live-preview-stage--mobile .live-preview-iframe {
+  min-height: 720px;
+}
+
+.live-preview-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  color: #8b93a1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .live-preview-toolbar { background: #10151c; border-color: #232b36; }
+  .live-preview-stage { background: #0b0f14; }
+  .live-preview-frame { background: #0f141b; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+}

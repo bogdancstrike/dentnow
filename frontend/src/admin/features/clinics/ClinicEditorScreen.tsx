@@ -13,6 +13,7 @@ import {
 import {
   ArrowLeftOutlined,
   SaveOutlined,
+  EditOutlined,
   PlusOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
@@ -27,7 +28,7 @@ import {
   ClinicTransit,
   ClinicFaqs,
 } from './ClinicSubResources';
-import { ClinicLivePreview } from './ClinicLivePreview';
+import { LivePreview } from '../../components/LivePreview';
 import './clinics.css';
 
 interface ClinicFormValues extends ClinicRow {}
@@ -111,9 +112,6 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
     });
   };
 
-  const values = (Form.useWatch([], form) ?? {}) as ClinicFormValues;
-  const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
-
   if (editing && clinicQuery.isLoading) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
@@ -134,6 +132,28 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
           >
             Salvează
           </Button>
+          {!editing && (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                form.setFieldsValue({
+                  name: 'DentNow Victoriei',
+                  slug: 'victoriei',
+                  status: 'active',
+                  area: 'Piața Victoriei',
+                  address_full: 'Bd. Lascăr Catargiu nr. 12, Sector 1, București',
+                  postal_code: '010671',
+                  latitude: 44.4530,
+                  longitude: 26.0850,
+                  map_embed_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2848.4!2d26.085!3d44.453',
+                  map_link_url: 'https://maps.app.goo.gl/example',
+                });
+                setDirty(true);
+              }}
+            >
+              Precompletează
+            </Button>
+          )}
         </Space>
         
         <Form
@@ -199,19 +219,12 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
       </div>
 
       <div className="article-editor-preview-panel">
-        <div className="article-preview-toolbar">
-          <Typography.Text strong>Previzualizare Live</Typography.Text>
-          <Select
-            size="small"
-            value={viewport}
-            onChange={(v) => setViewport(v as 'desktop' | 'mobile')}
-            options={[
-              { label: 'Desktop', value: 'desktop' },
-              { label: 'Mobil', value: 'mobile' },
-            ]}
-          />
-        </div>
-        <ClinicLivePreview values={values} viewport={viewport} />
+        <LivePreview
+          path={clinicQuery.data?.slug ? `/locatii/${clinicQuery.data.slug}` : null}
+          ready={editing && Boolean(clinicQuery.data?.slug)}
+          notReadyHint="Salvează clinica pentru a vedea pagina publică reală (hartă, contacte, orar, „cum ajungi”, FAQ)."
+          reloadToken={clinicQuery.data?.version}
+        />
       </div>
     </div>
   );

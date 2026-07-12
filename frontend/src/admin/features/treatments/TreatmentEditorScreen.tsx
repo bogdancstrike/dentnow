@@ -12,13 +12,14 @@ import {
 import {
   ArrowLeftOutlined,
   SaveOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
 import type { TreatmentRow } from './TreatmentsScreen';
-import { TreatmentLivePreview } from './TreatmentLivePreview';
+import { LivePreview } from '../../components/LivePreview';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { RemoteSelect } from '../../components/RemoteSelect';
 import '../editorial/articles.css'; // Reuse article layout CSS
@@ -104,9 +105,6 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
     });
   };
 
-  const values = (Form.useWatch([], form) ?? {}) as TreatmentFormValues;
-  const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
-
   if (editing && treatmentQuery.isLoading) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
@@ -127,6 +125,26 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
           >
             Salvează
           </Button>
+          {!editing && (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                form.setFieldsValue({
+                  name: 'Implant Dentar Premium',
+                  slug: 'implant-dentar-premium',
+                  summary: 'Implant dentar de înaltă calitate cu coroana ceramică inclusă. Garanție pe viață pentru implant.',
+                  active: true,
+                  homepage_featured: true,
+                  homepage_label: 'Implanturi',
+                  homepage_icon: 'Smile',
+                  body_markdown: '## De ce să alegi implantul dentar?\n\nImplantul dentar este soluția permanentă pentru înlocuirea unui dinte pierdut.\n\n### Avantaje:\n- Aspect natural\n- Durabilitate pe viață\n- Nu afectează dinții vecini\n- Funcționalitate completă\n\n### Etapele tratamentului:\n1. Consultație și planificare\n2. Inserarea implantului\n3. Perioada de osteointegrare (3-6 luni)\n4. Montarea coroanei finale',
+                });
+                setDirty(true);
+              }}
+            >
+              Precompletează
+            </Button>
+          )}
         </Space>
 
         <Form
@@ -179,19 +197,12 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
       </div>
 
       <div className="article-editor-preview-panel">
-        <div className="article-preview-toolbar">
-          <Typography.Text strong>Previzualizare Live</Typography.Text>
-          <Select
-            size="small"
-            value={viewport}
-            onChange={(v) => setViewport(v as 'desktop' | 'mobile')}
-            options={[
-              { label: 'Desktop', value: 'desktop' },
-              { label: 'Mobil', value: 'mobile' },
-            ]}
-          />
-        </div>
-        <TreatmentLivePreview values={values} viewport={viewport} />
+        <LivePreview
+          path={treatmentQuery.data?.slug ? `/tratamente/${treatmentQuery.data.slug}` : null}
+          ready={editing && Boolean(treatmentQuery.data?.slug)}
+          notReadyHint="Salvează tratamentul pentru a vedea pagina publică reală."
+          reloadToken={treatmentQuery.data?.version}
+        />
       </div>
     </div>
   );

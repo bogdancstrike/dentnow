@@ -20,6 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
 import type { OfferRow } from './OffersScreen';
+import { LivePreview } from '../../components/LivePreview';
 import '../editorial/articles.css'; // Reuse layout CSS
 
 interface OfferFormValues extends OfferRow {}
@@ -202,8 +203,14 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
         </Form>
       </div>
       
-      <div className="article-editor-preview-panel" style={{ display: 'grid', placeItems: 'center', color: '#8b93a1', padding: '40px' }}>
-        Preview live pentru oferte (în curând)
+      <div className="article-editor-preview-panel">
+        <LivePreview
+          path="/oferte"
+          ready={editing && Boolean(query.data)}
+          notReadyHint="Salvează oferta pentru a o vedea live pe pagina /oferte (doar ofertele active apar public)."
+          reloadToken={query.data?.version}
+          urlLabel="dentnow.ro/oferte"
+        />
       </div>
     </div>
   );
