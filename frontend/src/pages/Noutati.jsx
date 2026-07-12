@@ -20,7 +20,7 @@ export default function Noutati() {
   return (
     <div ref={ref}>
       <Seo title="Noutati DentNow" description="Actualizari DentNow despre program, preturi si continut care trebuie aprobat de clinica." path="/noutati" />
-      <PageHero tag="Noutati DentNow" title='Actualizari <em class="ac">curente.</em>' subtitle="Continutul vechi din 2024 a fost inlocuit cu intrari de lansare ce trebuie validate de clinica." />
+      <PageHero tag="Noutati DentNow" title='Actualizari <em class="ac">curente.</em>' subtitle="Noutatile clinicii DentNow." />
       <div className="news-grid">
         {mainNews ? (
           <article className="news-main rv">
