@@ -36,6 +36,7 @@ import { DoctorsScreen } from '../features/doctors/DoctorsScreen';
 import { DoctorEditorScreen } from '../features/doctors/DoctorEditorScreen';
 import { PartnersScreen } from '../features/partners/PartnersScreen';
 import { PartnerEditorScreen } from '../features/partners/PartnerEditorScreen';
+import { DecontatCasScreen } from '../features/decontat/DecontatCasScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
 import { openCommandPalette } from './adminEvents';
 import './adminLayout.css';
@@ -176,10 +177,12 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
             <Route path="parteneri" element={<PartnersScreen client={client} />} />
             <Route path="parteneri/nou" element={<PartnerEditorScreen client={client} />} />
             <Route path="parteneri/:partnerId" element={<PartnerEditorScreen client={client} />} />
-            
+
+            <Route path="decontat-cas" element={<DecontatCasScreen client={client} />} />
+
             {ADMIN_NAV_ITEMS.filter(
               (item) =>
-                !['articole', 'clinici', 'tratamente', 'oferte', 'echipa-medicala', 'parteneri'].includes(item.slug),
+                !['articole', 'clinici', 'tratamente', 'oferte', 'echipa-medicala', 'parteneri', 'decontat-cas'].includes(item.slug),
             ).flatMap((item) => {
               const config = getResourceConfig(item.key);
               if (config) {

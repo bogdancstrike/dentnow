@@ -20,7 +20,7 @@ Later follow-up requests (session 2, batch 2):
 - [ ] **Draft preview** — preview unsaved form values without going live (postMessage draft injection), discarded on exit.
 - [x] **Per-doctor page** — new `/echipa/:slug` public profile (portrait, role, credentials, focus, CTAs). Homepage team cards link to it; admin doctor „view” + editor preview now target `/echipa/:slug`.
 - [x] **Clinic gallery CRUD** `/admin/clinica` — new `gallery_images` table (migration 0011, seeded with the 6 placeholders), service/schema/serializer, `/v1/admin/gallery-images` endpoints, bootstrap exposure. `ProofGallery` renders from the backend (static fallback); admin screen with image upload (`ImageUploadField`), title/caption/alt/position/active.
-- [ ] **/decontat-cas CRUD** `/admin/decontat-cas`.
+- [x] **/decontat-cas CRUD** `/admin/decontat-cas` — new `cas_steps` + `cas_faqs` tables (migration 0012, seeded from the static data), services/schemas/serializers, CRUD endpoints, bootstrap `decontat_cas`. `DecontatCas.jsx` renders steps+faqs from the backend (static fallback). Bespoke admin screen with two tables + a live preview of the real `/decontat-cas` page.
 
 
 Review of the Gemini-authored commits (`4d94d3b..HEAD`) plus new product fixes. Committed task-by-task.
