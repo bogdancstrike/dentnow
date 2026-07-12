@@ -172,16 +172,15 @@ test.describe.serial('B+C admin login and pages', () => {
 
     // Clinici "Adaugă" drawer.
     await page.getByRole('button', { name: 'Adaugă' }).click();
-    const drawer = page.locator('.ant-drawer-content, .ant-modal-content').first();
+    const drawer = page.getByRole('dialog', { name: 'Clinică nouă' });
     await expect(drawer).toBeVisible({ timeout: 10_000 });
     await shot(page, 'C4-clinici-adauga');
     const drawerFieldCount = await drawer.locator('input, textarea, .ant-select').count();
     console.log('ADAUGA_DRAWER_FIELDS', drawerFieldCount);
     expect(drawerFieldCount, 'create form should render fields').toBeGreaterThan(0);
-    // Cancel / close (non-destructive).
-    const cancelBtn = drawer.getByRole('button', { name: /Anulează|Renunță|Cancel/ });
-    if (await cancelBtn.count()) await cancelBtn.first().click();
-    else await page.keyboard.press('Escape');
+    // Non-destructive: close the drawer without submitting.
+    await drawer.getByRole('button', { name: 'Close' }).click();
+    await expect(drawer).toBeHidden({ timeout: 10_000 });
 
     // C. Tratamente nav -> table lists treatments.
     await page.getByRole('menuitem', { name: /Tratamente/ }).click();
