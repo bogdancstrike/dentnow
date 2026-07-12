@@ -6,10 +6,16 @@ the first release. A few Redis/Kafka defaults remain only because qf imports its
 ETL modules eagerly even with ``enable_etl=False``; they configure nothing.
 """
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
+# Resolve the file from this module, not from the process working directory. This
+# makes local commands, tests, Gunicorn and Alembic consistently read backend/.env.
+# Real process/container variables keep precedence over values from the file.
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = BACKEND_DIR / ".env"
+load_dotenv(dotenv_path=ENV_FILE, override=False)
 
 
 def _bool(name: str, default: bool) -> bool:
