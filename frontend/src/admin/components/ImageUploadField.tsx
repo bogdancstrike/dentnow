@@ -19,6 +19,7 @@ export interface ImageUploadFieldProps {
   variant?: 'card' | 'thumbnail' | 'hero';
   width?: number;
   height?: number;
+  placeholderText?: string;
 }
 
 export function ImageUploadField({
@@ -29,6 +30,7 @@ export function ImageUploadField({
   variant = 'card',
   width = 160,
   height = 160,
+  placeholderText = 'Fără imagine',
 }: ImageUploadFieldProps) {
   const { message } = App.useApp();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,7 +82,7 @@ export function ImageUploadField({
             />
           ) : (
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Fără imagine
+              {placeholderText}
             </Typography.Text>
           )}
         </div>

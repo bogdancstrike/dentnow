@@ -16,11 +16,12 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
-import { VersionConflictError } from '../../api/adminClient';
+import { AdminApiError, VersionConflictError } from '../../api/adminClient';
 import { ImageUploadField } from '../../components/ImageUploadField';
 import { LivePreview } from '../../components/LivePreview';
 import type { DoctorRow } from './DoctorsScreen';
 import '../editorial/articles.css'; // Reuse layout CSS
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 interface DoctorFormValues extends DoctorRow {}
 
@@ -31,6 +32,7 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm<DoctorFormValues>();
+  const values = (Form.useWatch([], form) ?? {}) as Partial<DoctorFormValues>;
   const [dirty, setDirty] = useState(false);
 
   const query = useQuery({
@@ -77,6 +79,16 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
       if (!editing) navigate(`/admin/echipa-medicala/${doctor.id}`, { replace: true });
     },
     onError: (error) => {
+      if (
+        error instanceof AdminApiError
+        && error.status === 409
+        && error.envelope?.details?.['field'] === 'slug'
+      ) {
+        const urlConflictMessage = 'Adresa URL este deja folosită de alt medic. Alege o adresă URL diferită.';
+        form.setFields([{ name: 'slug', errors: [urlConflictMessage] }]);
+        message.error(urlConflictMessage);
+        return;
+      }
       message.error(
         error instanceof VersionConflictError
           ? 'Informațiile au fost modificate între timp. Reîncarcă pagina înainte de a salva din nou.'
@@ -106,6 +118,7 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
   if (editing && query.isLoading) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
+  if (editing && query.isError) return <AdminRequestError error={query.error} />;
 
   return (
     <div className="article-editor-grid">
@@ -155,7 +168,7 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
             <Form.Item name="name" label="Nume și Prenume" rules={[{ required: true }]}>
               <Input placeholder="Ex: Dr. Popescu Ion" />
             </Form.Item>
-            <Form.Item name="slug" label="Slug (URL)" rules={[{ required: true }]}>
+            <Form.Item name="slug" label="Adresă URL" rules={[{ required: true }]}>
               <Input placeholder="ex: dr-popescu-ion" />
             </Form.Item>
             <Form.Item name="role" label="Rol / Specializare">
@@ -168,7 +181,11 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
               <Input placeholder="Ex: Doctor în medicină dentară, membru SRIO" />
             </Form.Item>
             <Form.Item name="portrait_media_id" label="Portret">
-              <ImageUploadField client={client} altText={`Portret ${form.getFieldValue('name') || 'medic DentNow'}`} />
+              <ImageUploadField
+                client={client}
+                altText={`Portret ${form.getFieldValue('name') || 'medic DentNow'}`}
+                placeholderText="Echipa DentNow medic stomatolog"
+              />
             </Form.Item>
             <Form.Item name="active" label="Activ pe site?" valuePropName="checked">
               <input type="checkbox" />
@@ -179,10 +196,11 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
 
       <div className="article-editor-preview-panel">
         <LivePreview
-          path={query.data?.slug ? `/echipa/${query.data.slug}` : null}
-          ready={editing && Boolean(query.data?.slug)}
-          notReadyHint="Salvează medicul pentru a-i vedea pagina publică."
+          path={query.data?.slug ? `/echipa/${query.data.slug}` : '/echipa/previzualizare'}
+          ready={Boolean(query.data?.slug)}
           reloadToken={query.data?.version}
+          urlLabel={`dentnow.ro/echipa/${values.slug || query.data?.slug || 'medic-nou'}`}
+          draft={!editing || dirty ? { kind: 'doctor', data: { ...query.data, ...values } } : null}
         />
       </div>
     </div>

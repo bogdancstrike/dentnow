@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 export interface ClinicRow extends ResourceRow {
   id: string;
@@ -57,6 +58,8 @@ export function ClinicsScreen({ client }: { client: AdminClient }) {
     navigate('/admin/clinici/nou');
   };
 
+  if (listQuery.isError) return <AdminRequestError error={listQuery.error} />;
+
   return (
     <ResourceTable<ClinicRow>
       title="Clinici"
@@ -73,7 +76,7 @@ export function ClinicsScreen({ client }: { client: AdminClient }) {
       }}
       columns={[
         { title: 'Nume', dataIndex: 'name' },
-        { title: 'Slug', dataIndex: 'slug' },
+        { title: 'Adresă', dataIndex: 'slug' },
         { title: 'Zonă', dataIndex: 'area' },
         { title: 'Status', dataIndex: 'status' },
         { title: 'View', render: (_, row) => <Button type="link" icon={<EyeOutlined />} href={`/locatii/${row.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },

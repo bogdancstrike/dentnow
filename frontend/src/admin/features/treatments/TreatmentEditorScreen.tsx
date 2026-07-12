@@ -23,6 +23,8 @@ import { LivePreview } from '../../components/LivePreview';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { RemoteSelect } from '../../components/RemoteSelect';
 import '../editorial/articles.css'; // Reuse article layout CSS
+import { previewMarkdown } from '../../../api/previewDraft';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 interface TreatmentFormValues extends TreatmentRow {}
 
@@ -33,6 +35,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm<TreatmentFormValues>();
+  const values = (Form.useWatch([], form) ?? {}) as Partial<TreatmentFormValues>;
   const [dirty, setDirty] = useState(false);
 
   const treatmentQuery = useQuery({
@@ -108,6 +111,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
   if (editing && treatmentQuery.isLoading) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
+  if (editing && treatmentQuery.isError) return <AdminRequestError error={treatmentQuery.error} />;
 
   return (
     <div className="article-editor-grid">
@@ -159,7 +163,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
             <Form.Item name="name" label="Nume Tratament" rules={[{ required: true }]}>
               <Input placeholder="Ex: Implant Dentar" />
             </Form.Item>
-            <Form.Item name="slug" label="Slug (URL)" rules={[{ required: true }]}>
+            <Form.Item name="slug" label="Adresă URL" rules={[{ required: true }]}>
               <Input placeholder="ex: implant-dentar" />
             </Form.Item>
             <Form.Item name="category_id" label="Categorie existentă">
@@ -198,10 +202,19 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
 
       <div className="article-editor-preview-panel">
         <LivePreview
-          path={treatmentQuery.data?.slug ? `/tratamente/${treatmentQuery.data.slug}` : null}
-          ready={editing && Boolean(treatmentQuery.data?.slug)}
-          notReadyHint="Salvează tratamentul pentru a vedea pagina publică reală."
+          path={treatmentQuery.data?.slug ? `/tratamente/${treatmentQuery.data.slug}` : '/tratamente/previzualizare'}
+          ready={Boolean(treatmentQuery.data?.slug)}
           reloadToken={treatmentQuery.data?.version}
+          urlLabel={`dentnow.ro/tratamente/${values.slug || treatmentQuery.data?.slug || 'tratament-nou'}`}
+          draft={!editing || dirty ? {
+            kind: 'treatment',
+            data: {
+              ...treatmentQuery.data,
+              ...values,
+              detail_html: previewMarkdown(String(values.body_markdown || treatmentQuery.data?.body_markdown || '')),
+              prices: treatmentQuery.data?.prices || [],
+            },
+          } : null}
         />
       </div>
     </div>

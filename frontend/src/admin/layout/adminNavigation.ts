@@ -32,7 +32,6 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
       { slug: 'noutati', key: 'news', label: 'Noutăți', capability: CAP.contentRead },
       { slug: 'decontat-cas', key: 'decontat-cas', label: 'Decontare CAS', capability: CAP.contentRead },
       { slug: 'quiz', key: 'quiz', label: 'Quiz', capability: CAP.contentRead },
-      { slug: 'setari', key: 'settings', label: 'Setări site', capability: CAP.contentRead },
     ],
   },
   {
@@ -46,4 +45,3 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
 ];
 
 export const ADMIN_NAV_ITEMS = ADMIN_NAVIGATION.flatMap((group) => group.items);
-

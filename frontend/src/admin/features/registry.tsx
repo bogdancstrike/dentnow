@@ -6,12 +6,13 @@ import { EyeOutlined } from '@ant-design/icons';
 import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
 import { ClinicsScreen } from './clinics/ClinicsScreen';
-import { SiteSettingsScreen } from './site/SiteSettingsScreen';
 import { RemoteSelect } from '../components/RemoteSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { type ResourceConfig } from '../components/ResourceScreen';
 import type { ResourceRow } from '../components/ResourceTable';
 import type { Me } from '../auth/permissions';
+import { QuizSubResources } from './quiz/QuizSubResources';
+import { previewMarkdown } from '../../api/previewDraft';
 
 const { Item } = Form;
 
@@ -41,11 +42,19 @@ const legal = makeConfig({
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
     { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/${record.doc_type === 'privacy' ? 'confidentialitate' : record.doc_type}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
-  previewPath: (row) => {
-    const t = (row as { doc_type?: string } | null)?.doc_type;
+  previewPath: (row, values) => {
+    const t = String(values?.doc_type ?? (row as { doc_type?: string } | null)?.doc_type ?? '');
     if (!t) return null;
     return `/${t === 'privacy' ? 'confidentialitate' : t}`;
   },
+  previewKind: 'legal-document',
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    body_html: previewMarkdown(String(
+      values.body_markdown ?? (row as unknown as Record<string, unknown> | null)?.body_markdown ?? '',
+    )),
+  }),
   previewHint: 'Salvează documentul pentru a-i vedea pagina publică.',
   form: ({ editing }) => (
     <>
@@ -64,20 +73,25 @@ const quiz = makeConfig({
   endpoint: '/v1/admin/quizzes',
   columns: [
     { title: 'Titlu', dataIndex: 'title' },
-    { title: 'Slug', dataIndex: 'slug' },
+    { title: 'Adresă', dataIndex: 'slug' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
     { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href="/scor-igiena" target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: true },
   previewPath: () => '/scor-igiena',
+  previewKind: 'quiz',
   previewHint: 'Salvează quiz-ul pentru a-l vedea pe pagina /scor-igiena.',
   form: () => (
     <>
       <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
-      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input placeholder="scor-igiena" /></Item>
+      <Item name="slug" label="Adresă URL" rules={[{ required: true }]}><Input placeholder="scor-igiena" /></Item>
       <Item name="intro" label="Intro"><Input.TextArea rows={2} /></Item>
     </>
   ),
+  editExtra: ({ row, client, onChanged }) => (
+    <QuizSubResources quizId={row.id} client={client} onChanged={onChanged} />
+  ),
+  editExtraHint: 'Salvează mai întâi quiz-ul pentru a adăuga întrebări, răspunsuri și rezultate.',
 });
 
 const news = makeConfig({
@@ -86,12 +100,18 @@ const news = makeConfig({
   endpoint: '/v1/admin/news',
   columns: [
     { title: 'Titlu', dataIndex: 'title' },
-    { title: 'Slug', dataIndex: 'slug' },
+    { title: 'Adresă', dataIndex: 'slug' },
     { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
     { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/noutati#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { status: 'draft' },
   previewPath: () => '/noutati',
+  previewKind: 'news',
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    __preview_slug: (row as unknown as Record<string, unknown> | null)?.slug,
+  }),
   previewHint: 'Salvează noutatea cu status „Publicat” pentru a o vedea pe pagina /noutati.',
   sample: {
     title: 'Program special de sărbători',
@@ -104,7 +124,7 @@ const news = makeConfig({
   form: () => (
     <>
       <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
-      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input placeholder="titlu-noutate" /></Item>
+      <Item name="slug" label="Adresă URL" rules={[{ required: true }]}><Input placeholder="titlu-noutate" /></Item>
       <Item name="category" label="Categorie"><Input placeholder="Eveniment, Lansare etc." /></Item>
       <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
       <Item name="body_markdown" label="Conținut (Markdown)"><Input.TextArea rows={6} /></Item>
@@ -134,6 +154,12 @@ const homepageServices = makeConfig({
   ],
   defaults: { active: true, position: 0 },
   previewPath: () => '/#servicii',
+  previewKind: 'homepage-service',
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
+  }),
   previewHint: 'Salvează serviciul pentru a-l vedea în secțiunea „Tratamente uzuale” de pe prima pagină.',
   sample: {
     title: 'Fațete Dentare',
@@ -168,6 +194,12 @@ const gallery = makeConfig({
   ],
   defaults: { active: true, position: 0 },
   previewPath: () => '/#clinica',
+  previewKind: 'gallery-image',
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
+  }),
   previewHint: 'Salvează imaginea pentru a o vedea în caruselul „Un spatiu clinic clar” de pe prima pagină.',
   sample: {
     title: 'Sala de așteptare',
@@ -200,6 +232,5 @@ export function getResourceConfig(key: string): ResourceConfig<Row> | null {
 }
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {
-  if (key === 'settings') return <SiteSettingsScreen client={client} />;
   return null;
 }

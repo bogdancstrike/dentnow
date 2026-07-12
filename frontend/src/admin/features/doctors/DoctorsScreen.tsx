@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 export interface DoctorRow extends ResourceRow {
   id: string;
@@ -56,6 +57,8 @@ export function DoctorsScreen({ client }: { client: AdminClient }) {
   const openCreate = () => {
     navigate('/admin/echipa-medicala/nou');
   };
+
+  if (listQuery.isError) return <AdminRequestError error={listQuery.error} />;
 
   return (
     <ResourceTable<DoctorRow>

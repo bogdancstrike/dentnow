@@ -1,22 +1,23 @@
 /**
- * Reusable live preview. Renders the ACTUAL public page in a sandboxed same-origin
+ * Reusable live preview. Renders the ACTUAL public page in a same-origin
  * iframe instead of a hand-built approximation — so it is always pixel-accurate and
- * shows every section (maps, contacts, orar, FAQ, …). This works because admin edits
- * are live immediately (no snapshot/publish step), so the public route already
- * reflects saved changes.
+ * shows every section (maps, contacts, orar, FAQ, …). Unsaved values are delivered
+ * only to this iframe over a source- and origin-checked postMessage channel; saved
+ * values continue to come from the public APIs.
  *
  * Pass the public `path` for the entity (e.g. `/locatii/dristor`). Bump `reloadToken`
  * (usually the entity's `version`) to auto-refresh after a save; the manual "Reîncarcă"
  * button covers child-resource edits that don't change the parent version.
  */
-import { useEffect, useRef, useState } from 'react';
-import { Button, Empty, Segmented, Space, Tooltip, Typography } from 'antd';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, Empty, Segmented, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   DesktopOutlined,
   ExportOutlined,
   MobileOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
+import { PREVIEW_DRAFT_MSG, PREVIEW_READY_MSG } from '../../api/previewDraft';
 import './livePreview.css';
 
 export interface LivePreviewProps {
@@ -30,6 +31,11 @@ export interface LivePreviewProps {
   reloadToken?: number | string;
   /** Optional friendly URL shown in the fake browser chrome. */
   urlLabel?: string;
+  /**
+   * Unsaved editor values to render without persisting. When set, the preview shows
+   * even before the entity is saved, and updates live as the form changes (no reload).
+   */
+  draft?: { kind: string; data: unknown } | null;
 }
 
 export function LivePreview({
@@ -38,16 +44,49 @@ export function LivePreview({
   notReadyHint = 'Salvează întâi pentru a genera previzualizarea paginii publice.',
   reloadToken,
   urlLabel,
+  draft = null,
 }: LivePreviewProps) {
   const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
   const [nonce, setNonce] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const show = ready && Boolean(path);
+  // A draft lets us preview before saving, so the iframe shows even when not "ready".
+  const show = (ready || Boolean(draft)) && Boolean(path);
 
-  // Reload when the caller signals a save.
+  // Reload when the caller signals a save or the route changes (NOT on draft edits).
   useEffect(() => {
     setNonce((n) => n + 1);
   }, [reloadToken, path]);
+
+  const postDraft = useCallback(() => {
+    if (draft && iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        { type: PREVIEW_DRAFT_MSG, kind: draft.kind, data: draft.data },
+        window.location.origin,
+      );
+    }
+  }, [draft]);
+
+  // Push the draft on every form change (no reload), and answer the iframe's
+  // readiness handshake so the first draft lands after the page mounts.
+  useEffect(() => {
+    postDraft();
+  }, [postDraft]);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const payload = event.data as { type?: string; kind?: string } | null;
+      if (
+        event.origin === window.location.origin &&
+        event.source === iframeRef.current?.contentWindow &&
+        payload?.type === PREVIEW_READY_MSG &&
+        payload.kind === draft?.kind
+      ) {
+        postDraft();
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [postDraft]);
 
   // Insert the query before any #fragment so `/#echipa` becomes `/?...#echipa` and the
   // fragment still scrolls the public page into view.
@@ -64,7 +103,10 @@ export function LivePreview({
   return (
     <div className="live-preview">
       <div className="live-preview-toolbar">
-        <Typography.Text strong>Previzualizare live</Typography.Text>
+        <Space size="small">
+          <Typography.Text strong>Previzualizare live</Typography.Text>
+          {draft && <Tag color="gold">Ciornă nesalvată</Tag>}
+        </Space>
         <Space size="small">
           <Segmented
             size="small"

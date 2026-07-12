@@ -11,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 export interface OfferRow extends ResourceRow {
   id: string;
@@ -23,6 +24,8 @@ export interface OfferRow extends ResourceRow {
   price_amount?: number;
   old_amount?: number;
   featured?: boolean;
+  currency?: string;
+  features?: string[] | string;
 }
 
 interface OfferList {
@@ -61,6 +64,8 @@ export function OffersScreen({ client }: { client: AdminClient }) {
     navigate('/admin/oferte/nou');
   };
 
+  if (listQuery.isError) return <AdminRequestError error={listQuery.error} />;
+
   return (
     <ResourceTable<OfferRow>
       title="Oferte"
@@ -77,7 +82,7 @@ export function OffersScreen({ client }: { client: AdminClient }) {
       }}
       columns={[
         { title: 'Nume', dataIndex: 'name' },
-        { title: 'Slug', dataIndex: 'slug' },
+        { title: 'Adresă', dataIndex: 'slug' },
         { title: 'Status', dataIndex: 'status', render: (v) => <Tag>{v}</Tag> },
         { title: 'Preț', render: (_, r) => r.price_amount ? `${r.price_amount} RON` : '-' },
         { title: 'View', render: (_, row) => <Button type="link" icon={<EyeOutlined />} href={`/oferte#${row.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },

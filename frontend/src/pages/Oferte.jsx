@@ -5,13 +5,29 @@ import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import ContactCTA from '../components/sections/ContactCTA';
 import './Oferte.css';
+import { usePreviewDraft } from '../api/previewDraft';
+import { StatusPage } from '../shared/StatusPage';
 
 export default function Oferte() {
-  const { data: offers = [], isLoading } = useQuery({
+  const { data: offers = [], isLoading, isError } = useQuery({
     queryKey: publicQueryKeys.offers,
     queryFn: fetchOffers,
   });
-  const ref = useRevealAll([offers]);
+  const offerDraft = usePreviewDraft('offer');
+  const previewOffers = offerDraft
+    ? (() => {
+        const index = offers.findIndex((offer) =>
+          (offerDraft.id && offer.id === offerDraft.id)
+          || offer.slug === offerDraft.__preview_slug
+          || offer.slug === offerDraft.slug,
+        );
+        if (index < 0) return [...offers, offerDraft];
+        return offers.map((offer, itemIndex) => itemIndex === index ? { ...offer, ...offerDraft } : offer);
+      })()
+    : offers;
+  const ref = useRevealAll([previewOffers]);
+
+  if (isError) return <StatusPage code={503} />;
 
   return (
     <div ref={ref}>
@@ -19,7 +35,7 @@ export default function Oferte() {
       <PageHero dark tag="Oferte DentNow" title='Pachete clare,<br><em class="ac">fara presiune falsa.</em>' subtitle="Ofertele sunt afisate cu pret de pornire si trebuie confirmate de clinica inainte de lansare." />
       <div className="offers-grid">
         {isLoading && <div style={{ color: 'white', padding: '2rem' }}>Se incarcă ofertele...</div>}
-        {offers.map((o, i) => {
+        {previewOffers.map((o, i) => {
           const saveAmount = (o.old_amount && o.price_amount) ? o.old_amount - o.price_amount : null;
           return (
             <article key={o.slug} className={`offer-card rv${i > 0 ? ` d${i % 3}` : ''}${o.featured ? ' featured' : ''}`}>

@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchTreatments, publicQueryKeys } from '../api/publicClient';
-import { useLocation, Link, Navigate } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { IconPhone, IconClock, IconAlert } from '../components/ui/Icons';
 import config from '../config';
 import './TreatmentDetail.css';
+import { isPreviewMode, usePreviewDraft } from '../api/previewDraft';
+import NotFound from './NotFound';
+import { StatusPage } from '../shared/StatusPage';
 
 const treatmentData = {
   'implant-dentar-bucuresti': {
@@ -142,20 +145,24 @@ export default function TreatmentDetail() {
   const { pathname } = useLocation();
   const treatSlug = pathname.replace(/\/+$/, '').split('/').pop();
   const openPicker = useClinicPicker();
+  const treatmentDraft = usePreviewDraft('treatment');
 
-  const { data: treatments = [], isLoading } = useQuery({
+  const { data: treatments = [], isLoading, isError } = useQuery({
     queryKey: publicQueryKeys.treatments,
     queryFn: fetchTreatments,
   });
 
-  const backendItem = treatments.find(t => t.slug === treatSlug);
+  const savedItem = treatments.find(t => t.slug === treatSlug)
+    || (treatmentDraft?.id ? treatments.find((t) => t.id === treatmentDraft.id) : null);
+  const backendItem = treatmentDraft ? { ...(savedItem || {}), ...treatmentDraft } : savedItem;
 
   if (isLoading) {
     return <div style={{ padding: '8rem 2rem', textAlign: 'center', color: 'white' }}>Se încarcă tratamentul...</div>;
   }
+  if (isError) return <StatusPage code={503} />;
 
   if (!backendItem) {
-    return <Navigate to="/tratamente" replace />;
+    return isPreviewMode() ? null : <NotFound />;
   }
 
   const primaryPrice = backendItem.prices?.[0];

@@ -15,6 +15,7 @@ import { MeSchema, type Me } from './auth/permissions';
 import { adminTheme } from './theme';
 import { AdminLayout } from './layout/AdminLayout';
 import { AccessDeniedPage } from './pages/AccessDeniedPage';
+import { StatusPage } from '../shared/StatusPage';
 
 const adminQueryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
@@ -72,11 +73,11 @@ export default function AdminApp() {
             <Spin size="large" description="Se conectează la administrare…" />
           </div>
         )}
-        {state.phase === 'config-error' && <AccessDeniedPage title="Configurare indisponibilă" detail={state.message} />}
+        {state.phase === 'config-error' && <StatusPage code={503} title="Configurarea nu este disponibilă." detail="Platforma de administrare nu poate porni momentan." />}
         {state.phase === 'denied' && (
           <AccessDeniedPage title="Acces restricționat" detail="Contul tău nu are un rol DentNow atribuit." />
         )}
-        {state.phase === 'error' && <AccessDeniedPage title="Eroare" detail={state.message} />}
+        {state.phase === 'error' && <StatusPage code={503} />}
         {state.phase === 'ready' && <AdminLayout me={state.me} client={state.client} />}
       </AntApp>
       </QueryClientProvider>

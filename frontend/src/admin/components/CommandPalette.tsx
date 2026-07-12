@@ -2,18 +2,13 @@ import { Command } from 'cmdk';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  AuditOutlined,
   FileAddOutlined,
   FileTextOutlined,
   GlobalOutlined,
   LogoutOutlined,
   MedicineBoxOutlined,
-  MenuOutlined,
   PictureOutlined,
-  QuestionCircleOutlined,
-  SafetyCertificateOutlined,
   SearchOutlined,
-  SettingOutlined,
   ShopOutlined,
   SolutionOutlined,
   TeamOutlined,
@@ -23,7 +18,6 @@ import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
 import { CAP, can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
-import { ADMIN_NAVIGATION } from '../layout/adminNavigation';
 import { COMMAND_PALETTE_EVENT } from '../layout/adminEvents';
 
 interface SearchHit {
@@ -32,21 +26,6 @@ interface SearchHit {
   title: string;
   route: string;
 }
-
-const NAV_ICONS: Record<string, React.ReactNode> = {
-  clinics: <ShopOutlined />,
-  doctors: <TeamOutlined />,
-  treatments: <MedicineBoxOutlined />,
-  offers: <TagsOutlined />,
-  partners: <SolutionOutlined />,
-  articles: <FileTextOutlined />,
-  quiz: <QuestionCircleOutlined />,
-  navigation: <MenuOutlined />,
-  settings: <SettingOutlined />,
-  media: <PictureOutlined />,
-  legal: <SafetyCertificateOutlined />,
-  audit: <AuditOutlined />,
-};
 
 const RESULT_ICONS: Record<string, React.ReactNode> = {
   clinic: <ShopOutlined />,
@@ -88,14 +67,6 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
   const [searching, setSearching] = useState(false);
   const navigate = useNavigate();
   const normalizedQuery = query.trim();
-
-  const navigation = useMemo(
-    () =>
-      ADMIN_NAVIGATION.flatMap((group) => group.items)
-        .filter((item) => !item.capability || can(me, item.capability))
-        .filter((item) => matches(item.label, normalizedQuery)),
-    [me, normalizedQuery],
-  );
 
   const canWrite = can(me, CAP.contentWrite);
   const CREATE_ACTIONS: { id: string; label: string; keywords: string; icon: ReactNode; path: string }[] = useMemo(
@@ -193,7 +164,6 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
   };
 
   const nothing =
-    navigation.length === 0 &&
     actions.length === 0 &&
     extraActions.length === 0 &&
     results.length === 0 &&
@@ -223,21 +193,6 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
         </div>
         <Command.List>
           {nothing && <Command.Empty>Niciun rezultat.</Command.Empty>}
-
-          {navigation.length > 0 && (
-            <Command.Group heading="Navigare">
-              {navigation.map((item) => (
-                <Command.Item
-                  key={item.slug}
-                  value={`nav ${item.label}`}
-                  onSelect={() => go(`/admin/${item.slug}`)}
-                >
-                  <span className="dent-cmdk-icon">{NAV_ICONS[item.key]}</span>
-                  <span className="dent-cmdk-label">{item.label}</span>
-                </Command.Item>
-              ))}
-            </Command.Group>
-          )}
 
           {actions.length > 0 && (
             <Command.Group heading="Creează">
@@ -295,7 +250,7 @@ const PALETTE_CSS = `
 .dent-cmdk-content [cmdk-input]{height:52px;min-width:0;flex:1;border:0;outline:0;background:transparent;color:#191b21;font:14px/1.4 "Inter Variable",Inter,system-ui,sans-serif;}
 .dent-cmdk-content [cmdk-input]::placeholder{color:#8b93a1;}
 .dent-cmdk-esc{border:1px solid #e7e9ee;border-radius:5px;background:#f7f8fa;padding:3px 6px;color:#8b93a1;font:11px/1 "JetBrains Mono",ui-monospace,monospace;}
-.dent-cmdk-content [cmdk-list]{overflow-x:hidden;overflow-y:auto;padding:6px;scroll-padding-block:6px;}
+.dent-cmdk-content [cmdk-list]{min-height:0;max-height:calc(70vh - 53px);flex:1 1 auto;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:6px;scroll-padding-block:6px;}
 .dent-cmdk-content [cmdk-list]::-webkit-scrollbar{width:10px}.dent-cmdk-content [cmdk-list]::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:rgba(148,163,184,.5);background-clip:content-box;}
 .dent-cmdk-content [cmdk-group-heading]{padding:10px 10px 4px;color:#8b93a1;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
 .dent-cmdk-content [cmdk-item]{display:flex;min-height:38px;align-items:center;gap:10px;border-radius:8px;padding:9px 10px;color:#5a6472;font-size:14px;cursor:pointer;user-select:none;}

@@ -17,7 +17,18 @@ Later follow-up requests (session 2, batch 2):
 - [x] **Editor full-width + bigger preview** — removed the `maxWidth:1600` cap on all editors, widened the preview column (1.2fr) and made the preview panel a tall sticky pane; trimmed admin content padding.
 - [x] **Location page booking** — `/locatii/:slug` bottom CTA now calls/WhatsApps the current clinic directly instead of opening the all-locations picker.
 - [x] **Dedicated /nou editors for generic CRUD** — new reusable `ResourceEditorScreen` (full-page form + live preview) + `ResourceScreen` is now a list that navigates to it. noutati, servicii-dentnow, galerie clinică, legal, quiz all get `/nou` + `/:id` dedicated pages with preview + Precompletează, matching the bespoke editors.
-- [ ] **Draft preview** — preview unsaved form values without going live (postMessage draft injection), discarded on exit.
+- [x] **Draft preview** — preview unsaved clinic/offer/treatment/doctor and generic-resource form values without going live; same-origin `postMessage` drafts are memory-only and discarded on editor exit.
+- [x] **Quiz nested authoring** — `/admin/quiz/:id` now manages questions, answer choices with scores, ordering, and result bands; the active nested quiz drives `/scor-igiena` through public bootstrap, while `/nou` explains that the parent must be saved first.
+- [x] **Enterprise URL terminology** — visible “Slug” labels were replaced with “Adresă URL”/“Adresă”; API contracts keep the internal `slug` field.
+- [x] **Remove unused site settings** — deleted `/admin/setari`, its navigation/cmdk entry, route, and component.
+- [x] **Clinic create/edit completeness** — `/nou` collects unsaved contacts, phone/WhatsApp, hours, access directions, and FAQs before the first save; edit child tables are scoped to the selected clinic and refresh the real-page preview.
+- [x] **Explicit error pages** — branded 403 access denied, 404 missing resource, and 503 backend/maintenance states are wired into public/admin routes and query failures.
+- [x] **Medical-team carousel** — four or more doctors render in a fluid, continuously looping horizontal marquee that never changes the page scroll position; hover/focus pauses it and reduced-motion users receive a static horizontal list. Up to three doctors retain the grid.
+- [x] **Generic doctor portrait fallback** — doctor cards, profile pages, and the `/admin/echipa-medicala` upload field use the neutral „Echipa DentNow medic stomatolog” placeholder when no portrait exists; no fictional doctor name is shown.
+- [x] **Explicit doctor URL conflict** — unique-address API conflicts are no longer misclassified as concurrent edits; the doctor editor shows „Adresa URL este deja folosită” both as a toast and on the affected field.
+- [x] **Dynamic clinic contact picker** — call/WhatsApp modals read active clinics and their primary contacts from the public API, so clinics added in admin appear automatically instead of being limited to the three compiled locations.
+- [x] **Scrollable, focused command palette** — removed the user-rejected „Navigare” group and constrained the remaining cmdk result list to an independent keyboard/mouse/touch scroll area.
+- [x] **Homepage services CRUD/design** — the master `#servicii` markup/CSS was verified and retained exactly while the cards remain API-backed and editable at `/admin/servicii-dentnow`.
 - [x] **Per-doctor page** — new `/echipa/:slug` public profile (portrait, role, credentials, focus, CTAs). Homepage team cards link to it; admin doctor „view” + editor preview now target `/echipa/:slug`.
 - [x] **Clinic gallery CRUD** `/admin/clinica` — new `gallery_images` table (migration 0011, seeded with the 6 placeholders), service/schema/serializer, `/v1/admin/gallery-images` endpoints, bootstrap exposure. `ProofGallery` renders from the backend (static fallback); admin screen with image upload (`ImageUploadField`), title/caption/alt/position/active.
 - [x] **/decontat-cas CRUD** `/admin/decontat-cas` — new `cas_steps` + `cas_faqs` tables (migration 0012, seeded from the static data), services/schemas/serializers, CRUD endpoints, bootstrap `decontat_cas`. `DecontatCas.jsx` renders steps+faqs from the backend (static fallback). Bespoke admin screen with two tables + a live preview of the real `/decontat-cas` page.
@@ -27,14 +38,14 @@ Review of the Gemini-authored commits (`4d94d3b..HEAD`) plus new product fixes. 
 
 - [x] **Offers 400 `features` extra_forbidden** — `OfferCreate/OfferUpdate` now accept `features` (list or comma-string, coerced); `OfferService` syncs the `offer_features` child table and round-trips it in the serializer. Verified against live DB.
 - [x] **Stale failing frontend unit tests** — `resource-screen`/`clinics-screen` tests updated for dedicated screens + Router. 22/22 green, tsc clean.
-- [~] **Reusable, accurate live preview** — new `LivePreview` renders the REAL public route in a same-origin iframe (zero drift; shows every section because it *is* the page). Wired into clinic (`/locatii/:slug`), treatment (`/tratamente/:slug`), offer (`/oferte`) editors; auto-reloads on save + manual refresh + desktop/mobile. Removed the old hand-built approximations. Doctors/news pending (their public pages read static data — wired under #5/#6).
-- [~] **Clinic editor missing fields** — contacts (telefon/WhatsApp/email via dropdown), orar, „cum ajungi” (transport, dropdown mode), FAQ already exist as sub-editors; now discoverable via a clear prompt on `/nou` (child rows need a saved parent) and the real-page preview shows them. Gallery still pending (#9).
+- [x] **Reusable, accurate live preview** — `LivePreview` renders the real same-origin public route and overlays unsaved browser-only drafts for clinic, treatment, offer, doctor, news, homepage service, gallery, legal, and quiz parent forms; auto-refresh/manual refresh + desktop/mobile remain available.
+- [x] **Clinic editor missing fields** — contacts (telefon/WhatsApp/email), orar, „cum ajungi” and FAQ are editable before first save as local rows and after save as correctly clinic-scoped child CRUD; the real location preview renders all of them.
 - [x] **Doctors editor** — doctors are now API-backed: new `_query_doctors` in bootstrap, `DoctorTeam.jsx` reads `useSiteData().doctors` (with portrait via media proxy + fallback). Editor gains portrait upload (reusable `ImageUploadField`), credentials field, `Precompletează`, and a live preview of the real `/#echipa` section. Also fixed `portrait_media_id` missing from doctor schemas (would 400) and the public media proxy (dropped the obsolete publication gate so newly uploaded images serve).
 - [x] **Noutăți** — `/admin/noutati` CRUD was unreachable (no nav item, though the backend endpoints + registry config existed); added the nav entry so the news list/create/edit/delete works. `Noutati.jsx` was already API-driven (`fetchNews`) — fixed its broken image URL (`/media/<id>` → media proxy) and added a `published_at` field to the admin form.
 - [x] **Precompletează** prefill button on every `/nou` editor — now on clinici, oferte, tratamente, echipa-medicala, articole, parteneri (fills realistic mock data for quick editing).
 - [x] **Home „Tratamente uzuale”** — section already matched master (verified via screenshot; the static `services` data is byte-identical). Added a full dedicated backend CRUD: `homepage_services` table (migration 0010, seeded with the 6 cards), service/schema/serializer, `/v1/admin/homepage-services` endpoints, bootstrap exposure, and `/admin/servicii-dentnow` admin screen. `Home.jsx` renders the section from the backend (static fallback preserves the look if empty).
-- [ ] **Clinic gallery CRUD** at `/admin/clinica`.
-- [ ] **`/decontat-cas` CRUD** at `/admin/decontat-cas` with live preview.
+- [x] **Clinic gallery CRUD** at `/admin/clinica`.
+- [x] **`/decontat-cas` CRUD** at `/admin/decontat-cas` with live preview.
 
 ---
 
@@ -62,7 +73,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 ## NEW REQUIREMENTS (user, this session) — to implement
 - [x] **URL per admin tab** — React Router inside /admin so each useful section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
 - [~] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id). *(RemoteSelect built; treatment→category wired; remaining relations pending.)*
-- [ ] **More CRUD**: nested quiz question/option/band editor; image-carousel/gallery media; offer→treatment selection; **live preview** of the real page.
+- [~] **More CRUD**: nested quiz question/option/band editor and image-carousel/gallery media are complete; offer→treatment selection remains; real-page live preview is wired for current preview-capable editors.
 - [~] **Implement Google Review syncing**: backend scheduled task to pull reviews pending. Database model `clinics.google_place_id` added.
 - [x] **Restore original frontend UI**: Fixed `/oferte`, `/articole`, and `/tratamente` bug where `useRevealAll` hid items loaded asynchronously. Restored old "Tratamente uzuale" curated card UI on the homepage.
 - [x] **Noutăți (News)**: Split `/admin/articole` into Articole and Noutăți modules. Connected public `/noutati` to read live data from the database `SitePublication` API instead of hardcoded content.

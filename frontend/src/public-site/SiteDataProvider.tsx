@@ -11,6 +11,8 @@ import {
 } from '@tanstack/react-query';
 import { fetchBootstrap, publicQueryKeys } from '../api/publicClient';
 import type { Bootstrap } from '../api/publicContracts';
+import { usePreviewDraft } from '../api/previewDraft';
+import { StatusPage } from '../shared/StatusPage';
 
 const SiteDataContext = createContext<Bootstrap | null>(null);
 
@@ -22,7 +24,7 @@ export function useSiteData(): Bootstrap {
   return value;
 }
 
-function StatusScreen({ title, detail, onRetry }: { title: string; detail: string; onRetry?: () => void }) {
+function LoadingScreen() {
   return (
     <div
       role="status"
@@ -39,18 +41,18 @@ function StatusScreen({ title, detail, onRetry }: { title: string; detail: strin
         padding: '2rem',
       }}
     >
-      <strong style={{ fontSize: '1.1rem' }}>{title}</strong>
-      <span style={{ color: '#64748b', maxWidth: 420 }}>{detail}</span>
-      {onRetry && (
-        <button type="button" onClick={onRetry} style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}>
-          Reîncearcă
-        </button>
-      )}
+      <strong style={{ fontSize: '1.1rem' }}>Se încarcă conținutul…</strong>
+      <span style={{ color: '#64748b', maxWidth: 420 }}>Preluăm informațiile clinicii.</span>
     </div>
   );
 }
 
 function BootstrapGate({ children }: { children: ReactNode }) {
+  const clinicDraft = usePreviewDraft<Record<string, unknown>>('clinic');
+  const doctorDraft = usePreviewDraft<Record<string, unknown>>('doctor');
+  const serviceDraft = usePreviewDraft<Record<string, unknown>>('homepage-service');
+  const galleryDraft = usePreviewDraft<Record<string, unknown>>('gallery-image');
+  const quizDraft = usePreviewDraft<Record<string, unknown>>('quiz');
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: publicQueryKeys.bootstrap,
     queryFn: fetchBootstrap,
@@ -59,18 +61,64 @@ function BootstrapGate({ children }: { children: ReactNode }) {
   });
 
   if (isLoading) {
-    return <StatusScreen title="Se încarcă conținutul…" detail="Preluăm informațiile clinicii." />;
+    return <LoadingScreen />;
   }
   if (isError || !data) {
     return (
-      <StatusScreen
-        title="Conținut indisponibil temporar"
-        detail="Nu am putut încărca informațiile de la server. Vă rugăm reîncercați."
-        onRetry={() => void refetch()}
+      <StatusPage
+        code={503}
+        action={(
+          <button type="button" className="btn btn-dark" onClick={() => void refetch()}>
+            Reîncearcă
+          </button>
+        )}
       />
     );
   }
-  return <SiteDataContext.Provider value={data}>{children}</SiteDataContext.Provider>;
+
+  const mergeItem = <T extends Record<string, unknown>>(
+    items: T[],
+    draft: Record<string, unknown> | null,
+  ): T[] => {
+    if (!draft) return items;
+    const index = items.findIndex((item) =>
+      (draft.id && item.id === draft.id) ||
+      (draft.slug && item.slug === draft.slug),
+    );
+    if (index < 0) return [...items, draft as T];
+    return items.map((item, itemIndex) => itemIndex === index ? { ...item, ...draft } : item);
+  };
+  const mergePositionedItem = <T extends Record<string, unknown>>(
+    items: T[],
+    draft: Record<string, unknown> | null,
+  ): T[] => {
+    if (!draft) return items;
+    const { __preview_position: originalPosition, ...publicDraft } = draft;
+    if (typeof originalPosition === 'number') {
+      const index = items.findIndex((item) => item.position === originalPosition);
+      if (index >= 0) {
+        return items.map((item, itemIndex) => itemIndex === index ? { ...item, ...publicDraft } as T : item);
+      }
+    }
+    return [publicDraft as T, ...items];
+  };
+
+  const previewData: Bootstrap = {
+    ...data,
+    clinics: mergeItem(data.clinics as unknown as Record<string, unknown>[], clinicDraft) as Bootstrap['clinics'],
+    doctors: mergeItem(data.doctors as unknown as Record<string, unknown>[], doctorDraft) as Bootstrap['doctors'],
+    homepage_services: mergePositionedItem(
+      data.homepage_services as unknown as Record<string, unknown>[],
+      serviceDraft,
+    ) as Bootstrap['homepage_services'],
+    gallery: mergePositionedItem(
+      data.gallery as unknown as Record<string, unknown>[],
+      galleryDraft,
+    ) as Bootstrap['gallery'],
+    quiz: quizDraft ? { ...data.quiz, ...quizDraft } as Bootstrap['quiz'] : data.quiz,
+  };
+
+  return <SiteDataContext.Provider value={previewData}>{children}</SiteDataContext.Provider>;
 }
 
 const queryClient = new QueryClient({

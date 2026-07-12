@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 export interface TreatmentRow extends ResourceRow {
   id: string;
@@ -23,6 +24,7 @@ export interface TreatmentRow extends ResourceRow {
   homepage_label?: string;
   homepage_icon?: string;
   body_markdown?: string;
+  prices?: Array<Record<string, unknown>>;
 }
 
 interface TreatmentList {
@@ -61,6 +63,8 @@ export function TreatmentsScreen({ client }: { client: AdminClient }) {
     navigate('/admin/tratamente/nou');
   };
 
+  if (listQuery.isError) return <AdminRequestError error={listQuery.error} />;
+
   return (
     <ResourceTable<TreatmentRow>
       title="Tratamente"
@@ -77,7 +81,7 @@ export function TreatmentsScreen({ client }: { client: AdminClient }) {
       }}
       columns={[
         { title: 'Nume', dataIndex: 'name' },
-        { title: 'Slug', dataIndex: 'slug' },
+        { title: 'Adresă', dataIndex: 'slug' },
         { title: 'Activ', dataIndex: 'active', render: (v) => v ? 'Da' : 'Nu' },
         { title: 'View', render: (_, row) => <Button type="link" icon={<EyeOutlined />} href={`/tratamente/${row.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
         {

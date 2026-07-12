@@ -19,6 +19,7 @@ import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
 import type { PartnerRow } from './PartnersScreen';
 import '../editorial/articles.css';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 interface PartnerFormValues extends PartnerRow {}
 
@@ -104,6 +105,7 @@ export function PartnerEditorScreen({ client }: { client: AdminClient }) {
   if (editing && query.isLoading) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
+  if (editing && query.isError) return <AdminRequestError error={query.error} />;
 
   return (
     <div className="article-editor-grid">

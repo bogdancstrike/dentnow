@@ -40,8 +40,8 @@ function LocationCard({ loc, className }) {
           <IconClock size={16} />
           <span>
             {loc.hours.map((h) => {
-              const dayNames = ['Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata', 'Duminica'];
-              const dayName = dayNames[h.weekday - 1] || 'Zi';
+              const dayNames = ['Duminica', 'Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata'];
+              const dayName = dayNames[h.weekday] || 'Zi';
               const hoursStr = h.closed ? '(Inchis)' : `${h.opens_at?.substring(0, 5) || ''} - ${h.closes_at?.substring(0, 5) || ''}`;
               return <span key={h.weekday} className="loc-hour">{dayName}: {hoursStr}</span>;
             })}

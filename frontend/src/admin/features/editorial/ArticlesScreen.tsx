@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import type { ResourceRow } from '../../components/ResourceTable';
 import './articles.css';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 export interface ArticleRow extends ResourceRow {
   id: string;
@@ -190,6 +191,8 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
     },
   ];
 
+  if (listQuery.isError) return <AdminRequestError error={listQuery.error} />;
+
   return (
     <section className="articles-workspace" aria-labelledby="articles-heading">
       <header className="articles-heading">
@@ -240,4 +243,3 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
     </section>
   );
 }
-

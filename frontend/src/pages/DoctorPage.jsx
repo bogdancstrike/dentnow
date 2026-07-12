@@ -1,27 +1,28 @@
-import { useParams, Navigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { mediaUrl } from '../api/publicClient';
 import './DoctorPage.css';
+import { isPreviewMode, usePreviewDraft } from '../api/previewDraft';
+import NotFound from './NotFound';
 
-const FALLBACK_PORTRAITS = [
-  '/assets/dentnow/doctor-daria.svg',
-  '/assets/dentnow/doctor-diana.svg',
-  '/assets/dentnow/doctor-loredana.svg',
-];
+const FALLBACK_PORTRAIT = '/assets/dentnow/team.svg';
 
 export default function DoctorPage() {
   const { slug } = useParams();
   const { doctors } = useSiteData();
+  const doctorDraft = usePreviewDraft('doctor');
 
   const index = doctors.findIndex((d) => d.slug === slug);
-  const doctor = index >= 0 ? doctors[index] : null;
-  if (!doctor) return <Navigate to="/#echipa" replace />;
+  const savedDoctor = index >= 0 ? doctors[index]
+    : (doctorDraft?.id ? doctors.find((doctor) => doctor.id === doctorDraft.id) : null);
+  const doctor = doctorDraft ? { ...(savedDoctor || {}), ...doctorDraft } : savedDoctor;
+  if (!doctor) return isPreviewMode() ? null : <NotFound />;
 
   const image = doctor.portrait_media_id
     ? mediaUrl(doctor.portrait_media_id, 'hero')
-    : FALLBACK_PORTRAITS[index % FALLBACK_PORTRAITS.length];
+    : FALLBACK_PORTRAIT;
 
   return (
     <div>

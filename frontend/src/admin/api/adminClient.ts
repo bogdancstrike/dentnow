@@ -1,8 +1,8 @@
 /**
  * Admin API client. Every request carries a fresh bearer token and a correlation id;
- * mutations send `If-Match` and surface a 409 as a typed version conflict (not a
- * generic toast). Tokens live only in memory — provided by an injected getter so the
- * client is testable without a real Keycloak.
+ * mutations send `If-Match` and distinguish stale-version conflicts from other 409
+ * domain conflicts. Tokens live only in memory — provided by an injected getter so
+ * the client is testable without a real Keycloak.
  */
 import { getRuntimeConfig } from '../../config/runtime';
 import { isApiErrorEnvelope, type ApiErrorEnvelope } from '../../api/contracts';
@@ -48,6 +48,17 @@ function uuid(): string {
     : `cid-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
+function isVersionConflict(envelope?: ApiErrorEnvelope): boolean {
+  const details = envelope?.details;
+  return Boolean(details && ('current' in details || 'current_version' in details));
+}
+
+function conflictError(envelope?: ApiErrorEnvelope): AdminApiError {
+  return isVersionConflict(envelope)
+    ? new VersionConflictError(envelope)
+    : new AdminApiError(409, envelope);
+}
+
 export class AdminClient {
   constructor(private readonly getToken: TokenGetter) {}
 
@@ -80,7 +91,7 @@ export class AdminClient {
       } catch {
         /* non-JSON error body */
       }
-      if (response.status === 409) throw new VersionConflictError(envelope);
+      if (response.status === 409) throw conflictError(envelope);
       if (response.status === 401) throw new UnauthorizedError(401, envelope);
       throw new AdminApiError(response.status, envelope);
     }
@@ -128,7 +139,7 @@ export class AdminClient {
       } catch {
         /* non-JSON error body */
       }
-      if (response.status === 409) throw new VersionConflictError(envelope);
+      if (response.status === 409) throw conflictError(envelope);
       if (response.status === 401) throw new UnauthorizedError(401, envelope);
       throw new AdminApiError(response.status, envelope);
     }

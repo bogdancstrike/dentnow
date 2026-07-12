@@ -19,7 +19,15 @@ from src.clinics.models import (
 )
 from src.core.db import session_scope
 from src.core.errors import NotFoundError
-from src.editorial.models import Article, NewsItem, Review
+from src.editorial.models import (
+    Article,
+    NewsItem,
+    Quiz,
+    QuizOption,
+    QuizQuestion,
+    QuizResultBand,
+    Review,
+)
 from src.editorial.rich_text import render_markdown
 from src.site.models import (
     CasFaq,
@@ -135,6 +143,59 @@ def _query_doctors(session):
         })
     doctors.sort(key=lambda x: (x["position"], x["name"]))
     return doctors
+
+
+def _query_quiz(session):
+    quiz = session.scalar(
+        _live(Quiz).where(Quiz.active.is_(True)).order_by(Quiz.updated_at.desc())
+    )
+    if quiz is None:
+        return None
+    questions = []
+    for question in session.scalars(
+        _live(QuizQuestion)
+        .where(QuizQuestion.quiz_id == quiz.id)
+        .order_by(QuizQuestion.position.asc())
+    ).all():
+        options = [
+            {
+                "label": option.label,
+                "score": option.score,
+                "position": option.position,
+            }
+            for option in session.scalars(
+                _live(QuizOption)
+                .where(QuizOption.question_id == question.id)
+                .order_by(QuizOption.position.asc())
+            ).all()
+        ]
+        questions.append({
+            "prompt": question.prompt,
+            "position": question.position,
+            "options": options,
+        })
+    bands = [
+        {
+            "min_score": band.min_score,
+            "max_score": band.max_score,
+            "title": band.title,
+            "description": band.description,
+            "recommendations": band.recommendations,
+            "cta_treatment_id": str(band.cta_treatment_id) if band.cta_treatment_id else None,
+        }
+        for band in session.scalars(
+            _live(QuizResultBand)
+            .where(QuizResultBand.quiz_id == quiz.id)
+            .order_by(QuizResultBand.min_score.asc())
+        ).all()
+    ]
+    return {
+        "slug": quiz.slug,
+        "title": quiz.title,
+        "intro": quiz.intro,
+        "questions": questions,
+        "result_bands": bands,
+    }
 
 
 def _query_treatments(session):
@@ -287,6 +348,7 @@ def bootstrap(app, operation, request, **kw):
         homepage_services = _query_homepage_services(session)
         gallery = _query_gallery(session)
         decontat_cas = _query_decontat_cas(session)
+        quiz = _query_quiz(session)
 
     homepage_treatments = [t for t in treatments_data if t.get("homepage_featured")]
     return _json_response({
@@ -300,6 +362,7 @@ def bootstrap(app, operation, request, **kw):
         "gallery": gallery,
         "decontat_cas": decontat_cas,
         "homepage_treatments": homepage_treatments,
+        "quiz": quiz,
     })
 
 

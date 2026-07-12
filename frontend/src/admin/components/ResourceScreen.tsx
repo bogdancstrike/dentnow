@@ -11,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../api/adminClient';
 import { ResourceTable, type ResourceRow } from './ResourceTable';
+import { AdminRequestError } from './AdminRequestError';
 
 export interface ResourceConfig<T extends ResourceRow> {
   title: string;
@@ -22,11 +23,23 @@ export interface ResourceConfig<T extends ResourceRow> {
   toValues?: (row: T) => Record<string, unknown>;
   canWrite?: boolean;
   /** Public path to show in the dedicated editor's live preview. */
-  previewPath?: (row: T | null) => string | null;
+  previewPath?: (row: T | null, values?: Record<string, unknown>) => string | null;
+  /** Browser-only draft channel consumed by the real public route. */
+  previewKind?: string;
+  /** Optional mapping from admin form values to the public renderer's shape. */
+  toPreviewDraft?: (values: Record<string, unknown>, row: T | null) => unknown;
   /** Message shown in the preview before the entity is saved. */
   previewHint?: string;
   /** Optional mock values for the "Precompletează" button on the create page. */
   sample?: Record<string, unknown>;
+  /** Edit-only nested resources rendered after the parent form. */
+  editExtra?: (ctx: {
+    row: T;
+    client: AdminClient;
+    onChanged: () => void;
+  }) => ReactNode;
+  /** Prompt shown on create when nested resources require a saved parent ID. */
+  editExtraHint?: ReactNode;
 }
 
 interface ListResult<T> {
@@ -66,6 +79,8 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
   });
 
   const canWrite = config.canWrite !== false;
+
+  if (listQuery.isError) return <AdminRequestError error={listQuery.error} />;
 
   const actionColumn: ColumnsType<T>[number] = {
     title: 'Acțiuni',

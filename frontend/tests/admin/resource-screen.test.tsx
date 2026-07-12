@@ -57,8 +57,8 @@ describe('generic ResourceScreen via registry', () => {
     }
   });
 
-  it('screenForKey only returns the bespoke settings screen', () => {
-    expect(screenForKey('settings', new AdminClient(async () => 't'), ME)).not.toBeNull();
+  it('screenForKey has no bespoke generic pages', () => {
+    expect(screenForKey('settings', new AdminClient(async () => 't'), ME)).toBeNull();
     expect(screenForKey('news', new AdminClient(async () => 't'), ME)).toBeNull();
     expect(screenForKey('clinics', new AdminClient(async () => 't'), ME)).toBeNull();
   });

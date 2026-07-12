@@ -4,7 +4,7 @@
  * driven by config. Handles create (/nou) and edit (/:id) with If-Match + 409.
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { App, Button, Form, Skeleton, Space, Typography } from 'antd';
+import { Alert, App, Button, Form, Skeleton, Space, Typography } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,6 +14,7 @@ import type { ResourceRow } from './ResourceTable';
 import type { ResourceConfig } from './ResourceScreen';
 import { LivePreview } from './LivePreview';
 import '../features/editorial/articles.css';
+import { AdminRequestError } from './AdminRequestError';
 
 export function ResourceEditorScreen<T extends ResourceRow & { version: number }>({
   client,
@@ -30,7 +31,9 @@ export function ResourceEditorScreen<T extends ResourceRow & { version: number }
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
+  const values = (Form.useWatch([], form) ?? {}) as Record<string, unknown>;
   const [dirty, setDirty] = useState(false);
+  const [previewToken, setPreviewToken] = useState(0);
 
   const query = useQuery({
     queryKey: ['admin', config.endpoint, id],
@@ -86,8 +89,17 @@ export function ResourceEditorScreen<T extends ResourceRow & { version: number }
   };
 
   if (editing && query.isLoading) return <Skeleton active paragraph={{ rows: 10 }} />;
+  if (editing && query.isError) return <AdminRequestError error={query.error} />;
 
-  const previewPath = config.previewPath ? config.previewPath(query.data ?? null) : null;
+  const previewPath = config.previewPath ? config.previewPath(query.data ?? null, values) : null;
+  const previewDraft = config.previewKind
+    ? {
+        kind: config.previewKind,
+        data: config.toPreviewDraft
+          ? config.toPreviewDraft(values, query.data ?? null)
+          : { ...query.data, ...values },
+      }
+    : null;
 
   return (
     <div className="article-editor-grid">
@@ -129,6 +141,16 @@ export function ResourceEditorScreen<T extends ResourceRow & { version: number }
             {config.form({ editing: (query.data ?? null) as T | null, client })}
           </div>
         </Form>
+        {query.data && config.editExtra?.({
+          row: query.data,
+          client,
+          onChanged: () => setPreviewToken((token) => token + 1),
+        })}
+        {!editing && config.editExtraHint && (
+          <div className="article-form-section" style={{ marginTop: 24 }}>
+            <Alert type="info" showIcon title={config.editExtraHint} />
+          </div>
+        )}
       </div>
 
       <div className="article-editor-preview-panel">
@@ -136,7 +158,8 @@ export function ResourceEditorScreen<T extends ResourceRow & { version: number }
           path={config.previewPath ? previewPath : null}
           ready={Boolean(config.previewPath) && (editing ? Boolean(query.data) : false)}
           notReadyHint={config.previewHint ?? 'Salvează pentru a genera previzualizarea paginii publice.'}
-          reloadToken={query.data?.version}
+          reloadToken={`${query.data?.version ?? 0}.${previewToken}`}
+          draft={!editing || dirty ? previewDraft : null}
         />
       </div>
     </div>

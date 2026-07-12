@@ -16,35 +16,56 @@ import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AdminClient } from '../../api/adminClient';
 
-export function ClinicContacts({ clinicId, client }: { clinicId: string; client: AdminClient }) {
+interface ChildRow {
+  id: string;
+  version: number;
+  clinic_id: string;
+  [key: string]: unknown;
+}
+
+interface ChildProps {
+  clinicId: string;
+  client: AdminClient;
+  onChanged?: () => void;
+}
+
+function scopedItems(data: { items?: ChildRow[] } | undefined, clinicId: string): ChildRow[] {
+  return (data?.items ?? []).filter((row) => row.clinic_id === clinicId);
+}
+
+export function ClinicContacts({ clinicId, client, onChanged }: ChildProps) {
   const { message } = App.useApp();
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<any>(undefined);
+  const [editing, setEditing] = useState<ChildRow | Record<string, never> | undefined>(undefined);
   const [form] = Form.useForm();
 
   const query = useQuery({
     queryKey: ['admin', 'clinic-contacts', clinicId],
-    queryFn: async () => (await client.get<any>(`/v1/admin/clinic-contacts?clinic_id=${clinicId}`)).data,
+    queryFn: async () => (await client.get<{ items: ChildRow[] }>(`/v1/admin/clinic-contacts?page=1&page_size=100&clinic_id=${clinicId}`)).data,
   });
 
   const save = useMutation({
     mutationFn: async (values: any) => {
-      values.clinic_id = clinicId;
-      if (editing && editing.id) {
-        return client.patch(`/v1/admin/clinic-contacts/${editing.id}`, values, `"${editing.version}"`);
+      const { clinic_id: _clinicId, id: _id, version: _version, ...payload } = values;
+      if (editing && 'id' in editing) {
+        return client.patch(`/v1/admin/clinic-contacts/${editing.id}`, payload, `"${editing.version}"`);
       }
-      return client.post('/v1/admin/clinic-contacts', values);
+      return client.post('/v1/admin/clinic-contacts', { ...payload, clinic_id: clinicId });
     },
     onSuccess: () => {
       message.success('Contact salvat');
       setEditing(undefined);
       qc.invalidateQueries({ queryKey: ['admin', 'clinic-contacts', clinicId] });
+      onChanged?.();
     },
   });
 
   const remove = useMutation({
     mutationFn: async (row: any) => client.del(`/v1/admin/clinic-contacts/${row.id}`, `"${row.version}"`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'clinic-contacts', clinicId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'clinic-contacts', clinicId] });
+      onChanged?.();
+    },
   });
 
   return (
@@ -54,7 +75,7 @@ export function ClinicContacts({ clinicId, client }: { clinicId: string; client:
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
       <Table
-        dataSource={query.data?.items ?? []}
+        dataSource={scopedItems(query.data, clinicId)}
         rowKey="id"
         pagination={false}
         size="small"
@@ -100,35 +121,39 @@ export function ClinicContacts({ clinicId, client }: { clinicId: string; client:
   );
 }
 
-export function ClinicHours({ clinicId, client }: { clinicId: string; client: AdminClient }) {
+export function ClinicHours({ clinicId, client, onChanged }: ChildProps) {
   const { message } = App.useApp();
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<any>(undefined);
+  const [editing, setEditing] = useState<ChildRow | Record<string, never> | undefined>(undefined);
   const [form] = Form.useForm();
 
   const query = useQuery({
     queryKey: ['admin', 'clinic-hours', clinicId],
-    queryFn: async () => (await client.get<any>(`/v1/admin/clinic-hours?clinic_id=${clinicId}`)).data,
+    queryFn: async () => (await client.get<{ items: ChildRow[] }>(`/v1/admin/clinic-hours?page=1&page_size=100&clinic_id=${clinicId}`)).data,
   });
 
   const save = useMutation({
     mutationFn: async (values: any) => {
-      values.clinic_id = clinicId;
-      if (editing && editing.id) {
-        return client.patch(`/v1/admin/clinic-hours/${editing.id}`, values, `"${editing.version}"`);
+      const { clinic_id: _clinicId, id: _id, version: _version, ...payload } = values;
+      if (editing && 'id' in editing) {
+        return client.patch(`/v1/admin/clinic-hours/${editing.id}`, payload, `"${editing.version}"`);
       }
-      return client.post('/v1/admin/clinic-hours', values);
+      return client.post('/v1/admin/clinic-hours', { ...payload, clinic_id: clinicId });
     },
     onSuccess: () => {
       message.success('Orar salvat');
       setEditing(undefined);
       qc.invalidateQueries({ queryKey: ['admin', 'clinic-hours', clinicId] });
+      onChanged?.();
     },
   });
 
   const remove = useMutation({
     mutationFn: async (row: any) => client.del(`/v1/admin/clinic-hours/${row.id}`, `"${row.version}"`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'clinic-hours', clinicId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'clinic-hours', clinicId] });
+      onChanged?.();
+    },
   });
 
   const zile = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
@@ -140,7 +165,7 @@ export function ClinicHours({ clinicId, client }: { clinicId: string; client: Ad
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
       <Table
-        dataSource={query.data?.items ?? []}
+        dataSource={scopedItems(query.data, clinicId)}
         rowKey="id"
         pagination={false}
         size="small"
@@ -177,35 +202,39 @@ export function ClinicHours({ clinicId, client }: { clinicId: string; client: Ad
   );
 }
 
-export function ClinicFaqs({ clinicId, client }: { clinicId: string; client: AdminClient }) {
+export function ClinicFaqs({ clinicId, client, onChanged }: ChildProps) {
   const { message } = App.useApp();
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<any>(undefined);
+  const [editing, setEditing] = useState<ChildRow | Record<string, never> | undefined>(undefined);
   const [form] = Form.useForm();
 
   const query = useQuery({
     queryKey: ['admin', 'clinic-faqs', clinicId],
-    queryFn: async () => (await client.get<any>(`/v1/admin/clinic-faqs?clinic_id=${clinicId}`)).data,
+    queryFn: async () => (await client.get<{ items: ChildRow[] }>(`/v1/admin/clinic-faqs?page=1&page_size=100&clinic_id=${clinicId}`)).data,
   });
 
   const save = useMutation({
     mutationFn: async (values: any) => {
-      values.clinic_id = clinicId;
-      if (editing && editing.id) {
-        return client.patch(`/v1/admin/clinic-faqs/${editing.id}`, values, `"${editing.version}"`);
+      const { clinic_id: _clinicId, id: _id, version: _version, ...payload } = values;
+      if (editing && 'id' in editing) {
+        return client.patch(`/v1/admin/clinic-faqs/${editing.id}`, payload, `"${editing.version}"`);
       }
-      return client.post('/v1/admin/clinic-faqs', values);
+      return client.post('/v1/admin/clinic-faqs', { ...payload, clinic_id: clinicId });
     },
     onSuccess: () => {
       message.success('FAQ salvat');
       setEditing(undefined);
       qc.invalidateQueries({ queryKey: ['admin', 'clinic-faqs', clinicId] });
+      onChanged?.();
     },
   });
 
   const remove = useMutation({
     mutationFn: async (row: any) => client.del(`/v1/admin/clinic-faqs/${row.id}`, `"${row.version}"`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'clinic-faqs', clinicId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'clinic-faqs', clinicId] });
+      onChanged?.();
+    },
   });
 
   return (
@@ -215,7 +244,7 @@ export function ClinicFaqs({ clinicId, client }: { clinicId: string; client: Adm
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
       <Table
-        dataSource={query.data?.items ?? []}
+        dataSource={scopedItems(query.data, clinicId)}
         rowKey="id"
         pagination={false}
         size="small"
@@ -248,35 +277,39 @@ export function ClinicFaqs({ clinicId, client }: { clinicId: string; client: Adm
   );
 }
 
-export function ClinicTransit({ clinicId, client }: { clinicId: string; client: AdminClient }) {
+export function ClinicTransit({ clinicId, client, onChanged }: ChildProps) {
   const { message } = App.useApp();
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<any>(undefined);
+  const [editing, setEditing] = useState<ChildRow | Record<string, never> | undefined>(undefined);
   const [form] = Form.useForm();
 
   const query = useQuery({
     queryKey: ['admin', 'clinic-transit', clinicId],
-    queryFn: async () => (await client.get<any>(`/v1/admin/clinic-transit?clinic_id=${clinicId}`)).data,
+    queryFn: async () => (await client.get<{ items: ChildRow[] }>(`/v1/admin/clinic-transit?page=1&page_size=100&clinic_id=${clinicId}`)).data,
   });
 
   const save = useMutation({
     mutationFn: async (values: any) => {
-      values.clinic_id = clinicId;
-      if (editing && editing.id) {
-        return client.patch(`/v1/admin/clinic-transit/${editing.id}`, values, `"${editing.version}"`);
+      const { clinic_id: _clinicId, id: _id, version: _version, ...payload } = values;
+      if (editing && 'id' in editing) {
+        return client.patch(`/v1/admin/clinic-transit/${editing.id}`, payload, `"${editing.version}"`);
       }
-      return client.post('/v1/admin/clinic-transit', values);
+      return client.post('/v1/admin/clinic-transit', { ...payload, clinic_id: clinicId });
     },
     onSuccess: () => {
       message.success('Mijloc transport salvat');
       setEditing(undefined);
       qc.invalidateQueries({ queryKey: ['admin', 'clinic-transit', clinicId] });
+      onChanged?.();
     },
   });
 
   const remove = useMutation({
     mutationFn: async (row: any) => client.del(`/v1/admin/clinic-transit/${row.id}`, `"${row.version}"`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'clinic-transit', clinicId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'clinic-transit', clinicId] });
+      onChanged?.();
+    },
   });
 
   return (
@@ -286,7 +319,7 @@ export function ClinicTransit({ clinicId, client }: { clinicId: string; client: 
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
       <Table
-        dataSource={query.data?.items ?? []}
+        dataSource={scopedItems(query.data, clinicId)}
         rowKey="id"
         pagination={false}
         size="small"

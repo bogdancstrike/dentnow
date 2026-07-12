@@ -5,17 +5,33 @@ import { fetchNews, mediaUrl, publicQueryKeys } from '../api/publicClient';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import './Noutati.css';
+import { usePreviewDraft } from '../api/previewDraft';
+import { StatusPage } from '../shared/StatusPage';
 
 export default function Noutati() {
-  const { data: newsItems = [] } = useQuery({
+  const { data: newsItems = [], isError } = useQuery({
     queryKey: publicQueryKeys.news,
     queryFn: fetchNews,
   });
+  const newsDraft = usePreviewDraft('news');
+  const previewItems = newsDraft
+    ? (() => {
+        const index = newsItems.findIndex((item) =>
+          (newsDraft.id && item.id === newsDraft.id)
+          || item.slug === newsDraft.__preview_slug
+          || item.slug === newsDraft.slug,
+        );
+        if (index < 0) return [newsDraft, ...newsItems];
+        return newsItems.map((item, itemIndex) => itemIndex === index ? { ...item, ...newsDraft } : item);
+      })()
+    : newsItems;
 
-  const ref = useRevealAll([newsItems]);
+  const ref = useRevealAll([previewItems]);
 
-  const mainNews = newsItems[0];
-  const sideNews = newsItems.slice(1);
+  const mainNews = previewItems[0];
+  const sideNews = previewItems.slice(1);
+
+  if (isError) return <StatusPage code={503} />;
 
   return (
     <div ref={ref}>

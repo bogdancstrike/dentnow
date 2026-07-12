@@ -18,7 +18,7 @@ import {
 } from '@ant-design/icons';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../api/adminClient';
-import { can, type Me } from '../auth/permissions';
+import { CAP, can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
 import { CommandPalette } from '../components/CommandPalette';
 import { getResourceConfig, screenForKey } from '../features/registry';
@@ -39,6 +39,8 @@ import { PartnerEditorScreen } from '../features/partners/PartnerEditorScreen';
 import { DecontatCasScreen } from '../features/decontat/DecontatCasScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
 import { openCommandPalette } from './adminEvents';
+import { AccessDeniedPage } from '../pages/AccessDeniedPage';
+import { StatusPage } from '../../shared/StatusPage';
 import './adminLayout.css';
 
 const { Header, Sider, Content } = Layout;
@@ -66,6 +68,13 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
   );
 
   const currentItem = ADMIN_NAV_ITEMS.find((item) => item.slug === currentSlug);
+  const contentRoute = (element: React.ReactNode) => can(me, CAP.contentRead)
+    ? element
+    : <AccessDeniedPage title="Acces restricționat" detail="Contul tău nu poate consulta această secțiune." />;
+  const itemRoute = (item: (typeof ADMIN_NAV_ITEMS)[number], element: React.ReactNode) =>
+    !item.capability || can(me, item.capability)
+      ? element
+      : <AccessDeniedPage title="Acces restricționat" detail="Contul tău nu are permisiunea necesară pentru această secțiune." />;
 
   return (
     <Layout className="admin-shell" hasSider>
@@ -154,31 +163,31 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
         <Content id="admin-main" className="admin-content">
           <Routes>
             <Route index element={<Navigate to="clinici" replace />} />
-            <Route path="clinici" element={<ClinicsScreen client={client} />} />
-            <Route path="clinici/nou" element={<ClinicEditorScreen client={client} />} />
-            <Route path="clinici/:clinicId" element={<ClinicEditorScreen client={client} />} />
+            <Route path="clinici" element={contentRoute(<ClinicsScreen client={client} />)} />
+            <Route path="clinici/nou" element={contentRoute(<ClinicEditorScreen client={client} />)} />
+            <Route path="clinici/:clinicId" element={contentRoute(<ClinicEditorScreen client={client} />)} />
             
-            <Route path="tratamente" element={<TreatmentsScreen client={client} />} />
-            <Route path="tratamente/nou" element={<TreatmentEditorScreen client={client} />} />
-            <Route path="tratamente/:treatmentId" element={<TreatmentEditorScreen client={client} />} />
+            <Route path="tratamente" element={contentRoute(<TreatmentsScreen client={client} />)} />
+            <Route path="tratamente/nou" element={contentRoute(<TreatmentEditorScreen client={client} />)} />
+            <Route path="tratamente/:treatmentId" element={contentRoute(<TreatmentEditorScreen client={client} />)} />
 
-            <Route path="oferte" element={<OffersScreen client={client} />} />
-            <Route path="oferte/nou" element={<OfferEditorScreen client={client} />} />
-            <Route path="oferte/:offerId" element={<OfferEditorScreen client={client} />} />
+            <Route path="oferte" element={contentRoute(<OffersScreen client={client} />)} />
+            <Route path="oferte/nou" element={contentRoute(<OfferEditorScreen client={client} />)} />
+            <Route path="oferte/:offerId" element={contentRoute(<OfferEditorScreen client={client} />)} />
             
-            <Route path="articole" element={<ArticlesScreen client={client} />} />
-            <Route path="articole/nou" element={<ArticleEditorScreen client={client} />} />
-            <Route path="articole/:articleId" element={<ArticleEditorScreen client={client} />} />
+            <Route path="articole" element={contentRoute(<ArticlesScreen client={client} />)} />
+            <Route path="articole/nou" element={contentRoute(<ArticleEditorScreen client={client} />)} />
+            <Route path="articole/:articleId" element={contentRoute(<ArticleEditorScreen client={client} />)} />
 
-            <Route path="echipa-medicala" element={<DoctorsScreen client={client} />} />
-            <Route path="echipa-medicala/nou" element={<DoctorEditorScreen client={client} />} />
-            <Route path="echipa-medicala/:doctorId" element={<DoctorEditorScreen client={client} />} />
+            <Route path="echipa-medicala" element={contentRoute(<DoctorsScreen client={client} />)} />
+            <Route path="echipa-medicala/nou" element={contentRoute(<DoctorEditorScreen client={client} />)} />
+            <Route path="echipa-medicala/:doctorId" element={contentRoute(<DoctorEditorScreen client={client} />)} />
 
-            <Route path="parteneri" element={<PartnersScreen client={client} />} />
-            <Route path="parteneri/nou" element={<PartnerEditorScreen client={client} />} />
-            <Route path="parteneri/:partnerId" element={<PartnerEditorScreen client={client} />} />
+            <Route path="parteneri" element={contentRoute(<PartnersScreen client={client} />)} />
+            <Route path="parteneri/nou" element={contentRoute(<PartnerEditorScreen client={client} />)} />
+            <Route path="parteneri/:partnerId" element={contentRoute(<PartnerEditorScreen client={client} />)} />
 
-            <Route path="decontat-cas" element={<DecontatCasScreen client={client} />} />
+            <Route path="decontat-cas" element={contentRoute(<DecontatCasScreen client={client} />)} />
 
             {ADMIN_NAV_ITEMS.filter(
               (item) =>
@@ -188,9 +197,9 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
               if (config) {
                 const basePath = `/admin/${item.slug}`;
                 return [
-                  <Route key={item.slug} path={item.slug} element={<ResourceScreen client={client} config={config} basePath={basePath} />} />,
-                  <Route key={`${item.slug}/nou`} path={`${item.slug}/nou`} element={<ResourceEditorScreen client={client} config={config} basePath={basePath} />} />,
-                  <Route key={`${item.slug}/:id`} path={`${item.slug}/:id`} element={<ResourceEditorScreen client={client} config={config} basePath={basePath} />} />,
+                  <Route key={item.slug} path={item.slug} element={itemRoute(item, <ResourceScreen client={client} config={config} basePath={basePath} />)} />,
+                  <Route key={`${item.slug}/nou`} path={`${item.slug}/nou`} element={itemRoute(item, <ResourceEditorScreen client={client} config={config} basePath={basePath} />)} />,
+                  <Route key={`${item.slug}/:id`} path={`${item.slug}/:id`} element={itemRoute(item, <ResourceEditorScreen client={client} config={config} basePath={basePath} />)} />,
                 ];
               }
               return [
@@ -198,14 +207,14 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
                   key={item.slug}
                   path={item.slug}
                   element={
-                    screenForKey(item.key, client, me) ?? (
+                    itemRoute(item, screenForKey(item.key, client, me) ?? (
                       <Empty description={`Modulul „${item.label}” este în curs de adăugare`} />
-                    )
+                    ))
                   }
                 />,
               ];
             })}
-            <Route path="*" element={<Empty description="Secțiune inexistentă" />} />
+            <Route path="*" element={<StatusPage code={404} action={<Button type="primary" onClick={() => navigate('/admin/clinici')}>Înapoi la clinici</Button>} />} />
           </Routes>
         </Content>
       </Layout>

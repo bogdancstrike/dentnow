@@ -40,6 +40,9 @@ if (!Range.prototype.getBoundingClientRect) {
 if (!document.elementFromPoint) {
   document.elementFromPoint = (() => document.body) as typeof document.elementFromPoint;
 }
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn();
+}
 
 // Tests that pass an explicit fetch implementation bypass MSW; component tests that
 // hit `/config.json` or API routes are served by the handlers above.

@@ -26,6 +26,7 @@ import { RichTextEditor } from '../../components/RichTextEditor';
 import type { ArticleRow } from './ArticlesScreen';
 import { ArticleLivePreview, type ArticlePreviewValues } from './ArticleLivePreview';
 import './articles.css';
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 interface ArticleFormValues extends ArticlePreviewValues {
   status: ArticleRow['status'];
@@ -168,12 +169,7 @@ export function ArticleEditorScreen({ client }: { client: AdminClient }) {
   }
 
   if (editing && articleQuery.isError) {
-    return (
-      <div className="article-editor-error">
-        <Typography.Title level={3}>Articolul nu a putut fi încărcat</Typography.Title>
-        <Button onClick={() => navigate('/admin/articole')}>Înapoi la articole</Button>
-      </div>
-    );
+    return <AdminRequestError error={articleQuery.error} />;
   }
 
   return (

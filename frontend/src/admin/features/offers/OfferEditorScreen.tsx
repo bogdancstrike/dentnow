@@ -22,6 +22,7 @@ import { VersionConflictError } from '../../api/adminClient';
 import type { OfferRow } from './OffersScreen';
 import { LivePreview } from '../../components/LivePreview';
 import '../editorial/articles.css'; // Reuse layout CSS
+import { AdminRequestError } from '../../components/AdminRequestError';
 
 interface OfferFormValues extends OfferRow {}
 
@@ -32,6 +33,7 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm<OfferFormValues>();
+  const values = (Form.useWatch([], form) ?? {}) as Partial<OfferFormValues>;
   const [dirty, setDirty] = useState(false);
 
   const query = useQuery({
@@ -112,6 +114,7 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
   if (editing && query.isLoading) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
+  if (editing && query.isError) return <AdminRequestError error={query.error} />;
 
   return (
     <div className="article-editor-grid">
@@ -164,7 +167,7 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
             <Form.Item name="name" label="Nume Ofertă" rules={[{ required: true }]}>
               <Input placeholder="Ex: Pachet Implant Dentar" />
             </Form.Item>
-            <Form.Item name="slug" label="Slug (URL)" rules={[{ required: true }]}>
+            <Form.Item name="slug" label="Adresă URL" rules={[{ required: true }]}>
               <Input placeholder="ex: pachet-implant" />
             </Form.Item>
             <Form.Item name="status" label="Status">
@@ -206,10 +209,21 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
       <div className="article-editor-preview-panel">
         <LivePreview
           path="/oferte"
-          ready={editing && Boolean(query.data)}
-          notReadyHint="Salvează oferta pentru a o vedea live pe pagina /oferte (doar ofertele active apar public)."
+          ready={Boolean(query.data)}
           reloadToken={query.data?.version}
           urlLabel="dentnow.ro/oferte"
+          draft={!editing || dirty ? {
+            kind: 'offer',
+            data: {
+              ...query.data,
+              ...values,
+              __preview_slug: query.data?.slug,
+              currency: values.currency || query.data?.currency || 'RON',
+              features: Array.isArray(values.features)
+                ? values.features
+                : String(values.features || '').split(',').map((item) => item.trim()).filter(Boolean),
+            },
+          } : null}
         />
       </div>
     </div>

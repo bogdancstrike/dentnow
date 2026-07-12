@@ -1,15 +1,18 @@
-import { useParams, useLocation, Navigate } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { IconMapPin, IconPhone, IconClock, IconWhatsApp, IconAlert } from '../components/ui/Icons';
 import config from '../config';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import { useSiteData } from '../public-site/SiteDataProvider';
+import { isPreviewMode, usePreviewDraft } from '../api/previewDraft';
+import NotFound from './NotFound';
 import './LocationPage.css';
 
 export default function LocationPage() {
   const { citySlug } = useParams();
   const location = useLocation();
   const { clinics } = useSiteData();
+  const clinicDraft = usePreviewDraft('clinic');
 
   let targetSlug = citySlug;
   if (!targetSlug) {
@@ -18,10 +21,21 @@ export default function LocationPage() {
     else if (location.pathname.includes('stomatologie-prelungirea-ghencea')) targetSlug = 'prelungirea-ghencea';
   }
 
-  const backendClinic = clinics.find((c) => c.slug === targetSlug);
+  const savedClinic = clinics.find((c) => c.slug === targetSlug)
+    || (clinicDraft?.id ? clinics.find((c) => c.id === clinicDraft.id) : null);
+  const backendClinic = clinicDraft
+    ? {
+        ...(savedClinic || {}),
+        ...clinicDraft,
+        contacts: clinicDraft.contacts ?? savedClinic?.contacts ?? [],
+        hours: clinicDraft.hours ?? savedClinic?.hours ?? [],
+        transit: clinicDraft.transit ?? savedClinic?.transit ?? [],
+        faqs: clinicDraft.faqs ?? savedClinic?.faqs ?? [],
+      }
+    : savedClinic;
 
   if (!backendClinic) {
-    return <Navigate to="/" replace />;
+    return isPreviewMode() ? null : <NotFound />;
   }
 
   const phoneContact = backendClinic.contacts.find((c) => c.kind === 'phone');
@@ -44,6 +58,8 @@ export default function LocationPage() {
     faqs: backendClinic.faqs || [],
     hours: backendClinic.hours || [],
   };
+
+  const weekdayNames = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
 
   const jsonLd = [{
     '@type': 'Dentist',
@@ -118,7 +134,21 @@ export default function LocationPage() {
               <IconClock size={22} color="var(--accent)" />
               <div>
                 <strong>Program de Lucru:</strong>
-                <p>Luni – Vineri: 09:00 – 19:00<br />Sâmbătă: 09:00 – 15:00<br />Duminică: Închis</p>
+                {loc.hours.length > 0 ? (
+                  <p>
+                    {loc.hours
+                      .slice()
+                      .sort((a, b) => a.weekday - b.weekday)
+                      .map((hours, index) => (
+                        <span key={hours.weekday}>
+                          {weekdayNames[hours.weekday] || 'Zi'}: {hours.closed
+                            ? 'Închis'
+                            : `${hours.opens_at?.slice(0, 5) || '—'} – ${hours.closes_at?.slice(0, 5) || '—'}`}
+                          {index < loc.hours.length - 1 && <br />}
+                        </span>
+                      ))}
+                  </p>
+                ) : <p>Programul va fi confirmat de clinică.</p>}
               </div>
             </div>
 
@@ -135,8 +165,8 @@ export default function LocationPage() {
               <h3><IconAlert size={18} /> Cum ajungi la clinică</h3>
               <ul>
                 {loc.transit.map((t) => (
-                  <li key={t.mode}>
-                    <strong>{t.mode}:</strong> {t.detail}
+                  <li key={`${t.mode}-${t.label}`}>
+                    <strong>{t.label || t.mode}:</strong> {t.detail}
                   </li>
                 ))}
               </ul>

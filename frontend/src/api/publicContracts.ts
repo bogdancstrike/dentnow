@@ -74,6 +74,29 @@ export const DoctorSchema = z.object({
   position: z.number().default(0),
 });
 
+export const QuizSchema = z.object({
+  slug: z.string(),
+  title: z.string(),
+  intro: z.string().nullable().optional(),
+  questions: z.array(z.object({
+    prompt: z.string(),
+    position: z.number().default(0),
+    options: z.array(z.object({
+      label: z.string(),
+      score: z.number().default(0),
+      position: z.number().default(0),
+    })).default([]),
+  })).default([]),
+  result_bands: z.array(z.object({
+    min_score: z.number(),
+    max_score: z.number(),
+    title: z.string(),
+    description: z.string().nullable().optional(),
+    recommendations: z.string().nullable().optional(),
+    cta_treatment_id: z.string().nullable().optional(),
+  })).default([]),
+});
+
 export const LinkSchema = z.object({
   kind: z.string(),
   label: z.string(),
@@ -143,6 +166,7 @@ export const BootstrapSchema = z.object({
     })
     .default({ steps: [], faqs: [] }),
   homepage_treatments: z.array(TreatmentSchema).default([]),
+  quiz: QuizSchema.nullable().default(null),
 });
 
 export const SectionSchema = z.object({

@@ -1,5 +1,6 @@
 import config from '../config';
 import { legalContent as content } from '../data/legal';
+import { usePreviewDraft } from '../api/previewDraft';
 
 function renderParagraphs(section) {
   const paragraphs = section.paragraphs || (section.text ? [section.text] : []);
@@ -23,6 +24,13 @@ function renderParagraphs(section) {
 }
 
 export default function LegalContent({ type = 'gdpr' }) {
+  const legalDraft = usePreviewDraft('legal-document');
+  const draftMatches = legalDraft && (
+    legalDraft.doc_type === type || (type === 'privacy' && legalDraft.doc_type === 'privacy')
+  );
+  if (draftMatches && legalDraft.body_html) {
+    return <section className="legal-section" dangerouslySetInnerHTML={{ __html: legalDraft.body_html }} />;
+  }
   return (
     <>
       {(content[type] || content.gdpr).map((s) => (

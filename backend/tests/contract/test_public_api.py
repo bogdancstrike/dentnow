@@ -60,6 +60,42 @@ def test_public_endpoints_do_not_require_auth(client):
     assert client.get("/api/v1/public/articles").status_code in (200, 404)
 
 
+def test_public_bootstrap_includes_active_quiz_children(client, admin):
+    quiz_id = None
+    try:
+        quiz = client.post(
+            "/api/v1/admin/quizzes",
+            json={"slug": f"igiena-{uuid.uuid4().hex[:8]}", "title": "Scor personalizat", "intro": "Intro API"},
+            headers=admin,
+        )
+        assert quiz.status_code == 201
+        quiz_id = quiz.get_json()["id"]
+        question = client.post(
+            "/api/v1/admin/quiz-questions",
+            json={"quiz_id": quiz_id, "prompt": "Întrebare API", "position": 0},
+            headers=admin,
+        )
+        assert question.status_code == 201
+        question_id = question.get_json()["id"]
+        option = client.post(
+            "/api/v1/admin/quiz-options",
+            json={"question_id": question_id, "label": "Răspuns API", "score": 5, "position": 0},
+            headers=admin,
+        )
+        assert option.status_code == 201
+
+        body = client.get("/api/v1/public/bootstrap").get_json()
+        assert body["quiz"]["title"] == "Scor personalizat"
+        assert body["quiz"]["questions"][0]["prompt"] == "Întrebare API"
+        assert body["quiz"]["questions"][0]["options"][0]["label"] == "Răspuns API"
+    finally:
+        if quiz_id:
+            cleanup_headers = {**admin, "If-Match": '"1"'}
+            assert client.delete(
+                f"/api/v1/admin/quizzes/{quiz_id}", headers=cleanup_headers
+            ).status_code in (200, 204)
+
+
 def test_preview_one_use_exchange(client, admin):
     r = client.post("/api/v1/admin/previews", headers=admin)
     assert r.status_code == 201

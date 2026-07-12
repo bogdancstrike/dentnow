@@ -59,8 +59,9 @@ describe('SiteDataProvider', () => {
       </SiteDataProvider>,
     );
     await waitFor(() =>
-      expect(screen.getByText(/Conținut indisponibil/)).toBeInTheDocument(),
+      expect(screen.getByText('503')).toBeInTheDocument(),
     );
+    expect(screen.getByText(/Serviciul nu este disponibil/)).toBeInTheDocument();
     // No clinic content leaked into the error screen.
     expect(screen.queryByText(/Dristor/)).not.toBeInTheDocument();
   });

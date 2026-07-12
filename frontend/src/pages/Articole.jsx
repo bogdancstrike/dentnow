@@ -7,6 +7,9 @@ import PageHero from '../components/ui/PageHero';
 import PlaceholderCover from '../components/ui/PlaceholderCover';
 import Seo from '../components/seo/Seo';
 import './Articole.css';
+import { ApiError } from '../api/http';
+import NotFound from './NotFound';
+import { StatusPage } from '../shared/StatusPage';
 
 function slugify(value) {
   return value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -16,13 +19,13 @@ export default function Articole() {
   const { slug } = useParams();
   const openPicker = useClinicPicker();
 
-  const { data: articles = [], isLoading: loadingList } = useQuery({
+  const { data: articles = [], isLoading: loadingList, isError: listFailed } = useQuery({
     queryKey: publicQueryKeys.articles,
     queryFn: fetchArticles,
     enabled: !slug,
   });
 
-  const { data: article, isLoading: loadingDetail } = useQuery({
+  const { data: article, isLoading: loadingDetail, isError: detailFailed, error: detailError } = useQuery({
     queryKey: publicQueryKeys.article(slug || ''),
     queryFn: () => fetchArticle(slug || ''),
     enabled: !!slug,
@@ -33,15 +36,8 @@ export default function Articole() {
 
   if (slug) {
     if (loadingDetail) return <div ref={ref} style={{ padding: '8rem 2rem', textAlign: 'center' }}>Incarcare...</div>;
-    if (!article) {
-      return (
-        <div ref={ref}>
-          <Seo title="Articol negasit" description="Articolul cautat nu exista." path={`/articole/${slug}`} />
-          <PageHero tag="Articole" title="Articol negasit" subtitle="Revino la lista de articole DentNow." />
-          <div className="article-detail"><Link to="/articole" className="btn btn-dark">Toate articolele</Link></div>
-        </div>
-      );
-    }
+    if (detailFailed && detailError instanceof ApiError && detailError.status !== 404) return <StatusPage code={503} />;
+    if (!article) return <NotFound />;
     return (
       <div ref={ref}>
         <Seo title={article.title} description={article.excerpt} path={`/articole/${slug}`} />
@@ -57,6 +53,8 @@ export default function Articole() {
       </div>
     );
   }
+
+  if (listFailed) return <StatusPage code={503} />;
 
   return (
     <div ref={ref}>

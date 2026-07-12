@@ -60,6 +60,26 @@ describe('AdminClient', () => {
     ).rejects.toBeInstanceOf(VersionConflictError);
   });
 
+  it('keeps a unique-field 409 as a domain conflict instead of a version conflict', async () => {
+    server.use(
+      http.patch('/api/v1/admin/doctors/x', () =>
+        HttpResponse.json(
+          { error: 'conflict', message: 'doctor slug already in use', details: { field: 'slug' } },
+          { status: 409 },
+        ),
+      ),
+    );
+
+    try {
+      await new AdminClient(getToken).patch('/v1/admin/doctors/x', {}, '"1"');
+      throw new Error('request should have failed');
+    } catch (error) {
+      expect(error).toBeInstanceOf(AdminApiError);
+      expect(error).not.toBeInstanceOf(VersionConflictError);
+      expect(error).toMatchObject({ status: 409, name: 'AdminApiError' });
+    }
+  });
+
   it('maps 401 to UnauthorizedError and other errors to AdminApiError', async () => {
     server.use(http.get('/api/v1/admin/me', () => new HttpResponse(null, { status: 401 })));
     await expect(new AdminClient(getToken).get('/v1/admin/me')).rejects.toBeInstanceOf(UnauthorizedError);
