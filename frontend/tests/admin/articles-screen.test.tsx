@@ -59,6 +59,7 @@ describe('ArticlesScreen', () => {
 
     renderScreen();
     expect(await screen.findByText('Cum alegi periuța potrivită')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Articole' })).toHaveClass('articles-workspace--full');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByText('Cum alegi periuța potrivită'));
@@ -75,4 +76,3 @@ describe('ArticlesScreen', () => {
     expect(await screen.findByText('Articol nou dedicat')).toBeInTheDocument();
   });
 });
-

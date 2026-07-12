@@ -199,7 +199,7 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
   if (listQuery.isError) return <AdminRequestError error={listQuery.error} />;
 
   return (
-    <section className="articles-workspace" aria-labelledby="articles-heading">
+    <section className="articles-workspace articles-workspace--full" aria-labelledby="articles-heading">
       <header className="articles-heading">
         <div>
           <Typography.Text className="articles-eyebrow">Newsroom</Typography.Text>

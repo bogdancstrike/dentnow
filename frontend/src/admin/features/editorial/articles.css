@@ -5,6 +5,11 @@
   margin: 0 auto;
 }
 
+.articles-workspace--full {
+  width: 100%;
+  max-width: none;
+}
+
 .articles-heading {
   display: flex;
   align-items: end;
