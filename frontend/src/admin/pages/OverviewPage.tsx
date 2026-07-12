@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Descriptions, Space, Tag, Typography } from 'antd';
 import type { AdminClient } from '../api/adminClient';
 import type { Me } from '../auth/permissions';
+import { PublicationControls } from '../features/publication/PublicationControls';
 
 interface Publication {
   version: number;
@@ -43,6 +44,8 @@ export function OverviewPage({ me, client }: { me: Me; client: AdminClient }) {
           <Typography.Text type="secondary">Nicio publicație activă încă.</Typography.Text>
         )}
       </Card>
+
+      <PublicationControls me={me} client={client} />
 
       <Card title="Cont" size="small">
         <Descriptions column={1} size="small">
