@@ -18,7 +18,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Backend settings load explicitly from `backend/.env` while process/container environment variables retain precedence; paired frontend/backend Docker Hub publishing is configured.
 - [x] `/admin/articole` uses the full available admin workspace width.
 - [x] `/noutati/:slug` public detail pages render admin-authored content, every `/noutati` card has a visible „Citește mai mult” action, and news media/detail preview are admin-configurable.
-- [~] Restore grouped quiz question/answer CRUD with per-question „Adaugă răspuns” and drag ordering for whole question groups.
+- [x] Restored grouped quiz question/answer CRUD with per-question „Adaugă răspuns”, answer editing/removal under its parent, result bands, and persisted drag ordering for whole question groups.
 - [ ] Build `/admin/before-after` CRUD with live preview and persisted drag ordering.
 - [ ] Audit and rebuild Footer links with dynamic clinics/contact destinations.
 - [ ] Connect `/confidentialitate`, `/gdpr`, and `/termeni` to legal-document CRUD and update seed data.
@@ -33,7 +33,7 @@ Later follow-up requests (session 2, batch 2):
 - [x] **Location page booking** — `/locatii/:slug` bottom CTA now calls/WhatsApps the current clinic directly instead of opening the all-locations picker.
 - [x] **Dedicated /nou editors for generic CRUD** — new reusable `ResourceEditorScreen` (full-page form + live preview) + `ResourceScreen` is now a list that navigates to it. noutati, servicii-dentnow, galerie clinică, legal, quiz all get `/nou` + `/:id` dedicated pages with preview + Precompletează, matching the bespoke editors.
 - [x] **Draft preview** — preview unsaved clinic/offer/treatment/doctor and generic-resource form values without going live; same-origin `postMessage` drafts are memory-only and discarded on editor exit.
-- [~] **Quiz nested authoring** — being restored as grouped question/answer CRUD with question-level drag ordering after the temporary parent-only editor was requested and later superseded.
+- [x] **Quiz nested authoring** — restored as grouped question/answer CRUD with question-level drag ordering after the temporary parent-only editor was requested and later superseded.
 - [x] **Enterprise URL terminology** — visible “Slug” labels were replaced with “Adresă URL”/“Adresă”; API contracts keep the internal `slug` field.
 - [x] **Remove unused site settings** — deleted `/admin/setari`, its navigation/cmdk entry, route, and component.
 - [x] **Clinic create/edit completeness** — `/nou` collects unsaved contacts, phone/WhatsApp, hours, access directions, and FAQs before the first save; edit child tables are scoped to the selected clinic and refresh the real-page preview.

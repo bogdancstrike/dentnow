@@ -12,6 +12,7 @@ import { type ResourceConfig } from '../components/ResourceScreen';
 import type { ResourceRow } from '../components/ResourceTable';
 import type { Me } from '../auth/permissions';
 import { previewMarkdown } from '../../api/previewDraft';
+import { QuizSubResources } from './quiz/QuizSubResources';
 
 const { Item } = Form;
 
@@ -87,6 +88,10 @@ const quiz = makeConfig({
       <Item name="intro" label="Intro"><Input.TextArea rows={2} /></Item>
     </>
   ),
+  editExtra: ({ row, client, onChanged }) => (
+    <QuizSubResources quizId={row.id} client={client} onChanged={onChanged} />
+  ),
+  editExtraHint: 'Salvează mai întâi quiz-ul pentru a adăuga întrebări, răspunsuri și rezultate.',
 });
 
 const news = makeConfig({

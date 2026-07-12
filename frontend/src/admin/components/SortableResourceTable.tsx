@@ -75,7 +75,7 @@ function DragHandle({ disabled }: { disabled?: boolean }) {
   );
 }
 
-function DraggableRow({ style, ...props }: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key': string }) {
+function SortableTableRow({ style, ...props }: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key': string }) {
   const id = String(props['data-row-key']);
   const rowLabel = String(props['aria-label'] || 'rând');
   const sortable = useSortable({ id });
@@ -99,6 +99,11 @@ function DraggableRow({ style, ...props }: HTMLAttributes<HTMLTableRowElement> &
       <tr {...props} ref={sortable.setNodeRef} style={rowStyle} />
     </DragHandleContext.Provider>
   );
+}
+
+function DraggableRow(props: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key'?: string }) {
+  if (!props['data-row-key']) return <tr {...props} />;
+  return <SortableTableRow {...props as HTMLAttributes<HTMLTableRowElement> & { 'data-row-key': string }} />;
 }
 
 export function SortableResourceTable<T extends SortableRow>({
