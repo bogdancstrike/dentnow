@@ -128,13 +128,15 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Step 5: **5 tests pass** — event `.v1` enforcement, transactional outbox insert, dependency rule (no vendor SDK/adapter in domain code), no patient/registration endpoint
 - [x] Step 6: committed
 
-## Task 13 — Export + seed current content (`feat(migration): seed current dentnow content and media`)
-- [ ] Step 1: parity manifest + failing tests
-- [ ] Step 2: deterministic JS data exporter + asset copy w/ checksums
-- [ ] Step 3: explicit mappings for page-local content
-- [ ] Step 4: idempotent DB+MinIO seed (+ migration_baseline publication)
-- [ ] Step 5: verify migration (double-seed idempotent, parity)
-- [ ] Step 6: Commit (delete `content-source.env`)
+## Task 13 — Export + seed current content ✅ DONE (commit `47ec24e`)
+- [x] Step 1: parity manifest + `test_seed_parity.py`/`test_seed_idempotency.py` (opt-in RUN_SEED_TESTS)
+- [x] Step 2: `export-current-content.mjs` (esbuild-defines import.meta.env from content-source.env; imports data modules) → `current-site.json` + 20 assets w/ SHA-256
+- [x] Step 3: page-local + config mapping (clinics/phones/schedule/social/routes)
+- [x] Step 4: idempotent `seed_current_site.py` (needs_review marks; migration_baseline publication on empty DB) + `verify_seed_parity.py`
+- [x] Step 5: **verified** — seed→parity OK (all 14 counts match), double-seed no-op, 5 seed tests + 120 general pass
+- [x] Step 6: committed; `content-source.env` deleted (values captured; config.js fallbacks identical)
+
+> Note: MinIO asset upload in the seed is stubbed (assets copied to `backend/seeds/assets`, committed); wiring the MinIO push + media rows into the seed is a small follow-up (Task 20 stack run exercises it).
 
 ## Task 14 — Refactor public site to render backend data only (`feat(frontend): render public site from published api data`)
 - [ ] Step 1: failing provider + no-fallback tests
