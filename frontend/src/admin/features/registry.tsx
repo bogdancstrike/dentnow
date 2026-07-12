@@ -168,8 +168,65 @@ const legal = makeConfig({
   ),
 });
 
+const pages = makeConfig({
+  title: 'Pagini',
+  singular: 'pagină',
+  endpoint: '/v1/admin/pages',
+  columns: [
+    { title: 'Cale', dataIndex: 'path' },
+    { title: 'Route key', dataIndex: 'route_key' },
+    { title: 'Template', dataIndex: 'template_key' },
+  ],
+  defaults: { enabled: true, indexable: true, template_key: 'generic' },
+  form: () => (
+    <>
+      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
+      <Item name="path" label="Cale" rules={[{ required: true }]}><Input placeholder="/tratamente" /></Item>
+      <Item name="route_key" label="Route key" rules={[{ required: true }]}><Input placeholder="treatments" /></Item>
+      <Item name="template_key" label="Template">
+        <Select options={['home', 'treatment-index', 'treatment-detail', 'clinic-detail', 'article-index', 'article-detail', 'quiz', 'legal', 'offers-index', 'generic'].map((v) => ({ value: v, label: v }))} />
+      </Item>
+    </>
+  ),
+});
+
+const navigation = makeConfig({
+  title: 'Meniuri',
+  singular: 'meniu',
+  endpoint: '/v1/admin/navigation-menus',
+  columns: [
+    { title: 'Cheie', dataIndex: 'key' },
+    { title: 'Etichetă', dataIndex: 'label' },
+  ],
+  form: () => (
+    <>
+      <Item name="key" label="Cheie" rules={[{ required: true }]}><Input placeholder="desktop" /></Item>
+      <Item name="label" label="Etichetă" rules={[{ required: true }]}><Input /></Item>
+    </>
+  ),
+});
+
+const quiz = makeConfig({
+  title: 'Quiz',
+  singular: 'quiz',
+  endpoint: '/v1/admin/quizzes',
+  columns: [
+    { title: 'Titlu', dataIndex: 'title' },
+    { title: 'Slug', dataIndex: 'slug' },
+    { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+  ],
+  defaults: { active: true },
+  form: () => (
+    <>
+      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
+      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input placeholder="scor-igiena" /></Item>
+      <Item name="intro" label="Intro"><Input.TextArea rows={2} /></Item>
+    </>
+  ),
+});
+
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  treatments, offers, partners, doctors, articles, reviews, legal,
+  treatments, offers, partners, doctors, articles, reviews, legal, pages, navigation, quiz,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {
