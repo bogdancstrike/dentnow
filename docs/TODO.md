@@ -59,9 +59,9 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Step 8: committed
 - [x] **User req:** full app setup starts from `docker compose up` — `api` gated on full init chain; no manual `run` steps
 
-> ⚠️ **SECURITY:** auto-committer committed `.env` + all `.secrets/*` in `4909ed1`. Untracked in `a213ffc`;
-> now gitignored. **Before any push:** rotate (`ops/init-secrets.sh --rotate`) + purge from history.
-> Secrets are local dev-only, unpushed branch — contained.
+> Note: `.env` + `.secrets/*` were auto-committed in `4909ed1`, untracked in `a213ffc`, now gitignored.
+> Per user: dev uses **simple secrets** (`admin:admin`) — not a production exposure, no rotation needed.
+> Production uses strong secrets (`ENVIRONMENT=production ./ops/init-secrets.sh`, enforced at startup).
 
 ## Task 5 — DB/transaction/error/migration foundations ✅ DONE (commit `6281858`)
 - [x] Step 1: tests — `test_etags.py` (pure), `test_outbox.py` + `test_migrations.py` (DB-backed, rollback-isolated via conftest); 14 pass
@@ -138,14 +138,15 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 
 > Note: MinIO asset upload in the seed is stubbed (assets copied to `backend/seeds/assets`, committed); wiring the MinIO push + media rows into the seed is a small follow-up (Task 20 stack run exercises it).
 
-## Task 14 — Refactor public site to render backend data only (`feat(frontend): render public site from published api data`)
-- [ ] Step 1: failing provider + no-fallback tests
-- [ ] Step 2: typed public API clients + query keys
-- [ ] Step 3: convert every route to pure renderer
+## Task 14 — Refactor public site to render backend data only 🚧 FOUNDATION DONE (commit `226a917`)
+- [x] Step 1: `site-data-provider.test.tsx` (MSW loading/success/error, no leaked content)
+- [x] Step 2: typed `publicClient` + `publicContracts` (Zod, mirrors SiteSnapshotV1) + query keys
+- [ ] Step 3: convert every route to a pure renderer consuming `SiteDataProvider`/`fetchPageByPath`
 - [ ] Step 4: replace unsafe/duplicated behavior (DOMPurify, derived prices/dates/JSON-LD)
-- [ ] Step 5: remove retired data after parity
-- [ ] Step 6: verify all public routes anonymously
-- [ ] Step 7: Commit
+- [ ] Step 5: remove retired `src/data` + `config.js` business fallbacks after parity
+- [ ] Step 6: verify all public routes anonymously (mock Playwright)
+- [x] Partial: `SiteDataProvider` (explicit loading/error, no compiled fallback) built + verified; typecheck/11 tests/lint/build pass
+- [ ] Step 7: Commit (final)
 
 ## Task 15 — Keycloak-authenticated admin shell (`feat(admin): add keycloak protected administration shell`)
 - [ ] Step 1: failing route/auth/client tests
