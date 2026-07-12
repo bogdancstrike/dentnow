@@ -2517,6 +2517,136 @@
         "module_name": "src.api.site_admin",
         "method_name": "gallery_images_delete"
       }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_steps_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/cas-steps",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_steps_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_steps_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/cas-steps",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_steps_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_steps_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/cas-steps/<step_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_steps_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_steps_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/cas-steps/<step_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_steps_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_steps_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/cas-steps/<step_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_steps_delete"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_faqs_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/cas-faqs",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_faqs_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_faqs_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/cas-faqs",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_faqs_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_faqs_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/cas-faqs/<faq_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_faqs_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_faqs_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/cas-faqs/<faq_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_faqs_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "cas_faqs_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/cas-faqs/<faq_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "cas_faqs_delete"
+      }
     }
   ]
 }

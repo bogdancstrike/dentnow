@@ -22,6 +22,8 @@ from src.core.errors import NotFoundError
 from src.editorial.models import Article, NewsItem, Review
 from src.editorial.rich_text import render_markdown
 from src.site.models import (
+    CasFaq,
+    CasStep,
     GalleryImage,
     HomepageService,
     NavigationItem,
@@ -82,6 +84,20 @@ def _query_clinics(session):
         })
     clinics.sort(key=lambda x: x["slug"])
     return clinics
+
+
+def _query_decontat_cas(session):
+    steps = [
+        {"title": s.title, "text": s.text, "position": s.position}
+        for s in session.scalars(_live(CasStep).where(CasStep.active.is_(True))).all()
+    ]
+    steps.sort(key=lambda x: x["position"])
+    faqs = [
+        {"q": f.question, "a": f.answer, "position": f.position}
+        for f in session.scalars(_live(CasFaq).where(CasFaq.active.is_(True))).all()
+    ]
+    faqs.sort(key=lambda x: x["position"])
+    return {"steps": steps, "faqs": faqs}
 
 
 def _query_gallery(session):
@@ -270,6 +286,7 @@ def bootstrap(app, operation, request, **kw):
         doctors_data = _query_doctors(session)
         homepage_services = _query_homepage_services(session)
         gallery = _query_gallery(session)
+        decontat_cas = _query_decontat_cas(session)
 
     homepage_treatments = [t for t in treatments_data if t.get("homepage_featured")]
     return _json_response({
@@ -281,6 +298,7 @@ def bootstrap(app, operation, request, **kw):
         "doctors": doctors_data,
         "homepage_services": homepage_services,
         "gallery": gallery,
+        "decontat_cas": decontat_cas,
         "homepage_treatments": homepage_treatments,
     })
 

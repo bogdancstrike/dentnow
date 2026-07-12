@@ -8,6 +8,10 @@ from src.core.db import session_scope
 from src.iam.capabilities import CAP_CONTENT_READ, CAP_CONTENT_WRITE
 from src.iam.decorators import require_capability
 from src.site.schemas import (
+    CasFaqCreate,
+    CasFaqUpdate,
+    CasStepCreate,
+    CasStepUpdate,
     GalleryImageCreate,
     GalleryImageUpdate,
     HomepageServiceCreate,
@@ -27,6 +31,8 @@ from src.site.schemas import (
     SiteSettingsUpdate,
 )
 from src.site.service import (
+    CasFaqService,
+    CasStepService,
     GalleryImageService,
     HomepageServiceService,
     LinkService,
@@ -77,6 +83,57 @@ def homepage_services_update(app, operation, request, principal=None, service_id
 @require_capability(CAP_CONTENT_WRITE)
 def homepage_services_delete(app, operation, request, principal=None, service_id=None, **kw):
     return do_delete(HomepageServiceService, principal, service_id)
+
+
+# ── decontat CAS: steps + faqs ───────────────────────────────────────────────
+@require_capability(CAP_CONTENT_READ)
+def cas_steps_list(app, operation, request, principal=None, **kw):
+    return do_list(CasStepService, principal)
+
+
+@require_capability(CAP_CONTENT_READ)
+def cas_steps_get(app, operation, request, principal=None, step_id=None, **kw):
+    return do_get(CasStepService, principal, step_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def cas_steps_create(app, operation, request, principal=None, **kw):
+    return do_create(CasStepService, CasStepCreate, principal)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def cas_steps_update(app, operation, request, principal=None, step_id=None, **kw):
+    return do_update(CasStepService, CasStepUpdate, principal, step_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def cas_steps_delete(app, operation, request, principal=None, step_id=None, **kw):
+    return do_delete(CasStepService, principal, step_id)
+
+
+@require_capability(CAP_CONTENT_READ)
+def cas_faqs_list(app, operation, request, principal=None, **kw):
+    return do_list(CasFaqService, principal)
+
+
+@require_capability(CAP_CONTENT_READ)
+def cas_faqs_get(app, operation, request, principal=None, faq_id=None, **kw):
+    return do_get(CasFaqService, principal, faq_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def cas_faqs_create(app, operation, request, principal=None, **kw):
+    return do_create(CasFaqService, CasFaqCreate, principal)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def cas_faqs_update(app, operation, request, principal=None, faq_id=None, **kw):
+    return do_update(CasFaqService, CasFaqUpdate, principal, faq_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def cas_faqs_delete(app, operation, request, principal=None, faq_id=None, **kw):
+    return do_delete(CasFaqService, principal, faq_id)
 
 
 # ── gallery images (clinic space carousel) ───────────────────────────────────

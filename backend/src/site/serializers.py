@@ -20,6 +20,22 @@ def serialize_site_state(s: Any) -> dict:
     }
 
 
+def serialize_cas_step(s: Any) -> dict:
+    return {
+        "id": str(s.id), "version": s.version, "title": s.title, "text": s.text,
+        "position": s.position, "active": s.active,
+        "created_at": _iso(s.created_at), "updated_at": _iso(s.updated_at),
+    }
+
+
+def serialize_cas_faq(f: Any) -> dict:
+    return {
+        "id": str(f.id), "version": f.version, "question": f.question, "answer": f.answer,
+        "position": f.position, "active": f.active,
+        "created_at": _iso(f.created_at), "updated_at": _iso(f.updated_at),
+    }
+
+
 def serialize_gallery_image(g: Any) -> dict:
     return {
         "id": str(g.id),

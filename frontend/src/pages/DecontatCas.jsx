@@ -3,12 +3,16 @@ import PageHero from '../components/ui/PageHero';
 import config from '../config';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { IconPhone, IconClock, IconAlert, IconWhatsApp, IconMapPin } from '../components/ui/Icons';
+import { useSiteData } from '../public-site/SiteDataProvider';
 import './DecontatCas.css';
 
-import { faqs, steps } from '../data/cas';
+import { faqs as staticFaqs, steps as staticSteps } from '../data/cas';
 
 export default function DecontatCas() {
   const openPicker = useClinicPicker();
+  const { decontat_cas: cas } = useSiteData();
+  const steps = cas?.steps?.length ? cas.steps.map((s) => ({ title: s.title, text: s.text || '' })) : staticSteps;
+  const faqs = cas?.faqs?.length ? cas.faqs : staticFaqs;
 
   const jsonLd = [
     {

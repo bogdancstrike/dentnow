@@ -215,6 +215,28 @@ class HomepageService(WorkspaceRoot, Base):
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
+class CasStep(WorkspaceRoot, Base):
+    """A step in the /decontat-cas "cum functioneaza in 3 pasi" section."""
+    __tablename__ = "cas_steps"
+    __table_args__ = (Index("ix_cas_steps_position", "position"),)
+
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+class CasFaq(WorkspaceRoot, Base):
+    """A FAQ entry on the /decontat-cas page."""
+    __tablename__ = "cas_faqs"
+    __table_args__ = (Index("ix_cas_faqs_position", "position"),)
+
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
 class GalleryImage(WorkspaceRoot, Base):
     """An image in the homepage "Un spatiu clinic clar" clinic gallery carousel.
 

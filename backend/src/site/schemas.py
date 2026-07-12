@@ -66,6 +66,34 @@ class HomepageServiceUpdate(_Strict):
     active: Optional[bool] = None
 
 
+class CasStepCreate(_Strict):
+    title: str
+    text: Optional[str] = None
+    position: int = 0
+    active: bool = True
+
+
+class CasStepUpdate(_Strict):
+    title: Optional[str] = None
+    text: Optional[str] = None
+    position: Optional[int] = None
+    active: Optional[bool] = None
+
+
+class CasFaqCreate(_Strict):
+    question: str
+    answer: str
+    position: int = 0
+    active: bool = True
+
+
+class CasFaqUpdate(_Strict):
+    question: Optional[str] = None
+    answer: Optional[str] = None
+    position: Optional[int] = None
+    active: Optional[bool] = None
+
+
 class GalleryImageCreate(_Strict):
     title: str
     media_id: Optional[str] = None

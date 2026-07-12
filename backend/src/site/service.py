@@ -13,6 +13,8 @@ from src.core.errors import ConflictError, NotFoundError, ValidationError
 from src.audit.service import write_audit
 from src.integrations.outbox import enqueue_event
 from src.site.models import (
+    CasFaq,
+    CasStep,
     GalleryImage,
     HomepageService,
     NavigationItem,
@@ -24,6 +26,8 @@ from src.site.models import (
     SiteState,
 )
 from src.site.serializers import (
+    serialize_cas_faq,
+    serialize_cas_step,
     serialize_gallery_image,
     serialize_homepage_service,
     serialize_link,
@@ -84,6 +88,28 @@ class HomepageServiceService(CrudService):
 
     def serialize(self, obj: Any) -> dict:
         return serialize_homepage_service(obj)
+
+
+class CasStepService(CrudService):
+    model = CasStep
+    entity_type = "cas_step"
+    event_prefix = "cas_step"
+    sortable = ("position", "title", "created_at")
+    search_columns = ("title", "text")
+
+    def serialize(self, obj: Any) -> dict:
+        return serialize_cas_step(obj)
+
+
+class CasFaqService(CrudService):
+    model = CasFaq
+    entity_type = "cas_faq"
+    event_prefix = "cas_faq"
+    sortable = ("position", "created_at")
+    search_columns = ("question", "answer")
+
+    def serialize(self, obj: Any) -> dict:
+        return serialize_cas_faq(obj)
 
 
 class GalleryImageService(CrudService):

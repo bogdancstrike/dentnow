@@ -57,7 +57,7 @@ export default function Tratamente() {
   return (
     <div ref={revealRef}>
       <Seo title="Tratamente si tarife DentNow" description="Lista de tratamente stomatologice DentNow, preturi de pornire, pachete si detalii pentru programare." path="/tratamente" />
-      <PageHero tag="Tratamente & Tarife" title='Preturi clare, <em class="ac">explicate inainte.</em>' subtitle="Preturile sunt orientative si se confirma prin deviz dupa consult. Actualizat: Iulie 2026." />
+      <PageHero tag="Tratamente & Tarife" title='Preturi clare, <em class="ac">explicate inainte.</em>' subtitle="Preturile sunt orientative si se confirma prin deviz dupa consult." />
 
       <div className="jump-nav">
         {jumpNavItems.map((j) => <a key={j.id} href={`#${j.id}`} className={`jump-btn${activeId === j.id ? ' active' : ''}`}>{j.label}</a>)}

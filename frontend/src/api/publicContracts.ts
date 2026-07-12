@@ -136,6 +136,12 @@ export const BootstrapSchema = z.object({
   doctors: z.array(DoctorSchema).default([]),
   homepage_services: z.array(HomepageServiceSchema).default([]),
   gallery: z.array(GalleryImageSchema).default([]),
+  decontat_cas: z
+    .object({
+      steps: z.array(z.object({ title: z.string(), text: z.string().nullable().optional(), position: z.number().optional() })).default([]),
+      faqs: z.array(z.object({ q: z.string(), a: z.string(), position: z.number().optional() })).default([]),
+    })
+    .default({ steps: [], faqs: [] }),
   homepage_treatments: z.array(TreatmentSchema).default([]),
 });
 
