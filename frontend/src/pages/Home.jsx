@@ -5,7 +5,8 @@ import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
 import { services, trustStats } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
-import { reviews } from '../data/reviews';
+import { useQuery } from '@tanstack/react-query';
+import { fetchReviews, publicQueryKeys } from '../api/publicClient';
 import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
 import TrustStrip from '../components/sections/TrustStrip';
@@ -20,6 +21,10 @@ export default function Home() {
   const revealRef = useRevealAll([]);
   const openPicker = useClinicPicker();
   const siteData = useSiteData();
+  const { data: reviews = [] } = useQuery({
+    queryKey: publicQueryKeys.reviews,
+    queryFn: fetchReviews,
+  });
 
   return (
     <div ref={revealRef}>
@@ -132,7 +137,7 @@ export default function Home() {
           <p className="lead rv d2">Pastreaza doar recenzii verificate si actualizeaza ratingul cu sursa reala.</p>
         </div>
         <div className="reviews-static-grid">
-          {reviews.slice(0, 3).map((r) => <ReviewCard key={r.id} review={r} />)}
+          {reviews.slice(0, 3).map((r) => <ReviewCard key={r.id || r.author} review={r} />)}
         </div>
         <div className="section-action">
           <Link to="/recenzii" className="btn btn-dark">Vezi recenziile</Link>

@@ -140,7 +140,15 @@ export const ArticleSummarySchema = z.object({
   cover_media_id: z.string().nullable().optional(),
   published_at: z.string().nullable().optional(),
 });
-
+  
+export const ReviewSchema = z.object({
+  id: z.string().optional(),
+  author: z.string(),
+  rating: z.number(),
+  text_body: z.string().nullable().optional(),
+  source: z.string().nullable().optional(),
+  review_date: z.string(),
+});
 
 export const OfferSchema = z.object({
   slug: z.string(),
@@ -164,3 +172,4 @@ export type ArticleSummary = z.infer<typeof ArticleSummarySchema>;
 export type Treatment = z.infer<typeof TreatmentSchema>;
 export type TreatmentPrice = z.infer<typeof TreatmentPriceSchema>;
 export type Offer = z.infer<typeof OfferSchema>;
+export type Review = z.infer<typeof ReviewSchema>;

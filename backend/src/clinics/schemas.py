@@ -30,6 +30,7 @@ class ClinicCreate(_Strict):
     longitude: Optional[float] = Field(default=None, ge=-180, le=180)
     map_embed_url: Optional[str] = None
     map_link_url: Optional[str] = None
+    google_place_id: Optional[str] = None
     status: str = "active"
     position: int = 0
 
@@ -60,6 +61,7 @@ class ClinicUpdate(_Strict):
     longitude: Optional[float] = Field(default=None, ge=-180, le=180)
     map_embed_url: Optional[str] = None
     map_link_url: Optional[str] = None
+    google_place_id: Optional[str] = None
     status: Optional[str] = None
     position: Optional[int] = None
 

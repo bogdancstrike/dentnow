@@ -1,6 +1,7 @@
 import { useRevealAll } from '../hooks/useReveal';
 import config from '../config';
-import { reviews } from '../data/reviews';
+import { useQuery } from '@tanstack/react-query';
+import { fetchReviews, publicQueryKeys } from '../api/publicClient';
 import ReviewCard from '../components/ui/ReviewCard';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
@@ -9,6 +10,11 @@ import './Recenzii.css';
 
 export default function Recenzii() {
   const ref = useRevealAll([]);
+  const { data: reviews = [] } = useQuery({
+    queryKey: publicQueryKeys.reviews,
+    queryFn: fetchReviews,
+  });
+
   return (
     <div ref={ref}>
       <Seo title="Recenzii pacienti DentNow" description="Recenzii pacienti DentNow si link catre profilul Google pentru verificare." path="/recenzii" />
@@ -22,7 +28,7 @@ export default function Recenzii() {
         </div>
       </div>
       <div className="reviews-grid">
-        {reviews.map((r, i) => <ReviewCard key={r.id} review={r} className={`rv${i % 3 > 0 ? ` d${i % 3}` : ''}`} />)}
+        {reviews.map((r, i) => <ReviewCard key={r.id || r.author} review={r} className={`rv${i % 3 > 0 ? ` d${i % 3}` : ''}`} />)}
       </div>
       <DarkCTA title='Ai o experienta de impartasit?' subtitle="Recenziile verificate ajuta pacientii noi sa aleaga informat." />
     </div>

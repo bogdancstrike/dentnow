@@ -98,6 +98,9 @@ class Config:
     WORKER_NAME = os.getenv("WORKER_NAME", "dentnow-workers")
     ERROR_TOPIC = os.getenv("ERROR_TOPIC", "dentnow-errors")
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
+    # ── External APIs ──────────────────────────────────────────────────────
+    GOOGLE_PLACES_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY", "")
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT = os.getenv("REDIS_PORT", "6379")
     REDIS_DB = os.getenv("REDIS_DB", "0")

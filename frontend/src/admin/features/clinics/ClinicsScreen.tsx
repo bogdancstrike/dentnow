@@ -147,6 +147,9 @@ export function ClinicsScreen({ client }: { client: AdminClient }) {
           <Form.Item name="address_full" label="Adresă completă">
             <Input.TextArea rows={2} />
           </Form.Item>
+          <Form.Item name="google_place_id" label="Google Place ID">
+            <Input placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4" />
+          </Form.Item>
           <Form.Item name="status" label="Status">
             <Select
               options={[

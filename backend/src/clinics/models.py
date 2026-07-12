@@ -43,6 +43,7 @@ class Clinic(WorkspaceRoot, Base):
     longitude: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     map_embed_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     map_link_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    google_place_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'active'"))
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 

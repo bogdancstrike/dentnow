@@ -15,6 +15,8 @@ import {
   type ArticleSummary,
   type Treatment,
   type Offer,
+  type Review,
+  ReviewSchema,
 } from './publicContracts';
 
 export async function fetchBootstrap(): Promise<Bootstrap> {
@@ -54,6 +56,11 @@ export async function fetchOffers(): Promise<Offer[]> {
   return data.items.map((item) => OfferSchema.parse(item));
 }
 
+export async function fetchReviews(): Promise<Review[]> {
+  const data = await apiGetJson<{ items: unknown[] }>('/v1/public/reviews');
+  return data.items.map((item) => ReviewSchema.parse(item));
+}
+
 export const publicQueryKeys = {
   bootstrap: ['public', 'bootstrap'] as const,
   page: (path: string) => ['public', 'page', path] as const,
@@ -61,4 +68,5 @@ export const publicQueryKeys = {
   article: (slug: string) => ['public', 'article', slug] as const,
   treatments: ['public', 'treatments'] as const,
   offers: ['public', 'offers'] as const,
+  reviews: ['public', 'reviews'] as const,
 };
