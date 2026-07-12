@@ -49,9 +49,16 @@ export function LivePreview({
     setNonce((n) => n + 1);
   }, [reloadToken, path]);
 
-  const src = path
-    ? `${path}${path.includes('?') ? '&' : '?'}preview=1&_r=${reloadToken ?? ''}.${nonce}`
-    : '';
+  // Insert the query before any #fragment so `/#echipa` becomes `/?...#echipa` and the
+  // fragment still scrolls the public page into view.
+  const buildSrc = (target: string): string => {
+    const hashIndex = target.indexOf('#');
+    const base = hashIndex >= 0 ? target.slice(0, hashIndex) : target;
+    const hash = hashIndex >= 0 ? target.slice(hashIndex + 1) : '';
+    const withQuery = `${base}${base.includes('?') ? '&' : '?'}preview=1&_r=${reloadToken ?? ''}.${nonce}`;
+    return hash ? `${withQuery}#${hash}` : withQuery;
+  };
+  const src = path ? buildSrc(path) : '';
   const chromeLabel = urlLabel ?? (path ? `dentnow.ro${path.split('?')[0]}` : '');
 
   return (

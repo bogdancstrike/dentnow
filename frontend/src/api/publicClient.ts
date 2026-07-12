@@ -4,6 +4,16 @@
  * from another (on mismatch the caller invalidates and refetches as a unit).
  */
 import { apiGetJson } from './http';
+import { getRuntimeConfig } from '../config/runtime';
+
+/** Public URL for a media asset variant (served by the API media proxy). */
+export function mediaUrl(
+  id: string,
+  variant: 'card' | 'thumbnail' | 'hero' | 'original' = 'card',
+): string {
+  const { apiBase } = getRuntimeConfig();
+  return `${apiBase}/v1/public/media/${id}/${variant}`;
+}
 import {
   BootstrapSchema,
   PageSchema,

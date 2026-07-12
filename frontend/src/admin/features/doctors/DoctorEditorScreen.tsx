@@ -11,11 +11,14 @@ import {
 import {
   ArrowLeftOutlined,
   SaveOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
+import { ImageUploadField } from '../../components/ImageUploadField';
+import { LivePreview } from '../../components/LivePreview';
 import type { DoctorRow } from './DoctorsScreen';
 import '../editorial/articles.css'; // Reuse layout CSS
 
@@ -120,6 +123,24 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
           >
             Salvează
           </Button>
+          {!editing && (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                form.setFieldsValue({
+                  name: 'Dr. Andrei Ionescu',
+                  slug: 'dr-andrei-ionescu',
+                  role: 'Medic specialist implantologie',
+                  focus: 'Implanturi dentare, chirurgie orală și reabilitări complexe, cu explicații clare la fiecare pas.',
+                  credentials: 'Doctor în medicină dentară, membru al Societății Române de Implantologie',
+                  active: true,
+                });
+                setDirty(true);
+              }}
+            >
+              Precompletează
+            </Button>
+          )}
         </Space>
 
         <Form
@@ -143,6 +164,12 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
             <Form.Item name="focus" label="Focus (Scurtă descriere)">
               <Input.TextArea rows={3} placeholder="Scurtă prezentare a competențelor și experienței..." />
             </Form.Item>
+            <Form.Item name="credentials" label="Titluri / Acreditări">
+              <Input placeholder="Ex: Doctor în medicină dentară, membru SRIO" />
+            </Form.Item>
+            <Form.Item name="portrait_media_id" label="Portret">
+              <ImageUploadField client={client} altText={`Portret ${form.getFieldValue('name') || 'medic DentNow'}`} />
+            </Form.Item>
             <Form.Item name="active" label="Activ pe site?" valuePropName="checked">
               <input type="checkbox" />
             </Form.Item>
@@ -150,8 +177,14 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
         </Form>
       </div>
 
-      <div className="article-editor-preview-panel" style={{ display: 'grid', placeItems: 'center', color: '#8b93a1', padding: '40px' }}>
-        Preview live pentru echipa medicală (în curând)
+      <div className="article-editor-preview-panel">
+        <LivePreview
+          path="/#echipa"
+          ready={editing && Boolean(query.data)}
+          notReadyHint="Salvează medicul pentru a-l vedea în secțiunea „Echipă” de pe prima pagină."
+          reloadToken={query.data?.version}
+          urlLabel="dentnow.ro/#echipa"
+        />
       </div>
     </div>
   );

@@ -9,7 +9,14 @@ from sqlalchemy import select
 
 from src.api._helpers import public_endpoint
 from src.catalog.models import Offer, OfferFeature, Treatment, TreatmentCategory, TreatmentPrice
-from src.clinics.models import Clinic, ClinicContact, ClinicFaq, ClinicHours, ClinicTransitItem
+from src.clinics.models import (
+    Clinic,
+    ClinicContact,
+    ClinicFaq,
+    ClinicHours,
+    ClinicTransitItem,
+    Doctor,
+)
 from src.core.db import session_scope
 from src.core.errors import NotFoundError
 from src.editorial.models import Article, NewsItem, Review
@@ -73,6 +80,19 @@ def _query_clinics(session):
         })
     clinics.sort(key=lambda x: x["slug"])
     return clinics
+
+
+def _query_doctors(session):
+    doctors = []
+    for d in session.scalars(_live(Doctor).where(Doctor.active.is_(True))).all():
+        doctors.append({
+            "slug": d.slug, "name": d.name, "role": d.role, "focus": d.focus,
+            "credentials": d.credentials,
+            "portrait_media_id": str(d.portrait_media_id) if d.portrait_media_id else None,
+            "position": d.position,
+        })
+    doctors.sort(key=lambda x: (x["position"], x["name"]))
+    return doctors
 
 
 def _query_treatments(session):
@@ -221,6 +241,7 @@ def bootstrap(app, operation, request, **kw):
         navigation = _query_navigation(session)
         clinics_data = _query_clinics(session)
         treatments_data = _query_treatments(session)
+        doctors_data = _query_doctors(session)
 
     homepage_treatments = [t for t in treatments_data if t.get("homepage_featured")]
     return _json_response({
@@ -229,6 +250,7 @@ def bootstrap(app, operation, request, **kw):
         "links": links,
         "navigation": navigation,
         "clinics": clinics_data,
+        "doctors": doctors_data,
         "homepage_treatments": homepage_treatments,
     })
 

@@ -47,6 +47,16 @@ export const ClinicSchema = z.object({
   })).default([]),
 });
 
+export const DoctorSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  role: z.string().nullable().optional(),
+  focus: z.string().nullable().optional(),
+  credentials: z.string().nullable().optional(),
+  portrait_media_id: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
 export const LinkSchema = z.object({
   kind: z.string(),
   label: z.string(),
@@ -106,6 +116,7 @@ export const BootstrapSchema = z.object({
   links: z.array(LinkSchema).default([]),
   navigation: z.record(z.string(), z.array(NavItemSchema)).default({}),
   clinics: z.array(ClinicSchema).default([]),
+  doctors: z.array(DoctorSchema).default([]),
   homepage_treatments: z.array(TreatmentSchema).default([]),
 });
 
@@ -167,6 +178,7 @@ export const OfferSchema = z.object({
 
 export type Bootstrap = z.infer<typeof BootstrapSchema>;
 export type Clinic = z.infer<typeof ClinicSchema>;
+export type Doctor = z.infer<typeof DoctorSchema>;
 export type Page = z.infer<typeof PageSchema>;
 export type ArticleSummary = z.infer<typeof ArticleSummarySchema>;
 export type Treatment = z.infer<typeof TreatmentSchema>;

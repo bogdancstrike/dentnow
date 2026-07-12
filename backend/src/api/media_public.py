@@ -20,9 +20,13 @@ def _principal_none():
 
 @public_endpoint
 def media_public(app, operation, request, asset_id=None, variant="card", **kw):
+    # The snapshot/publication system was removed — admin changes (including new media)
+    # are live immediately, so the public proxy serves any ready public asset rather
+    # than requiring a PublicationMedia reference that is no longer created. Consent-
+    # bound assets (case images) remain gated by _assert_deliverable inside read_variant.
     with session_scope() as session:
         data, content_type, etag, cache = MediaService(session, _principal_none()).read_variant(
-            asset_id, variant, require_publication=True
+            asset_id, variant, require_publication=False
         )
     resp = Response(data, mimetype=content_type)
     resp.headers["ETag"] = etag

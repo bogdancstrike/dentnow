@@ -181,6 +181,20 @@ class DoctorService(CrudService):
     def serialize(self, obj: Any) -> dict:
         return serialize_doctor(obj)
 
+    @staticmethod
+    def _coerce_portrait(data: dict) -> dict:
+        data = dict(data)
+        if "portrait_media_id" in data:
+            value = data["portrait_media_id"]
+            data["portrait_media_id"] = uuid.UUID(str(value)) if value else None
+        return data
+
+    def to_create_kwargs(self, data: dict) -> dict:
+        return self._coerce_portrait(data)
+
+    def to_update_values(self, data: dict, obj: Any) -> dict:
+        return self._coerce_portrait(data)
+
     def before_write(self, obj: Any, data: dict, *, creating: bool) -> None:
         q = select(Doctor.id).where(Doctor.slug == obj.slug, Doctor.deleted_at.is_(None))
         if not creating:

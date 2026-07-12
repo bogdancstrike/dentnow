@@ -150,6 +150,7 @@ class DoctorCreate(_Strict):
     role: Optional[str] = None
     focus: Optional[str] = None
     credentials: Optional[str] = None
+    portrait_media_id: Optional[str] = None
     active: bool = True
     position: int = 0
 
@@ -167,5 +168,6 @@ class DoctorUpdate(_Strict):
     role: Optional[str] = None
     focus: Optional[str] = None
     credentials: Optional[str] = None
+    portrait_media_id: Optional[str] = None
     active: Optional[bool] = None
     position: Optional[int] = None
