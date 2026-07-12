@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { navLinks, mobileNavLinks } from '../../data/navigation';
+import { fetchTreatments, publicQueryKeys } from '../../api/publicClient';
 import { useTheme } from '../../hooks/useTheme';
 import { useClinicPicker } from '../../hooks/useClinicPicker';
 import { IconSun, IconMoon, IconPhone } from '../ui/Icons';
@@ -13,6 +15,42 @@ export default function Navbar() {
   const location = useLocation();
   const { dark, toggle } = useTheme();
   const openPicker = useClinicPicker();
+
+  const { data: treatments = [] } = useQuery({
+    queryKey: publicQueryKeys.treatments,
+    queryFn: fetchTreatments,
+  });
+
+  const dynamicNavLinks = useMemo(() => {
+    return navLinks.map(link => {
+      if (link.label === 'Tratamente') {
+        return {
+          ...link,
+          children: [
+            { label: 'Toate tratamentele', to: '/tratamente' },
+            ...treatments.map(t => ({ label: t.name, to: `/tratamente/${t.slug}` }))
+          ]
+        };
+      }
+      return link;
+    });
+  }, [treatments]);
+
+  const dynamicMobileNavLinks = useMemo(() => {
+    // Keep 'Acasa', 'Decontare CAS', 'Tratamente si tarife' then insert treatments, then the rest
+    const treatmentsIndex = mobileNavLinks.findIndex(l => l.label === 'Tratamente si tarife');
+    if (treatmentsIndex !== -1) {
+      // Find where 'Oferte' starts to remove hardcoded treatments
+      const oferteIndex = mobileNavLinks.findIndex(l => l.label === 'Oferte');
+      
+      const before = mobileNavLinks.slice(0, treatmentsIndex + 1);
+      const dynamic = treatments.map(t => ({ label: t.name, to: `/tratamente/${t.slug}` }));
+      const after = oferteIndex !== -1 ? mobileNavLinks.slice(oferteIndex) : [];
+      
+      return [...before, ...dynamic, ...after];
+    }
+    return mobileNavLinks;
+  }, [treatments]);
 
   const closeMenus = () => { setMobileOpen(false); setOpenMenu(''); };
 
@@ -51,7 +89,7 @@ export default function Navbar() {
       <nav className={`nav${isDark ? ' dark' : ''}`}>
         <Link to="/" className="nav-logo">Dent<span>Now</span></Link>
         <ul className="nav-links">
-          {navLinks.map((l) => (
+          {dynamicNavLinks.map((l) => (
             <li key={l.label} className="nav-item" onMouseLeave={() => setOpenMenu('')}>
               {l.children ? (
                 <>
@@ -82,7 +120,7 @@ export default function Navbar() {
       </nav>
       {mobileOpen && <button className="nav-backdrop" aria-label="Inchide meniul" onClick={() => setMobileOpen(false)} />}
       <nav id="mobile-navigation" className={`nav-mobile${mobileOpen ? ' open' : ''}`} aria-label="Navigatie mobila">
-        {mobileNavLinks.map((l) => <Link key={l.to} to={l.to} onClick={closeMenus}>{l.label}</Link>)}
+        {dynamicMobileNavLinks.map((l) => <Link key={l.to} to={l.to} onClick={closeMenus}>{l.label}</Link>)}
         <button type="button" className="nav-cta-mobile" onClick={() => { closeMenus(); openPicker('both'); }}><IconPhone size={16} /> Programează-te</button>
       </nav>
     </>

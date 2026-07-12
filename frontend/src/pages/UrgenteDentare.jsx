@@ -1,10 +1,12 @@
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
+import { useClinicPicker } from '../hooks/useClinicPicker';
 import { IconPhone, IconClock, IconAlert, IconWhatsApp } from '../components/ui/Icons';
 import config from '../config';
 import './UrgenteDentare.css';
 
 export default function UrgenteDentare() {
+  const openPicker = useClinicPicker();
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'EmergencyService',
@@ -119,9 +121,9 @@ export default function UrgenteDentare() {
           <h3><IconClock size={20} /> Program de Preluare Urgențe</h3>
           <p>Luni – Vineri: 09:00 – 19:00 | Sâmbătă: 09:00 – 15:00</p>
           <div className="hours-whatsapp">
-            <a href={`https://wa.me/${config.phones[0].tel.replace('+', '')}?text=Buna%20ziua%2C%20am%20o%20urgenta%20dentara`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+            <button type="button" onClick={() => openPicker('whatsapp')} className="btn btn-whatsapp">
               <IconWhatsApp size={18} /> Trimite un Mesaj WhatsApp Rapid
-            </a>
+            </button>
           </div>
         </div>
       </section>

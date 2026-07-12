@@ -67,6 +67,7 @@ export default function PublicApp() {
               />
 
               {/* Dedicated treatment pages */}
+              <Route path="tratamente/:slug" element={<TreatmentDetail />} />
               <Route path="implant-dentar-bucuresti" element={<TreatmentDetail />} />
               <Route path="aparat-dentar-dristor" element={<TreatmentDetail />} />
               <Route path="albire-dentara-laser" element={<TreatmentDetail />} />
