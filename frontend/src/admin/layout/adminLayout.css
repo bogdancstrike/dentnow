@@ -33,6 +33,12 @@
   background: #12141a !important;
 }
 
+.admin-sidebar-inner {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
 .admin-shell > .ant-layout {
   min-width: 0;
   height: 100dvh;
@@ -85,6 +91,23 @@
   color: rgba(226, 232, 240, 0.55);
   font-size: 11px;
   font-weight: 500;
+}
+
+.admin-sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 10px 8px;
+}
+
+.admin-sidebar-footer button {
+  min-height: 38px;
+  justify-content: flex-start;
+  color: rgba(233, 236, 239, 0.68);
+}
+
+.admin-sidebar-footer button:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
 }
 
 .admin-header {

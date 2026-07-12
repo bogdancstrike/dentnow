@@ -1,5 +1,6 @@
 export const navLinks = [
   { label: 'Acasa', to: '/' },
+  { label: 'Decontare CAS', to: '/decontat-cas' },
   {
     label: 'Tratamente',
     to: '/tratamente',
@@ -10,11 +11,9 @@ export const navLinks = [
       { label: 'Albire Dentară Laser', to: '/albire-dentara-laser' },
       { label: 'Protetică Zirconiu', to: '/protetica-zirconiu' },
       { label: 'Urgențe Dentare', to: '/urgente-dentare-bucuresti' },
-      { label: 'Decontate CAS / Gratuit Copii', to: '/decontat-cas' },
     ],
   },
   { label: 'Oferte', to: '/oferte' },
-  { label: 'Recenzii', to: '/recenzii' },
   {
     label: 'Locații',
     to: '/stomatologie-dristor',
@@ -48,15 +47,14 @@ export const navLinks = [
 
 export const mobileNavLinks = [
   { label: 'Acasa', to: '/' },
+  { label: 'Decontare CAS', to: '/decontat-cas' },
   { label: 'Tratamente si tarife', to: '/tratamente' },
   { label: 'Urgențe Dentare București', to: '/urgente-dentare-bucuresti' },
-  { label: 'Decontat CAS & Gratuit Copii', to: '/decontat-cas' },
   { label: 'Implant Dentar București', to: '/implant-dentar-bucuresti' },
   { label: 'Oferte', to: '/oferte' },
   { label: 'DentNow Dristor', to: '/stomatologie-dristor' },
   { label: 'DentNow Baba Novac', to: '/stomatologie-baba-novac' },
   { label: 'DentNow Prelungirea Ghencea', to: '/stomatologie-prelungirea-ghencea' },
-  { label: 'Recenzii', to: '/recenzii' },
   { label: 'Before & After', to: '/before-after' },
   { label: 'Articole', to: '/articole' },
   { label: 'Scor Igiena', to: '/scor-igiena' },
@@ -68,7 +66,6 @@ export const footerServices = [
   { label: 'Albire Dentară Laser', to: '/albire-dentara-laser' },
   { label: 'Protetică Zirconiu', to: '/protetica-zirconiu' },
   { label: 'Urgențe Dentare', to: '/urgente-dentare-bucuresti' },
-  { label: 'Decontate CAS / Gratuit Copii', to: '/decontat-cas' },
 ];
 
 export const footerClinic = [

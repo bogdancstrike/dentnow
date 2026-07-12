@@ -10,6 +10,7 @@ import {
 import type { MenuProps } from 'antd';
 import {
   LogoutOutlined,
+  GlobalOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SearchOutlined,
@@ -65,6 +66,7 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
         onBreakpoint={setCollapsed}
         trigger={null}
       >
+        <div className="admin-sidebar-inner">
         <button
           type="button"
           className="admin-brand"
@@ -87,6 +89,18 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
           items={menuItems}
           onClick={(event) => navigate(`/admin/${event.key}`)}
         />
+        <div className="admin-sidebar-footer">
+          <Button
+            type="text"
+            block
+            icon={<GlobalOutlined />}
+            aria-label="Vezi site-ul public"
+            onClick={() => window.open('/', '_blank', 'noopener')}
+          >
+            {!collapsed && 'Vezi site-ul public'}
+          </Button>
+        </div>
+        </div>
       </Sider>
 
       <Layout>

@@ -1013,6 +1013,10 @@
         "to": "/"
       },
       {
+        "label": "Decontare CAS",
+        "to": "/decontat-cas"
+      },
+      {
         "label": "Tratamente",
         "to": "/tratamente",
         "children": [
@@ -1039,20 +1043,12 @@
           {
             "label": "Urgențe Dentare",
             "to": "/urgente-dentare-bucuresti"
-          },
-          {
-            "label": "Decontate CAS / Gratuit Copii",
-            "to": "/decontat-cas"
           }
         ]
       },
       {
         "label": "Oferte",
         "to": "/oferte"
-      },
-      {
-        "label": "Recenzii",
-        "to": "/recenzii"
       },
       {
         "label": "Locații",
@@ -1123,16 +1119,16 @@
         "to": "/"
       },
       {
+        "label": "Decontare CAS",
+        "to": "/decontat-cas"
+      },
+      {
         "label": "Tratamente si tarife",
         "to": "/tratamente"
       },
       {
         "label": "Urgențe Dentare București",
         "to": "/urgente-dentare-bucuresti"
-      },
-      {
-        "label": "Decontat CAS & Gratuit Copii",
-        "to": "/decontat-cas"
       },
       {
         "label": "Implant Dentar București",
@@ -1153,10 +1149,6 @@
       {
         "label": "DentNow Prelungirea Ghencea",
         "to": "/stomatologie-prelungirea-ghencea"
-      },
-      {
-        "label": "Recenzii",
-        "to": "/recenzii"
       },
       {
         "label": "Before & After",

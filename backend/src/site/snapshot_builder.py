@@ -12,8 +12,8 @@ from datetime import date
 
 from sqlalchemy import select
 
-from src.catalog.models import Offer, OfferFeature, Treatment, TreatmentPrice
-from src.clinics.models import Clinic, ClinicContact, ClinicHours
+from src.catalog.models import Offer, OfferFeature, Treatment, TreatmentCategory, TreatmentPrice
+from src.clinics.models import Clinic, ClinicContact, ClinicFaq, ClinicHours, ClinicTransitItem
 from src.editorial.models import Article, Review
 from src.editorial.rich_text import render_markdown
 from src.media.models import MediaAsset, MediaVariant
@@ -98,11 +98,23 @@ def build_snapshot(session) -> SiteSnapshotV1:
             for h in session.scalars(_live(ClinicHours).where(ClinicHours.clinic_id == c.id)).all()
         ]
         hours.sort(key=lambda x: x["weekday"])
+        transit = [
+            {"mode": t.mode, "label": t.label, "detail": t.detail, "position": t.position}
+            for t in session.scalars(_live(ClinicTransitItem).where(ClinicTransitItem.clinic_id == c.id)).all()
+        ]
+        transit.sort(key=lambda x: (x["position"], x["label"]))
+        faqs = [
+            {"question": f.question, "answer": f.answer, "position": f.position}
+            for f in session.scalars(_live(ClinicFaq).where(ClinicFaq.clinic_id == c.id)).all()
+        ]
+        faqs.sort(key=lambda x: (x["position"], x["question"]))
         clinics.append(ClinicPublic(
             slug=c.slug, name=c.name, area=c.area, address_full=c.address_full,
+            postal_code=c.postal_code,
             latitude=float(c.latitude) if c.latitude is not None else None,
             longitude=float(c.longitude) if c.longitude is not None else None,
-            map_embed_url=c.map_embed_url, map_link_url=c.map_link_url, contacts=contacts, hours=hours,
+            map_embed_url=c.map_embed_url, map_link_url=c.map_link_url, contacts=contacts,
+            hours=hours, transit=transit, faqs=faqs,
         ))
     clinics.sort(key=lambda x: x.slug)
 
@@ -130,17 +142,27 @@ def build_snapshot(session) -> SiteSnapshotV1:
 
     # ── treatments + prices ────────────────────────────────────────────────────
     treatments = []
+    categories = {
+        category.id: category
+        for category in session.scalars(_live(TreatmentCategory)).all()
+    }
     for t in session.scalars(_live(Treatment).where(Treatment.active.is_(True))).all():
         prices = [
             {"price_kind": pr.price_kind, "amount": float(pr.amount) if pr.amount is not None else None,
              "amount_max": float(pr.amount_max) if pr.amount_max is not None else None,
-             "currency": pr.currency, "note": pr.note, "clinic_id": str(pr.clinic_id) if pr.clinic_id else None}
+             "old_amount": float(pr.old_amount) if pr.old_amount is not None else None,
+             "currency": pr.currency, "note": pr.note, "clinic_id": str(pr.clinic_id) if pr.clinic_id else None,
+             "position": pr.position}
             for pr in session.scalars(_live(TreatmentPrice).where(TreatmentPrice.treatment_id == t.id)).all()
         ]
         prices.sort(key=lambda x: (x["clinic_id"] or "", x["price_kind"]))
+        category = categories.get(t.category_id)
         treatments.append(TreatmentPublic(
             slug=t.slug, name=t.name, summary=t.summary,
-            detail_html=render_markdown(t.detail_markdown) if t.detail_markdown else None, prices=prices,
+            category_slug=category.slug if category else None,
+            category_label=category.label if category else None,
+            detail_html=render_markdown(t.detail_markdown) if t.detail_markdown else None,
+            prices=prices, position=t.position,
         ))
     treatments.sort(key=lambda x: x.slug)
 
@@ -156,7 +178,9 @@ def build_snapshot(session) -> SiteSnapshotV1:
         offers.append(OfferPublic(
             slug=o.slug, name=o.name, summary=o.summary, badge=o.badge,
             price_amount=float(o.price_amount) if o.price_amount is not None else None,
+            old_amount=float(o.old_amount) if o.old_amount is not None else None,
             currency=o.currency, starts_at=o.starts_at, ends_at=o.ends_at, features=features,
+            featured=o.featured, position=o.position,
         ))
     offers.sort(key=lambda x: x.slug)
 

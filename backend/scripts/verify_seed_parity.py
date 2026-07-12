@@ -15,12 +15,15 @@ from src.core.db import session_scope  # noqa: E402
 from src.editorial.models import (  # noqa: E402
     Article, CaseStudy, Ebook, NewsItem, QuizOption, QuizQuestion, Review,
 )
+from src.media.models import MediaAsset  # noqa: E402
+from src.site.models import NavigationItem  # noqa: E402
 
 EXPECTED = {
     "clinics": 3, "phone_lines": 2, "services": 6, "offers": 6,
     "treatment_categories": 10, "treatment_price_rows": 20, "partners": 6,
     "case_studies": 3, "ebooks": 6, "news_items": 3, "quiz_questions": 7,
     "quiz_options": 28, "articles": 17, "reviews": 9,
+    "media_assets": 1, "navigation_items": 37,
 }
 
 
@@ -48,6 +51,8 @@ def actual_counts(session) -> dict:
         "quiz_options": n(QuizOption, QuizOption.deleted_at.is_(None)),
         "articles": n(Article, Article.deleted_at.is_(None)),
         "reviews": n(Review, Review.deleted_at.is_(None)),
+        "media_assets": n(MediaAsset, MediaAsset.deleted_at.is_(None)),
+        "navigation_items": n(NavigationItem, NavigationItem.deleted_at.is_(None)),
     }
 
 

@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-.PHONY: help secrets config up down infra-test frontend-check backend-check
+.PHONY: help secrets config up down infra-test frontend-check backend-check seed default loaded
 
 help: ## Show available targets
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -35,3 +35,17 @@ frontend-check: ## Frontend typecheck + unit tests + lint + build
 
 backend-check: ## Backend contract/unit tests (requires backend/.venv)
 	PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/contract backend/tests/unit -q
+
+seed: secrets ## Seed content: `make seed default` or `make seed loaded`
+	docker compose up -d --wait postgres minio
+	docker compose up --abort-on-container-failure migrate minio-init
+	@SCRIPT=seed.py; \
+	if [[ " $(MAKECMDGOALS) " == *" loaded "* ]]; then SCRIPT=seed_loaded.py; fi; \
+	docker compose run --rm --build --entrypoint /bin/bash seed -c \
+	  'export POSTGRES_PASSWORD="$$(cat /run/secrets/postgres_password)"; \
+	   export DATABASE_URL="postgresql+psycopg2://dentnow:$${POSTGRES_PASSWORD}@postgres:5432/dentnow"; \
+	   export S3_SECRET_KEY="$$(cat /run/secrets/minio_app_secret)"; \
+	   exec python '"$$SCRIPT"
+
+default loaded: ## Seed mode selectors used with `make seed default|loaded`
+	@:

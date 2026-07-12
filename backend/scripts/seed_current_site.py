@@ -8,16 +8,20 @@ legally certified. Unverified records are marked ``needs_review``. The one audit
 from __future__ import annotations
 
 import json
+import html
 import re
 import sys
 import uuid
+from datetime import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from sqlalchemy import func, select  # noqa: E402
+
 import src.models_all  # noqa: E402,F401
 from src.catalog.models import (  # noqa: E402
-    Offer, OfferFeature, Partner, Treatment, TreatmentCategory, TreatmentPrice,
+    Offer, OfferFeature, Partner, Technology, Treatment, TreatmentCategory, TreatmentPrice,
 )
 from src.clinics.models import Clinic, ClinicContact, ClinicHours, Doctor  # noqa: E402
 from src.core.clock import utcnow, uuid7  # noqa: E402
@@ -25,7 +29,13 @@ from src.core.db import session_scope  # noqa: E402
 from src.editorial.models import (  # noqa: E402
     Article, CaseStudy, Ebook, LegalDocument, NewsItem, Quiz, QuizOption, QuizQuestion, Review,
 )
-from src.site.models import Page, SiteLink, SiteState, SitePublication  # noqa: E402
+from src.iam.capabilities import ROLE_ADMIN  # noqa: E402
+from src.iam.principal import Principal  # noqa: E402
+from src.media.models import PublicationMedia  # noqa: E402
+from src.media.service import MediaService  # noqa: E402
+from src.site.models import (  # noqa: E402
+    NavigationItem, NavigationMenu, Page, SiteLink, SiteState, SitePublication,
+)
 
 SEEDS = Path(__file__).resolve().parents[1] / "seeds"
 WEEKDAY_ORDER = {"Luni – Vineri": None, "Sâmbătă": 5, "Duminică": 6}
@@ -34,7 +44,6 @@ ROUTES = [
     ("/tratamente", "treatments", "treatment-index", "Tratamente & Tarife"),
     ("/oferte", "offers", "offers-index", "Oferte"),
     ("/articole", "articles", "article-index", "Articole"),
-    ("/recenzii", "reviews", "generic", "Recenzii"),
     ("/before-after", "before-after", "generic", "Before & After"),
     ("/noutati", "news", "article-index", "Noutăți"),
     ("/scor-igiena", "quiz", "quiz", "Scor Igienă Orală"),
@@ -45,6 +54,13 @@ ROUTES = [
     ("/gdpr", "gdpr", "legal", "GDPR"),
     ("/confidentialitate", "privacy", "legal", "Confidențialitate"),
     ("/termeni", "terms", "legal", "Termeni și Condiții"),
+    ("/stomatologie-dristor", "clinic-dristor", "clinic-detail", "Stomatologie Dristor"),
+    ("/stomatologie-baba-novac", "clinic-baba-novac", "clinic-detail", "Stomatologie Baba Novac"),
+    ("/stomatologie-prelungirea-ghencea", "clinic-prelungirea-ghencea", "clinic-detail", "Stomatologie Prelungirea Ghencea"),
+    ("/implant-dentar-bucuresti", "treatment-implant", "treatment-detail", "Implant Dentar București"),
+    ("/aparat-dentar-dristor", "treatment-ortodontie", "treatment-detail", "Aparat Dentar Dristor"),
+    ("/albire-dentara-laser", "treatment-albire", "treatment-detail", "Albire Dentară Laser"),
+    ("/protetica-zirconiu", "treatment-protetica", "treatment-detail", "Protetică Zirconiu"),
 ]
 
 
@@ -68,45 +84,110 @@ def _parse_price(raw: str):
     return "on_request", None, None
 
 
+def _legacy_html_to_markdown(raw: str | None) -> str | None:
+    """Turn the audited legacy article fragments into safe Markdown for the CMS.
+
+    The old frontend stored a small, fixed subset of HTML. Keeping it as
+    ``body_markdown`` would make the Markdown renderer escape tags visibly, so the
+    seed normalizes paragraphs, breaks, emphasis and list-like bullets once.
+    """
+    if not raw:
+        return None
+    value = raw
+    value = re.sub(r"<\s*br\s*/?\s*>", "\n", value, flags=re.I)
+    value = re.sub(r"<\s*/?\s*strong\s*>", "**", value, flags=re.I)
+    value = re.sub(r"<\s*/?\s*em\s*>", "_", value, flags=re.I)
+    value = re.sub(r"<\s*/\s*p\s*>", "\n\n", value, flags=re.I)
+    value = re.sub(r"<\s*p(?:\s+[^>]*)?>", "", value, flags=re.I)
+    value = re.sub(r"<[^>]+>", "", value)
+    value = html.unescape(value).replace("• ", "- ")
+    return re.sub(r"\n{3,}", "\n\n", value).strip()
+
+
+def _hours(raw: str | None) -> tuple[time | None, time | None]:
+    matches = re.findall(r"(\d{1,2}):(\d{2})", raw or "")
+    if len(matches) < 2:
+        return None, None
+    return time(int(matches[0][0]), int(matches[0][1])), time(int(matches[1][0]), int(matches[1][1]))
+
+
+def _weekdays(label: str) -> list[int]:
+    if "Luni" in label and "Vineri" in label:
+        return [0, 1, 2, 3, 4]
+    return {"Sâmbătă": [5], "Duminică": [6]}.get(label, [0])
+
+
+def seed_placeholder_media(session) -> uuid.UUID:
+    """Upload the canonical temporary photo through the real MinIO media path."""
+    principal = Principal(subject="seed", roles=frozenset({ROLE_ADMIN}))
+    result = MediaService(session, principal).upload_image(
+        (SEEDS / "assets" / "og-dentnow.png").read_bytes(),
+        filename="dentnow-placeholder.png",
+        alt_text="Imagine temporară DentNow — va fi înlocuită din administrare",
+        rights_note="Generated migration placeholder; not patient imagery",
+    )
+    return uuid.UUID(result["id"])
+
+
 def already_seeded(session) -> bool:
-    return session.scalar(__import__("sqlalchemy").select(Clinic.id).limit(1)) is not None
+    return session.scalar(select(Clinic.id).limit(1)) is not None
 
 
-def seed(session, data: dict) -> dict:
+def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
     counts: dict[str, int] = {}
 
     # ── site state ─────────────────────────────────────────────────────────
     state = session.get(SiteState, 1) or SiteState(id=1)
     state.site_name = data["site"]["name"]
+    state.default_locale = data["site"].get("locale", "ro-RO")
+    state.default_timezone = data["site"].get("timezone", "Europe/Bucharest")
     session.merge(state)
 
     # ── clinics (+ contacts, hours) ──────────────────────────────────────────
     clinic_ids = []
     for pos, c in enumerate(data["clinics"]):
+        clinic_slug = _slug(c["name"].removeprefix("DentNow "))
+        postal_match = re.search(r"\b\d{6}\b", c.get("address", ""))
         clinic = Clinic(
-            slug=_slug(c["name"]), name=c["name"], area=c.get("area"),
+            slug=clinic_slug, name=c["name"], area=c.get("area"),
             address_full=c.get("address"), map_link_url=c.get("mapsLink"),
-            map_embed_url=c.get("embedUrl"), status="active", position=pos,
+            map_embed_url=c.get("embedUrl"), postal_code=postal_match.group(0) if postal_match else None,
+            status="active", position=pos,
         )
         session.add(clinic)
         session.flush()
         clinic_ids.append(clinic.id)
         session.add(ClinicContact(
             clinic_id=clinic.id, kind="phone", display_value=c["phoneDisplay"],
-            normalized_value=re.sub(r"[^\d+]", "", c["phone"]), is_primary=True, position=0,
+            normalized_value=re.sub(r"[^\d+]", "", c["phone"]), url=f"tel:{c['phone']}",
+            label="Programări", is_primary=True, position=0,
+        ))
+        session.add(ClinicContact(
+            clinic_id=clinic.id, kind="whatsapp", display_value="WhatsApp",
+            normalized_value=re.sub(r"[^\d+]", "", c["phone"]),
+            url=f"https://wa.me/{re.sub(r'[^\d]', '', c['phone'])}", label="WhatsApp", position=1,
         ))
         for h in c.get("schedule", []):
-            session.add(ClinicHours(
-                clinic_id=clinic.id, weekday=WEEKDAY_ORDER.get(h["day"], 0) or 0,
-                closed=not h.get("open", True),
-            ))
+            opens_at, closes_at = _hours(h.get("hours"))
+            for weekday in _weekdays(h["day"]):
+                session.add(ClinicHours(
+                    clinic_id=clinic.id, weekday=weekday, opens_at=opens_at, closes_at=closes_at,
+                    closed=not h.get("open", True),
+                ))
     counts["clinics"] = len(clinic_ids)
     counts["phone_lines"] = len({c["phone"] for c in data["clinics"]})
 
     # ── links ────────────────────────────────────────────────────────────────
     for i, ph in enumerate(data.get("phones", [])):
         session.add(SiteLink(kind="phone", label=ph["label"], value=ph["tel"],
-                             display_value=ph["display"], position=i))
+                             display_value=ph["display"], url=f"tel:{ph['tel']}", position=i))
+    contact = data.get("contact", {})
+    if contact.get("email"):
+        session.add(SiteLink(kind="email", label="Email", value=contact["email"],
+                             display_value=contact["email"], url=f"mailto:{contact['email']}"))
+    if contact.get("whatsappUrl"):
+        session.add(SiteLink(kind="whatsapp", label="WhatsApp", value=contact["whatsappUrl"],
+                             display_value="WhatsApp", url=contact["whatsappUrl"]))
     social = data.get("social", {})
     for k in ("facebook", "instagram", "linkedin", "website"):
         if social.get(k):
@@ -131,9 +212,10 @@ def seed(session, data: dict) -> dict:
             session.add(t)
             session.flush()
             kind, amount, amount_max = _parse_price(row.get("price", ""))
+            _old_kind, old_amount, _old_max = _parse_price(row.get("oldPrice", ""))
             session.add(TreatmentPrice(
                 treatment_id=t.id, price_kind=kind, amount=amount, amount_max=amount_max,
-                currency="RON", note=row.get("price"), position=j,
+                old_amount=old_amount, currency="RON", note=row.get("price"), position=j,
             ))
             price_rows += 1
     counts["treatment_categories"] = len(data["treatmentCategories"])
@@ -142,9 +224,10 @@ def seed(session, data: dict) -> dict:
     # ── offers (6) + features ────────────────────────────────────────────────
     for pos, o in enumerate(data["offers"]):
         kind, amount, _m = _parse_price(o.get("price", ""))
+        _old_kind, old_amount, _old_max = _parse_price(o.get("oldPrice", ""))
         offer = Offer(slug=_slug(o["name"]), name=o["name"], summary=o.get("desc"),
-                      badge=o.get("badge"), price_amount=amount, currency="RON",
-                      status="draft", featured=bool(o.get("featured")), position=pos)
+                      badge=o.get("badge"), price_amount=amount, old_amount=old_amount, currency="RON",
+                      status="active", featured=bool(o.get("featured")), position=pos)
         session.add(offer)
         session.flush()
         for fi, feat in enumerate(o.get("features", [])):
@@ -153,43 +236,57 @@ def seed(session, data: dict) -> dict:
 
     # ── partners (6) ─────────────────────────────────────────────────────────
     for pos, p in enumerate(data["partners"]):
-        session.add(Partner(name=p["name"], relationship_type=p.get("type"), badge=p.get("badge"), position=pos))
+        session.add(Partner(name=p["name"], relationship_type=p.get("type"), badge=p.get("badge"),
+                            logo_media_id=placeholder_media_id, position=pos))
     counts["partners"] = len(data["partners"])
 
     # ── doctors ──────────────────────────────────────────────────────────────
     for pos, d in enumerate(data.get("doctors", [])):
         session.add(Doctor(slug=_slug(d["name"] + f"-{pos}"), name=d["name"], role=d.get("role"),
-                          focus=d.get("focus"), active=True, position=pos))
+                          focus=d.get("focus"), portrait_media_id=placeholder_media_id,
+                          active=True, position=pos))
+
+    # ── technology cards use the same replaceable MinIO placeholder ─────────
+    for pos, t in enumerate(data.get("technologies", [])):
+        session.add(Technology(name=t["title"], description=t.get("text"),
+                               media_id=placeholder_media_id, active=True, position=pos))
+    counts["technologies"] = len(data.get("technologies", []))
 
     # ── ebooks (6) ───────────────────────────────────────────────────────────
     for pos, e in enumerate(data["ebooks"]):
         session.add(Ebook(slug=_slug(e["label"]), title=e["title"], category=e.get("cat"),
-                        description=e.get("desc"), active=True, position=pos))
+                        description=e.get("desc"), cover_media_id=placeholder_media_id,
+                        active=True, position=pos))
     counts["ebooks"] = len(data["ebooks"])
 
     # ── news (3) ─────────────────────────────────────────────────────────────
     for pos, n in enumerate(data["newsItems"]):
-        session.add(NewsItem(slug=f"news-{pos}-{_slug(n['title'])}", title=n["title"],
-                          category=n.get("cat"), status="needs_review", position=pos))
+        session.add(NewsItem(slug=_slug(n["title"]), title=n["title"],
+                          category=n.get("cat"), media_id=placeholder_media_id,
+                          status="published", published_at=utcnow().date(), position=pos))
     counts["news_items"] = len(data["newsItems"])
 
     # ── reviews (9) ──────────────────────────────────────────────────────────
     for pos, r in enumerate(data["reviews"]):
         session.add(Review(author=r.get("author", "Anonim"), review_date=utcnow().date(),
                         rating=int(r.get("rating", 5)), text_body=r.get("text"),
-                        source="google", status="needs_review", position=pos))
+                        source="google", source_url=data.get("contact", {}).get("reviewsUrl"),
+                        status="published", position=pos))
     counts["reviews"] = len(data["reviews"])
 
     # ── articles (17) ────────────────────────────────────────────────────────
     for pos, a in enumerate(data["articles"]):
-        session.add(Article(slug=f"art-{pos}-{_slug(a['title'])}", title=a["title"],
+        session.add(Article(slug=_slug(a["title"]), title=a["title"],
                           category=a.get("cat"), excerpt=a.get("excerpt"),
-                          body_markdown=a.get("body"), status="needs_review", position=pos))
+                          body_markdown=_legacy_html_to_markdown(a.get("body")),
+                          cover_media_id=placeholder_media_id, author="Echipa DentNow",
+                          published_at=utcnow().date(), status="published", position=pos))
     counts["articles"] = len(data["articles"])
 
     # ── case studies (3) ─────────────────────────────────────────────────────
     for pos, c in enumerate(data["beforeAfterCases"]):
         session.add(CaseStudy(title=c["title"], description=c.get("desc"),
+                           before_media_id=placeholder_media_id, after_media_id=placeholder_media_id,
                            disclaimer=c.get("desc"), consent_state="none", position=pos))
     counts["case_studies"] = len(data["beforeAfterCases"])
 
@@ -215,31 +312,71 @@ def seed(session, data: dict) -> dict:
                                body_markdown=f"{t} placeholder — needs review.", active=True))
 
     # ── pages (route inventory) ──────────────────────────────────────────────
+    pages_by_path = {}
     for path_, key, template, title in ROUTES:
-        session.add(Page(path=path_, route_key=key, template_key=template, title=title,
-                       enabled=True, indexable=not path_.startswith(("/gdpr", "/confid", "/termeni"))))
+        page = Page(path=path_, route_key=key, template_key=template, title=title,
+                    enabled=True, indexable=not path_.startswith(("/gdpr", "/confid", "/termeni")))
+        session.add(page)
+        session.flush()
+        pages_by_path[path_] = page
+
+    # ── public navigation comes from the seed/database, including nested items ─
+    navigation_count = 0
+    for menu_key in ("desktop", "mobile"):
+        menu = NavigationMenu(key=menu_key, label=menu_key.capitalize())
+        session.add(menu)
+        session.flush()
+
+        def add_nav_items(items, parent_id=None):
+            nonlocal navigation_count
+            for position, item in enumerate(items):
+                target = item.get("to")
+                page = pages_by_path.get(target) if target and "#" not in target else None
+                nav = NavigationItem(
+                    menu_id=menu.id, parent_id=parent_id, label=item["label"], position=position,
+                    target_page_id=page.id if page else None,
+                    external_url=None if page else target,
+                )
+                session.add(nav)
+                session.flush()
+                navigation_count += 1
+                add_nav_items(item.get("children", []), nav.id)
+
+        add_nav_items(data.get("navigation", {}).get(menu_key, []))
+    counts["navigation_items"] = navigation_count
+    counts["media_assets"] = 1
 
     session.flush()
     return counts
 
 
-def create_migration_baseline(session) -> str:
-    """Create the one auditable migration_baseline publication (empty DB only)."""
+def create_seed_publication(session, reason: str) -> str:
+    """Create and activate a snapshot produced by a trusted seed command."""
     from src.site.snapshot_builder import build_snapshot, content_hash
 
     snapshot = build_snapshot(session)
     chash = content_hash(snapshot)
+    state = session.get(SiteState, 1)
+    if state is None:
+        raise RuntimeError("site state missing before baseline publication")
+    next_version = (session.scalar(select(func.max(SitePublication.version))) or 0) + 1
     pub = SitePublication(
-        id=uuid7(), version=1, workspace_version=1, schema_version=1,
+        id=uuid7(), version=next_version, workspace_version=state.workspace_version,
         snapshot=snapshot.model_dump(mode="json"), content_hash=chash,
-        activation_reason="migration_baseline", created_by="seed",
+        activation_reason=reason, created_by="seed",
     )
     session.add(pub)
     session.flush()
-    state = session.get(SiteState, 1)
+    for asset_id in snapshot.media.keys():
+        session.add(PublicationMedia(publication_id=pub.id, asset_id=uuid.UUID(asset_id)))
     state.active_publication_id = pub.id
     session.flush()
     return str(pub.id)
+
+
+def create_migration_baseline(session) -> str:
+    """Create the one auditable migration_baseline publication (empty DB only)."""
+    return create_seed_publication(session, "migration_baseline")
 
 
 def main() -> int:
@@ -248,7 +385,8 @@ def main() -> int:
         if already_seeded(session):
             print("seed: already seeded — no changes")
             return 0
-        counts = seed(session, data)
+        placeholder_media_id = seed_placeholder_media(session)
+        counts = seed(session, data, placeholder_media_id)
         pub_id = create_migration_baseline(session)
         print(f"seed: created baseline workspace + migration_baseline publication {pub_id}")
         print("seed: counts " + json.dumps(counts))

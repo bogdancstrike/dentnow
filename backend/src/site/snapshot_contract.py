@@ -44,12 +44,15 @@ class ClinicPublic(_Model):
     name: str
     area: str | None = None
     address_full: str | None = None
+    postal_code: str | None = None
     latitude: float | None = None
     longitude: float | None = None
     map_embed_url: str | None = None
     map_link_url: str | None = None
     contacts: list[dict[str, Any]] = []
     hours: list[dict[str, Any]] = []
+    transit: list[dict[str, Any]] = []
+    faqs: list[dict[str, Any]] = []
 
 
 class SectionPublic(_Model):
@@ -79,9 +82,12 @@ class PagePublic(_Model):
 class TreatmentPublic(_Model):
     slug: str
     name: str
+    category_slug: str | None = None
+    category_label: str | None = None
     summary: str | None = None
     detail_html: str | None = None
     prices: list[dict[str, Any]] = []
+    position: int = 0
 
 
 class OfferPublic(_Model):
@@ -90,10 +96,13 @@ class OfferPublic(_Model):
     summary: str | None = None
     badge: str | None = None
     price_amount: float | None = None
+    old_amount: float | None = None
     currency: str = "RON"
     starts_at: str | None = None
     ends_at: str | None = None
     features: list[str] = []
+    featured: bool = False
+    position: int = 0
 
 
 class ArticlePublic(_Model):

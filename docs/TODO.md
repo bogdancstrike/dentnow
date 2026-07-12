@@ -35,6 +35,7 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 - [ ] **Reviews from Google** — "Recenzii" is not manually authored; sync automatically from Google reviews per clinic's Maps location. Needs `clinics.google_place_id` + Google Places API key. *(Reverses architecture §23 non-goal "no Google review scraping" — user override.)*
 - [~] **Enterprise/professional look** + `cmdk` quick actions. *(Shell/cmdk restyled after the simpler `testing_platform` design system; remaining screens are being migrated.)*
 - [x] **cmdk feature rule** — every new admin feature is reviewed for a safe, permission-aware quick action; frequent create/navigate/search actions are added, while destructive/high-risk actions remain in their normal confirmed flow. (`Articol nou` added.)
+- [x] Added persistent **Vezi site-ul public** in the admin sidebar plus the matching cmdk action.
 - [x] Removed the user-rejected **Prezentare generală** and generic **Pagini & SEO** admin pages; `/admin` now opens `/admin/clinici`.
 - [x] Removed manual **Recenzii** CRUD navigation; reviews will be a Google-synced clinic data source, not an authored page.
 - [x] Removed website publication/version controls from `/admin`. Preview is contextual per edited entity, never a global publish action.
@@ -229,6 +230,18 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 
 ## Task 24 — Ops docs + release rehearsal ⬜ NOT STARTED
 - [ ] README rewrite, deployment/recovery/content runbooks, clean release rehearsal
+
+## Task 25 — Privacy-preserving visitor analytics + admin dashboards ⬜ NEW
+- [ ] Add a first-party backend telemetry endpoint for `page_view`, navigation clicks, meaningful section visibility, article reads, treatment views, offer views, and clinic/contact CTA interactions.
+- [ ] Derive a secret-keyed pseudonymous visitor identifier from request/network signals; **never persist raw IP addresses, full user-agent strings, bearer/session values, or unbounded referrers**.
+- [ ] Parse and store only bounded device/browser families and coarse trusted-proxy location fields (country/region; city only after legal/privacy approval). Reject client-supplied IP/location identity claims.
+- [ ] Add retention/aggregation policy, bot filtering, rate limits, DNT/consent behavior, same-origin validation, CSP compatibility, and deletion/rotation for visitor identifiers.
+- [ ] Add PostgreSQL tables/indexes for bounded events and daily aggregates; keep this analytics context separate from immutable admin audit and from any future patient data.
+- [ ] Add permission-protected admin aggregate APIs for new/returning visitors, sessions, page/section/menu views, article reads, treatment/offer popularity, CTA conversion, referrers, device mix, and time-series trends.
+- [ ] Add `/admin/analytics` enterprise dashboard inspired by `testing_platform`: 1/7/30/custom date ranges, KPI cards, accessible trend charts, top-page/article/treatment/offer tables, empty/loading/error states, and CSV export.
+- [ ] Add a cmdk `Analytics` navigation entry plus useful safe quick views such as “Analytics — ultimele 7 zile” and “Cele mai citite articole”; no destructive analytics action in cmdk.
+- [ ] Test event validation/privacy redaction, pseudonym rotation, aggregation correctness/time zones, permissions, bot/rate-limit handling, chart accessibility, responsive layouts, and Compose traffic flow.
+- [!] Confirm lawful basis, consent/cookie requirements, approved geographic precision, analytics retention, and privacy-policy wording before enabling production collection.
 
 ---
 

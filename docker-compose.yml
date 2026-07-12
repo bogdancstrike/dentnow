@@ -247,7 +247,7 @@ services:
         export POSTGRES_PASSWORD="$(cat /run/secrets/postgres_password)"
         export DATABASE_URL="postgresql+psycopg2://dentnow:$${POSTGRES_PASSWORD}@postgres:5432/dentnow"
         export S3_SECRET_KEY="$(cat /run/secrets/minio_app_secret)"
-        exec python scripts/seed_current_site.py
+        exec python seed.py
     restart: "no"
 
   api:

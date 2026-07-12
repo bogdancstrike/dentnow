@@ -53,7 +53,7 @@ if [[ -z "$SPA_ID" ]]; then
     -s implicitFlowEnabled=false \
     -s directAccessGrantsEnabled=false \
     -s serviceAccountsEnabled=false \
-    -s 'attributes."pkce.code.challenge.method"=S256' \
+    -s 'attributes={"pkce.code.challenge.method":"S256","post.logout.redirect.uris":"'"${PUBLIC_APP_URL}/"'"}' \
     -s "redirectUris=[\"${PUBLIC_APP_URL}/admin/*\"]" \
     -s "webOrigins=[\"${PUBLIC_APP_URL}\"]"
   SPA_ID="$(client_id_of "$SPA_CLIENT")"
@@ -63,7 +63,7 @@ else
     -s publicClient=true -s standardFlowEnabled=true \
     -s implicitFlowEnabled=false -s directAccessGrantsEnabled=false \
     -s serviceAccountsEnabled=false \
-    -s 'attributes."pkce.code.challenge.method"=S256' \
+    -s 'attributes={"pkce.code.challenge.method":"S256","post.logout.redirect.uris":"'"${PUBLIC_APP_URL}/"'"}' \
     -s "redirectUris=[\"${PUBLIC_APP_URL}/admin/*\"]" \
     -s "webOrigins=[\"${PUBLIC_APP_URL}\"]"
   echo "keycloak-config: updated SPA client ${SPA_CLIENT}"

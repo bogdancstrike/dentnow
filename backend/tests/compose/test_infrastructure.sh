@@ -68,4 +68,15 @@ for r in dentnow_admin dentnow_editor dentnow_publisher dentnow_clinic_manager; 
 done
 ok "both DentNow clients and all four roles exist"
 
+# 6. Browser logout may return to the anonymous public homepage. Keycloak 26
+# validates post_logout_redirect_uri against this dedicated client attribute.
+LOGOUT_CONFIG="$($DC run --rm --entrypoint /bin/bash keycloak-config -c "
+  /opt/keycloak/bin/kcadm.sh config credentials --server http://keycloak:8080 --realm master --user ${KEYCLOAK_ADMIN_USER:-admin} --password '${KC_ADMIN_PW}' >/dev/null 2>&1
+  ID=\$(/opt/keycloak/bin/kcadm.sh get clients -r ${REALM} -q clientId=dentnow-admin-spa --fields id --format csv --noquotes | head -n1)
+  /opt/keycloak/bin/kcadm.sh get clients/\$ID -r ${REALM}
+")"
+echo "$LOGOUT_CONFIG" | grep -Fq "${PUBLIC_APP_URL:-http://localhost:3000}/" \
+  || fail "SPA public-home post-logout redirect missing"
+ok "SPA logout may return to the public homepage"
+
 echo "INFRA SMOKE PASSED"
