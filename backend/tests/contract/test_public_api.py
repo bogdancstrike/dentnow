@@ -131,6 +131,41 @@ def test_case_study_is_public_only_after_consent_approval(client, admin):
             ).status_code in (200, 204)
 
 
+def test_approved_legal_document_drives_public_page(client, admin):
+    legal_id = None
+    try:
+        created = client.post(
+            "/api/v1/admin/legal-documents",
+            json={
+                "doc_type": "privacy",
+                "version_label": f"test-{uuid.uuid4().hex[:8]}",
+                "effective_date": "2026-07-13",
+                "body_markdown": "## Politică administrată\n\nConținut juridic din CRUD.",
+            },
+            headers=admin,
+        )
+        assert created.status_code == 201, created.get_data(as_text=True)
+        legal_id = created.get_json()["id"]
+
+        approved = client.post(
+            f"/api/v1/admin/legal-documents/{legal_id}/approve",
+            json={"approved": True},
+            headers=admin,
+        )
+        assert approved.status_code == 200, approved.get_data(as_text=True)
+        public_document = client.get("/api/v1/public/legal/privacy")
+        assert public_document.status_code == 200
+        body = public_document.get_json()["legal_document"]
+        assert body["effective_date"] == "2026-07-13"
+        assert "Politică administrată" in body["body_html"]
+    finally:
+        if legal_id:
+            assert client.delete(
+                f"/api/v1/admin/legal-documents/{legal_id}",
+                headers={**admin, "If-Match": '"2"'},
+            ).status_code in (200, 204)
+
+
 def test_public_bootstrap_includes_active_quiz_children(client, admin):
     quiz_id = None
     try:

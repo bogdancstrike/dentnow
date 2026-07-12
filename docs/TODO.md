@@ -21,7 +21,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Restored grouped quiz question/answer CRUD with per-question „Adaugă răspuns”, answer editing/removal under its parent, result bands, and persisted drag ordering for whole question groups.
 - [x] Built `/admin/before-after` CRUD with separate before/after uploads, clinic/treatment links, consent approval/revocation, browser-only live draft preview, and persisted drag ordering.
 - [x] Rebuilt Footer from live API data: dynamic treatment services, dynamic clinics, per-clinic phone/WhatsApp/map contacts, API social/email links, and a tested allow-list of valid internal resource/legal routes.
-- [ ] Connect `/confidentialitate`, `/gdpr`, and `/termeni` to legal-document CRUD and update seed data.
+- [x] Connected `/confidentialitate`, `/gdpr`, and `/termeni` to `/admin/legal` documents with unsaved draft preview, audited approval/publication, effective dates, public 404/503 handling, and explicitly approved seed documents; removed duplicate compiled legal copy.
 
 ---
 

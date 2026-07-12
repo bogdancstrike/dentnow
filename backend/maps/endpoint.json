@@ -2260,6 +2260,19 @@
     },
     {
       "namespace": "api",
+      "operation_name": "public_legal_document",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/legal/<doc_type>",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "legal_document"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "public_clinics",
       "model_name": "Empty",
       "request_method": [

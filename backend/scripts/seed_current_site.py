@@ -341,7 +341,8 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
         if not body:
             body = f"{t} placeholder — needs review."
         session.add(LegalDocument(doc_type=t, version_label="migration-baseline",
-                               body_markdown=body, active=True))
+                               effective_date=utcnow().date(), body_markdown=body,
+                               approved_by="seed-import", approved_at=utcnow(), active=True))
 
     # ── pages (route inventory) ──────────────────────────────────────────────
     pages_by_path = {}

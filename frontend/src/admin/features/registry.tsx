@@ -14,6 +14,7 @@ import type { Me } from '../auth/permissions';
 import { previewMarkdown } from '../../api/previewDraft';
 import { QuizSubResources } from './quiz/QuizSubResources';
 import { CaseConsentControl } from './beforeAfter/CaseConsentControl';
+import { LegalApprovalControl } from './legal/LegalApprovalControl';
 
 const { Item } = Form;
 
@@ -43,12 +44,14 @@ const legal = makeConfig({
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
     { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/${record.doc_type === 'privacy' ? 'confidentialitate' : record.doc_type}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
+  defaults: { active: false },
   previewPath: (row, values) => {
     const t = String(values?.doc_type ?? (row as { doc_type?: string } | null)?.doc_type ?? '');
     if (!t) return null;
     return `/${t === 'privacy' ? 'confidentialitate' : t}`;
   },
   previewKind: 'legal-document',
+  previewAlwaysDraft: true,
   toPreviewDraft: (values, row) => ({
     ...row,
     ...values,
@@ -63,9 +66,14 @@ const legal = makeConfig({
         <Select disabled={!!editing} options={[{ value: 'gdpr', label: 'GDPR' }, { value: 'privacy', label: 'Confidențialitate' }, { value: 'terms', label: 'Termeni' }, { value: 'cookies', label: 'Cookies' }]} />
       </Item>
       <Item name="version_label" label="Versiune" rules={[{ required: true }]}><Input /></Item>
+      <Item name="effective_date" label="Data intrării în vigoare (YYYY-MM-DD)"><Input placeholder="2026-07-13" /></Item>
       <Item name="body_markdown" label="Conținut (Markdown)"><Input.TextArea rows={8} /></Item>
     </>
   ),
+  editExtra: ({ row, client, onChanged }) => (
+    <LegalApprovalControl row={row} client={client} onChanged={onChanged} />
+  ),
+  editExtraHint: 'Salvează documentul, apoi aprobă-l pentru a înlocui versiunea publică.',
 });
 
 const quiz = makeConfig({

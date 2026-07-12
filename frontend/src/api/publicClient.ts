@@ -87,6 +87,20 @@ export async function fetchCaseStudies(): Promise<CaseStudyPublic[]> {
   return data.items;
 }
 
+export interface LegalDocumentPublic {
+  doc_type: 'gdpr' | 'privacy' | 'terms' | 'cookies';
+  version_label: string;
+  effective_date?: string | null;
+  body_html: string;
+}
+
+export async function fetchLegalDocument(docType: LegalDocumentPublic['doc_type']): Promise<LegalDocumentPublic> {
+  const data = await apiGetJson<{ legal_document: LegalDocumentPublic }>(
+    `/v1/public/legal/${encodeURIComponent(docType)}`,
+  );
+  return data.legal_document;
+}
+
 export interface ArticleDetail extends ArticleSummary {
   body_html?: string | null;
 }
@@ -125,4 +139,5 @@ export const publicQueryKeys = {
   news: ['public', 'news'] as const,
   newsItem: (slug: string) => ['public', 'news', slug] as const,
   caseStudies: ['public', 'case-studies'] as const,
+  legalDocument: (docType: string) => ['public', 'legal', docType] as const,
 };

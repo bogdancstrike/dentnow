@@ -23,6 +23,7 @@ from src.core.errors import NotFoundError
 from src.editorial.models import (
     Article,
     CaseStudy,
+    LegalDocument,
     NewsItem,
     Quiz,
     QuizOption,
@@ -541,3 +542,28 @@ def case_studies(app, operation, request, **kw):
     with session_scope() as session:
         data = _query_case_studies(session)
     return _json_response({"release_version": 1, "items": data})
+
+
+@public_endpoint
+def legal_document(app, operation, request, doc_type=None, **kw):
+    if doc_type not in {"gdpr", "privacy", "terms", "cookies"}:
+        raise NotFoundError("legal document not found")
+    with session_scope() as session:
+        document = session.scalar(
+            _live(LegalDocument)
+            .where(LegalDocument.doc_type == doc_type, LegalDocument.active.is_(True))
+            .order_by(
+                LegalDocument.effective_date.desc().nullslast(),
+                LegalDocument.approved_at.desc().nullslast(),
+                LegalDocument.updated_at.desc(),
+            )
+        )
+        if document is None:
+            raise NotFoundError("legal document not found")
+        body = {
+            "doc_type": document.doc_type,
+            "version_label": document.version_label,
+            "effective_date": document.effective_date.isoformat() if document.effective_date else None,
+            "body_html": render_markdown(document.body_markdown) if document.body_markdown else "",
+        }
+    return _json_response({"release_version": 1, "legal_document": body})
