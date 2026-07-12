@@ -22,13 +22,25 @@ export default function Navbar() {
   });
 
   const dynamicNavLinks = useMemo(() => {
+    const categories = [];
+    const catMap = new Map();
+    treatments.forEach((t) => {
+      const catName = t.category_label || 'Altele';
+      const catSlug = t.category_slug || 'altele';
+      if (!catMap.has(catName)) {
+        catMap.set(catName, { label: catName, to: `/tratamente#${catSlug}` });
+        categories.push(catMap.get(catName));
+      }
+    });
+
     return navLinks.map(link => {
       if (link.label === 'Tratamente') {
         return {
           ...link,
           children: [
             { label: 'Toate tratamentele', to: '/tratamente' },
-            ...treatments.map(t => ({ label: t.name, to: `/tratamente/${t.slug}` }))
+            ...categories,
+            { label: 'Urgențe Dentare', to: '/urgente-dentare-bucuresti' }
           ]
         };
       }
@@ -37,6 +49,17 @@ export default function Navbar() {
   }, [treatments]);
 
   const dynamicMobileNavLinks = useMemo(() => {
+    const categories = [];
+    const catMap = new Map();
+    treatments.forEach((t) => {
+      const catName = t.category_label || 'Altele';
+      const catSlug = t.category_slug || 'altele';
+      if (!catMap.has(catName)) {
+        catMap.set(catName, { label: catName, to: `/tratamente#${catSlug}` });
+        categories.push(catMap.get(catName));
+      }
+    });
+
     // Keep 'Acasa', 'Decontare CAS', 'Tratamente si tarife' then insert treatments, then the rest
     const treatmentsIndex = mobileNavLinks.findIndex(l => l.label === 'Tratamente si tarife');
     if (treatmentsIndex !== -1) {
@@ -44,7 +67,10 @@ export default function Navbar() {
       const oferteIndex = mobileNavLinks.findIndex(l => l.label === 'Oferte');
       
       const before = mobileNavLinks.slice(0, treatmentsIndex + 1);
-      const dynamic = treatments.map(t => ({ label: t.name, to: `/tratamente/${t.slug}` }));
+      const dynamic = [
+        ...categories,
+        { label: 'Urgențe Dentare București', to: '/urgente-dentare-bucuresti' }
+      ];
       const after = oferteIndex !== -1 ? mobileNavLinks.slice(oferteIndex) : [];
       
       return [...before, ...dynamic, ...after];
