@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  App,
   Button,
   Empty,
   Layout,
@@ -23,6 +24,10 @@ import { CommandPalette } from '../components/CommandPalette';
 import { screenForKey } from '../features/registry';
 import { ClinicsScreen } from '../features/clinics/ClinicsScreen';
 import { ClinicEditorScreen } from '../features/clinics/ClinicEditorScreen';
+import { TreatmentsScreen } from '../features/treatments/TreatmentsScreen';
+import { TreatmentEditorScreen } from '../features/treatments/TreatmentEditorScreen';
+import { OffersScreen } from '../features/offers/OffersScreen';
+import { OfferEditorScreen } from '../features/offers/OfferEditorScreen';
 import { ArticleEditorScreen } from '../features/editorial/ArticleEditorScreen';
 import { ArticlesScreen } from '../features/editorial/ArticlesScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
@@ -33,6 +38,7 @@ const { Header, Sider, Content } = Layout;
 
 export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
   const navigate = useNavigate();
+  const { message } = App.useApp();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const currentSlug = location.pathname.replace(/^\/admin\/?/, '').split('/')[0] || 'clinici';
@@ -124,6 +130,20 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
           </Space>
 
           <Space size="small" className="admin-header-actions">
+            <Button
+              type="primary"
+              icon={<GlobalOutlined />}
+              onClick={async () => {
+                try {
+                  await client.post('/v1/admin/publications', {});
+                  message.success('Site-ul a fost publicat cu succes! Va fi online în curând.');
+                } catch (e) {
+                  message.error('Eroare la publicarea site-ului: ' + (e as Error).message);
+                }
+              }}
+            >
+              Publică site
+            </Button>
             <Button icon={<SearchOutlined />} onClick={openCommandPalette}>
               <span className="admin-action-label">Caută</span>
               <kbd>Ctrl K</kbd>
@@ -144,10 +164,19 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
             <Route path="clinici" element={<ClinicsScreen client={client} />} />
             <Route path="clinici/nou" element={<ClinicEditorScreen client={client} />} />
             <Route path="clinici/:clinicId" element={<ClinicEditorScreen client={client} />} />
+            
+            <Route path="tratamente" element={<TreatmentsScreen client={client} />} />
+            <Route path="tratamente/nou" element={<TreatmentEditorScreen client={client} />} />
+            <Route path="tratamente/:treatmentId" element={<TreatmentEditorScreen client={client} />} />
+
+            <Route path="oferte" element={<OffersScreen client={client} />} />
+            <Route path="oferte/nou" element={<OfferEditorScreen client={client} />} />
+            <Route path="oferte/:offerId" element={<OfferEditorScreen client={client} />} />
+            
             <Route path="articole" element={<ArticlesScreen client={client} />} />
             <Route path="articole/nou" element={<ArticleEditorScreen client={client} />} />
             <Route path="articole/:articleId" element={<ArticleEditorScreen client={client} />} />
-            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole' && item.slug !== 'clinici').map((item) => (
+            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole' && item.slug !== 'clinici' && item.slug !== 'tratamente' && item.slug !== 'oferte').map((item) => (
               <Route
                 key={item.slug}
                 path={item.slug}

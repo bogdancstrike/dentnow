@@ -24,56 +24,9 @@ function makeConfig(cfg: ResourceConfig<Row>): ResourceConfig<Row> {
   return cfg;
 }
 
-const treatments = makeConfig({
-  title: 'Tratamente',
-  singular: 'tratament',
-  endpoint: '/v1/admin/treatments',
-  columns: [
-    { title: 'Nume', dataIndex: 'name' },
-    { title: 'Slug', dataIndex: 'slug' },
-    { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
-    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/tratamente#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
-  ],
-  defaults: { active: true },
-  form: ({ client }) => (
-    <>
-      <Item name="name" label="Nume" rules={[{ required: true }]}><Input /></Item>
-      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input placeholder="implant-dentar" /></Item>
-      <Item name="category_id" label="Categorie existentă">
-        <RemoteSelect client={client} endpoint="/v1/admin/treatment-categories" labelKey="label" placeholder="Selectează categoria" />
-      </Item>
-      <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
-      <Item name="active" label="Activ" valuePropName="checked"><input type="checkbox" /></Item>
-      <Item name="homepage_featured" label="Promovat pe Home" valuePropName="checked"><input type="checkbox" /></Item>
-      <Item name="homepage_label" label="Label pt Home"><Input placeholder="Implant Dentar" /></Item>
-      <Item name="homepage_icon" label="Icon pt Home (lucide-react name)"><Input placeholder="Smile" /></Item>
-    </>
-  ),
-});
+// treatments has been moved to dedicated screen
 
-const offers = makeConfig({
-  title: 'Oferte',
-  singular: 'ofertă',
-  endpoint: '/v1/admin/offers',
-  columns: [
-    { title: 'Nume', dataIndex: 'name' },
-    { title: 'Slug', dataIndex: 'slug' },
-    { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
-    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/oferte#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
-  ],
-  defaults: { status: 'draft' },
-  form: () => (
-    <>
-      <Item name="name" label="Nume" rules={[{ required: true }]}><Input /></Item>
-      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input /></Item>
-      <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
-      <Item name="badge" label="Badge"><Input /></Item>
-      <Item name="status" label="Status">
-        <Select options={[{ value: 'draft', label: 'Draft' }, { value: 'active', label: 'Activă' }, { value: 'archived', label: 'Arhivată' }]} />
-      </Item>
-    </>
-  ),
-});
+// offers has been moved to dedicated screen
 
 const partners = makeConfig({
   title: 'Parteneri',
@@ -187,7 +140,7 @@ const news = makeConfig({
 });
 
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  treatments, offers, partners, doctors, legal, quiz, news,
+  partners, doctors, legal, quiz, news,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {
