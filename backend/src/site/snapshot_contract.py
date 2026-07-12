@@ -117,6 +117,18 @@ class ArticlePublic(_Model):
     published_at: str | None = None
 
 
+class NewsPublic(_Model):
+    slug: str
+    title: str
+    category: str | None = None
+    summary: str | None = None
+    body_html: str | None = None
+    media_id: str | None = None
+    event_date: str | None = None
+    published_at: str | None = None
+    position: int = 0
+
+
 class ReviewPublic(_Model):
     author: str
     review_date: str
@@ -127,6 +139,7 @@ class ReviewPublic(_Model):
 
 class EditorialPublic(_Model):
     articles: list[ArticlePublic] = []
+    news: list[NewsPublic] = []
     reviews: list[ReviewPublic] = []
 
 

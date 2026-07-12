@@ -14,7 +14,6 @@ function slugify(value) {
 
 export default function Articole() {
   const { slug } = useParams();
-  const ref = useRevealAll([slug]);
   const openPicker = useClinicPicker();
 
   const { data: articles = [], isLoading: loadingList } = useQuery({
@@ -29,6 +28,8 @@ export default function Articole() {
     enabled: !!slug,
     retry: false,
   });
+
+  const ref = useRevealAll([slug, articles, article]);
 
   if (slug) {
     if (loadingDetail) return <div ref={ref} style={{ padding: '8rem 2rem', textAlign: 'center' }}>Incarcare...</div>;

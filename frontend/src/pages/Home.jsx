@@ -3,7 +3,7 @@ import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
-import { trustStats } from '../data/content';
+import { trustStats, services, quickServices } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReviews, publicQueryKeys } from '../api/publicClient';
@@ -18,13 +18,14 @@ import { IconPhone, IconWhatsApp, IconMapPin, IconMail, IconClock, IconFacebook,
 import './Home.css';
 
 export default function Home() {
-  const revealRef = useRevealAll([]);
   const openPicker = useClinicPicker();
   const siteData = useSiteData();
   const { data: reviews = [] } = useQuery({
     queryKey: publicQueryKeys.reviews,
     queryFn: fetchReviews,
   });
+
+  const revealRef = useRevealAll([reviews]);
 
   return (
     <div ref={revealRef}>
@@ -125,12 +126,12 @@ export default function Home() {
           <p className="lead rv d2">Am redus promisiunile vagi si am pastrat lucrurile care ajuta pacientul sa decida: serviciu, pret de pornire, pas urmator.</p>
         </div>
         <div className="services-grid">
-          {siteData.homepage_treatments.map((s, i) => (
-            <Link to={`/tratamente#${s.slug}`} key={s.slug} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
-              <span className="svc-icon">{s.homepage_icon || '01'}</span>
+          {services.map((s, i) => (
+            <Link to={s.link} key={s.title} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
+              <span className="svc-icon">{s.icon}</span>
               <div className="svc-arrow">↗</div>
-              <h3 className="svc-title">{s.name}</h3>
-              <p className="svc-desc">{s.summary}</p>
+              <h3 className="svc-title">{s.title}</h3>
+              <p className="svc-desc">{s.desc}</p>
             </Link>
           ))}
         </div>

@@ -156,8 +156,38 @@ const quiz = makeConfig({
   ),
 });
 
+const news = makeConfig({
+  title: 'Noutăți',
+  singular: 'noutate',
+  endpoint: '/v1/admin/news',
+  columns: [
+    { title: 'Titlu', dataIndex: 'title' },
+    { title: 'Slug', dataIndex: 'slug' },
+    { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/noutati#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
+  ],
+  defaults: { status: 'draft' },
+  form: () => (
+    <>
+      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
+      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input placeholder="titlu-noutate" /></Item>
+      <Item name="category" label="Categorie"><Input placeholder="Eveniment, Lansare etc." /></Item>
+      <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
+      <Item name="body_markdown" label="Conținut (Markdown)"><Input.TextArea rows={6} /></Item>
+      <Item name="status" label="Status" rules={[{ required: true }]}>
+        <Select options={[
+          { value: 'draft', label: 'Draft' },
+          { value: 'needs_review', label: 'Necesită verificare' },
+          { value: 'published', label: 'Publicat' },
+          { value: 'archived', label: 'Arhivat' },
+        ]} />
+      </Item>
+    </>
+  ),
+});
+
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  treatments, offers, partners, doctors, legal, quiz,
+  treatments, offers, partners, doctors, legal, quiz, news,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {

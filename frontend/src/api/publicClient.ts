@@ -35,6 +35,11 @@ export async function fetchArticles(): Promise<ArticleSummary[]> {
   return data.items.map((item) => ArticleSummarySchema.parse(item));
 }
 
+export async function fetchNews() {
+  const data = await apiGetJson<{ items: unknown[] }>('/v1/public/news');
+  return data.items;
+}
+
 export interface ArticleDetail extends ArticleSummary {
   body_html?: string | null;
 }
@@ -61,6 +66,7 @@ export async function fetchReviews(): Promise<Review[]> {
   return data.items.map((item) => ReviewSchema.parse(item));
 }
 
+
 export const publicQueryKeys = {
   bootstrap: ['public', 'bootstrap'] as const,
   page: (path: string) => ['public', 'page', path] as const,
@@ -69,4 +75,5 @@ export const publicQueryKeys = {
   treatments: ['public', 'treatments'] as const,
   offers: ['public', 'offers'] as const,
   reviews: ['public', 'reviews'] as const,
+  news: ['public', 'news'] as const,
 };

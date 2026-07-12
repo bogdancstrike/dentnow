@@ -14,7 +14,7 @@ from sqlalchemy import select
 
 from src.catalog.models import Offer, OfferFeature, Treatment, TreatmentCategory, TreatmentPrice
 from src.clinics.models import Clinic, ClinicContact, ClinicFaq, ClinicHours, ClinicTransitItem
-from src.editorial.models import Article, Review
+from src.editorial.models import Article, NewsItem, Review
 from src.editorial.rich_text import render_markdown
 from src.media.models import MediaAsset, MediaVariant
 from src.site.models import (
@@ -33,6 +33,7 @@ from src.site.snapshot_contract import (
     LinkPublic,
     MediaPublic,
     NavigationItemPublic,
+    NewsPublic,
     OfferPublic,
     PagePublic,
     ReviewPublic,
@@ -199,6 +200,20 @@ def build_snapshot(session) -> SiteSnapshotV1:
         ))
     articles.sort(key=lambda x: x.slug)
 
+    news = []
+    for n in session.scalars(_live(NewsItem).where(NewsItem.status == "published")).all():
+        if n.media_id:
+            media_ids.add(str(n.media_id))
+        news.append(NewsPublic(
+            slug=n.slug, title=n.title, category=n.category, summary=n.summary,
+            body_html=render_markdown(n.body_markdown) if n.body_markdown else None,
+            media_id=str(n.media_id) if n.media_id else None,
+            event_date=n.event_date.isoformat() if n.event_date else None,
+            published_at=n.published_at.isoformat() if n.published_at else None,
+            position=n.position,
+        ))
+    news.sort(key=lambda x: x.position)
+
     reviews = [
         ReviewPublic(author=r.author, review_date=r.review_date.isoformat(), rating=r.rating,
                      text_body=r.text_body, source=r.source)
@@ -226,7 +241,7 @@ def build_snapshot(session) -> SiteSnapshotV1:
                         default_timezone=state.default_timezone),
         links=links, navigation=navigation, clinics=clinics, pages_by_path=pages_by_path,
         treatments=treatments, offers=offers,
-        editorial=EditorialPublic(articles=articles, reviews=reviews), media=media,
+        editorial=EditorialPublic(articles=articles, news=news, reviews=reviews), media=media,
     )
 
 

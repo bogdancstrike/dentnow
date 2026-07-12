@@ -58,9 +58,13 @@ class Config:
     # ── Keycloak ───────────────────────────────────────────────────────────
     # PUBLIC url  = what the browser and the issuer claim use (host-reachable).
     # INTERNAL url = what the API container uses to fetch JWKS (compose network).
-    KEYCLOAK_PUBLIC_URL = os.getenv("KEYCLOAK_PUBLIC_URL", "http://localhost:8080")
-    KEYCLOAK_INTERNAL_URL = os.getenv("KEYCLOAK_INTERNAL_URL", "http://localhost:8080")
+    KEYCLOAK_PUBLIC_URL = os.getenv("KEYCLOAK_PUBLIC_URL", "http://localhost:8090")
+    KEYCLOAK_INTERNAL_URL = os.getenv("KEYCLOAK_INTERNAL_URL", "http://localhost:8090")
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "doncik")
+    KEYCLOAK_ADMIN_CLIENT_ID = os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "dentnow-api")
+
+    # ── External Services ──────────────────────────────────────────────────
+    GOOGLE_PLACES_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY", "")
     KEYCLOAK_SPA_CLIENT_ID = os.getenv("KEYCLOAK_SPA_CLIENT_ID", "dentnow-admin-spa")
     KEYCLOAK_AUDIENCE = os.getenv("KEYCLOAK_AUDIENCE", "dentnow-api")
     KEYCLOAK_AUTHORIZED_PARTY = os.getenv(

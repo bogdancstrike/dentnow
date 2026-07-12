@@ -9,7 +9,6 @@ import ContactCTA from '../components/sections/ContactCTA';
 import './Tratamente.css';
 
 export default function Tratamente() {
-  const revealRef = useRevealAll([]);
   const openPicker = useClinicPicker();
   const [activeId, setActiveId] = useState('');
 
@@ -17,6 +16,8 @@ export default function Tratamente() {
     queryKey: publicQueryKeys.treatments,
     queryFn: fetchTreatments,
   });
+
+  const revealRef = useRevealAll([treatments]);
 
   useEffect(() => {
     const sections = document.querySelectorAll('.tarife-cat');

@@ -88,6 +88,16 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
     onError: (error) => message.error((error as Error).message || 'Articolul nu a putut fi șters.'),
   });
 
+  const publish = useMutation({
+    mutationFn: (article: ArticleRow) =>
+      client.patch(`/v1/admin/articles/${article.id}`, { status: 'published' }, `"${article.version}"`),
+    onSuccess: () => {
+      message.success('Articolul a fost publicat.');
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'articles'] });
+    },
+    onError: (error) => message.error((error as Error).message || 'Articolul nu a putut fi publicat.'),
+  });
+
   const columns: ColumnsType<ArticleRow> = [
     {
       title: 'Articol',
@@ -149,6 +159,17 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
             icon={<EditOutlined />}
             onClick={() => navigate(`/admin/articole/${article.id}`)}
           />
+          {article.status !== 'published' && (
+            <Popconfirm
+              title="Publici articolul?"
+              description="Va fi vizibil pe site imediat."
+              okText="Publică"
+              cancelText="Renunță"
+              onConfirm={() => publish.mutate(article)}
+            >
+              <Button type="link" size="small">Publică</Button>
+            </Popconfirm>
+          )}
           <Popconfirm
             title="Ștergi articolul?"
             description="Articolul va dispărea din următoarea publicație."
@@ -174,7 +195,7 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
       <header className="articles-heading">
         <div>
           <Typography.Text className="articles-eyebrow">Newsroom</Typography.Text>
-          <Typography.Title id="articles-heading" level={2}>Articole & noutăți</Typography.Title>
+          <Typography.Title id="articles-heading" level={2}>Articole</Typography.Title>
           <Typography.Paragraph>
             Creează ghiduri utile, pregătește conținutul pentru verificare și controlează ce ajunge pe site.
           </Typography.Paragraph>

@@ -133,3 +133,10 @@ def sitemap(app, operation, request, **kw):
     resp.headers["Cache-Control"] = "public, max-age=300"
     resp.headers["X-Release-Version"] = str(version)
     return resp
+
+
+@public_endpoint
+def news_list(app, operation, request, **kw):
+    snap, version, chash = _require_active()
+    items = (snap.get("editorial") or {}).get("news", [])
+    return _json_response({"items": items}, version, chash)

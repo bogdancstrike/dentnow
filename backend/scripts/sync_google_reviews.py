@@ -1,12 +1,16 @@
 import datetime
 import logging
 import time
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import requests
 from sqlalchemy import select
 
 from src.config import Config
-from src.core.db import get_session
+from src.core.db import session_scope
 from src.clinics.models import Clinic
 from src.editorial.models import Review
 
@@ -82,12 +86,25 @@ def main():
         logger.warning("GOOGLE_PLACES_API_KEY is not set. Skipping sync.")
         return
 
-    with get_session() as session:
+    with session_scope() as session:
         clinics = session.scalars(
             select(Clinic).where(Clinic.status != "closed")
         ).all()
         for clinic in clinics:
             sync_reviews_for_clinic(session, clinic, api_key)
+        
+        # Rebuild site snapshot to include new reviews
+        from src.site.snapshot_builder import build_snapshot, canonical_json
+        from src.site.models import SitePublication
+        from src.core.clock import utcnow
+        
+        snap = build_snapshot(session)
+        pub = SitePublication(snapshot_json=canonical_json(snap), is_active=True, created_at=utcnow(), created_by="system")
+        for old in session.scalars(select(SitePublication).where(SitePublication.is_active == True)).all():
+            old.is_active = False
+        session.add(pub)
+        session.commit()
+        logger.info("Published new site snapshot with updated reviews.")
 
 
 if __name__ == "__main__":

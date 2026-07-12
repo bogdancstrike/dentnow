@@ -2208,6 +2208,19 @@
     },
     {
       "namespace": "api",
+      "operation_name": "public_news",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/news",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "news_list"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "public_reviews",
       "model_name": "Empty",
       "request_method": [

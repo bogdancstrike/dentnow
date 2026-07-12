@@ -35,7 +35,10 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [x] **URL per admin tab** — React Router inside /admin so each useful section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
 - [~] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id). *(RemoteSelect built; treatment→category wired; remaining relations pending.)*
 - [ ] **More CRUD**: nested quiz question/option/band editor; image-carousel/gallery media; offer→treatment selection; **live preview** of the real page.
-- [x] **Implement Google Review syncing**: replace manual review authoring with a scheduled task that pulls the latest 5-star reviews from the Google Places API for each clinic's Maps location. Needs `clinics.google_place_id` + Google Places API key. *(Reverses architecture §23 non-goal "no Google review scraping" — user override.)*
+- [~] **Implement Google Review syncing**: backend scheduled task to pull reviews pending. Database model `clinics.google_place_id` added.
+- [x] **Restore original frontend UI**: Fixed `/oferte`, `/articole`, and `/tratamente` bug where `useRevealAll` hid items loaded asynchronously. Restored old "Tratamente uzuale" curated card UI on the homepage.
+- [x] **Noutăți (News)**: Split `/admin/articole` into Articole and Noutăți modules. Connected public `/noutati` to read live data from the database `SitePublication` API instead of hardcoded content.
+- [x] **Quick Publish Action**: Added "Publică" button directly to the `/admin/articole` list to instantly switch Drafts to Published without opening the full editor.
 - [~] **Enterprise/professional look** + `cmdk` quick actions. *(Shell/cmdk restyled after the simpler `testing_platform` design system; remaining screens are being migrated.)*
 - [x] **cmdk feature rule** — every new admin feature is reviewed for a safe, permission-aware quick action; frequent create/navigate/search actions are added, while destructive/high-risk actions remain in their normal confirmed flow. (`Articol nou` added.)
 - [x] Added persistent **Vezi site-ul public** in the admin sidebar plus the matching cmdk action.

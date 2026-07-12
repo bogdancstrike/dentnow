@@ -9,11 +9,11 @@ import { DarkCTA } from '../components/ui/SharedSections';
 import './Recenzii.css';
 
 export default function Recenzii() {
-  const ref = useRevealAll([]);
   const { data: reviews = [] } = useQuery({
     queryKey: publicQueryKeys.reviews,
     queryFn: fetchReviews,
   });
+  const ref = useRevealAll([reviews]);
 
   return (
     <div ref={ref}>
