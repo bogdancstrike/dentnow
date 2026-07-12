@@ -3,14 +3,12 @@ import { IconMapPin, IconPhone, IconClock, IconWhatsApp, IconAlert } from '../co
 import config from '../config';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
-import { useClinicPicker } from '../hooks/useClinicPicker';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import './LocationPage.css';
 
 export default function LocationPage() {
   const { citySlug } = useParams();
   const location = useLocation();
-  const openPicker = useClinicPicker();
   const { clinics } = useSiteData();
 
   let targetSlug = citySlug;
@@ -181,13 +179,18 @@ export default function LocationPage() {
           </div>
         </div>
 
-        {/* Bottom CTA */}
+        {/* Bottom CTA — clinic is implied by the page, so act on it directly (no picker). */}
         <div className="location-cta-banner">
           <h3>Ai nevoie de o consultație la {loc.name}?</h3>
           <p>Echipa noastră de medici dentiști te așteaptă într-un ambient modern și primitor.</p>
-          <button type="button" className="btn btn-dark btn-lg" onClick={() => openPicker('both')}>
-            Programează-te Online Acum
-          </button>
+          <div className="loc-actions" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href={`tel:${loc.phoneTel}`} className="btn btn-dark btn-lg">
+              <IconPhone size={18} /> Sună acum ({loc.phoneDisplay})
+            </a>
+            <a href={loc.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-lg">
+              <IconWhatsApp size={18} /> Programează pe WhatsApp
+            </a>
+          </div>
         </div>
       </section>
     </div>
