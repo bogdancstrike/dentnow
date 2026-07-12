@@ -1,15 +1,15 @@
 /**
- * Generic list + drawer-form CRUD screen. Each domain feature supplies its typed
- * columns and form fields (real React, not arbitrary field descriptors) — this only
- * owns the repeated mechanics: paging, the create/edit drawer, If-Match edits, and
- * 409 conflict handling.
+ * Generic list CRUD screen. Each domain feature supplies its typed columns + form
+ * fields via a ResourceConfig. The list owns paging + delete; create/edit navigate to
+ * the dedicated full-page ResourceEditorScreen (with live preview), matching the
+ * bespoke editors. `basePath` is the admin route root, e.g. `/admin/noutati`.
  */
 import { useState, type ReactNode } from 'react';
-import { Button, Drawer, Form, Popconfirm, Space, App } from 'antd';
+import { Button, Popconfirm, Space, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../api/adminClient';
-import { VersionConflictError } from '../api/adminClient';
 import { ResourceTable, type ResourceRow } from './ResourceTable';
 
 export interface ResourceConfig<T extends ResourceRow> {
@@ -21,6 +21,12 @@ export interface ResourceConfig<T extends ResourceRow> {
   defaults?: Record<string, unknown>;
   toValues?: (row: T) => Record<string, unknown>;
   canWrite?: boolean;
+  /** Public path to show in the dedicated editor's live preview. */
+  previewPath?: (row: T | null) => string | null;
+  /** Message shown in the preview before the entity is saved. */
+  previewHint?: string;
+  /** Optional mock values for the "Precompletează" button on the create page. */
+  sample?: Record<string, unknown>;
 }
 
 interface ListResult<T> {
@@ -31,16 +37,17 @@ interface ListResult<T> {
 export function ResourceScreen<T extends ResourceRow & { version: number }>({
   client,
   config,
+  basePath,
 }: {
   client: AdminClient;
   config: ResourceConfig<T>;
+  basePath: string;
 }) {
   const { message } = App.useApp();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [editing, setEditing] = useState<T | null | undefined>(undefined);
-  const [form] = Form.useForm();
   const key = ['admin', config.endpoint];
 
   const listQuery = useQuery({
@@ -49,32 +56,11 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
       (await client.get<ListResult<T>>(`${config.endpoint}?page=${page}&page_size=${pageSize}`)).data,
   });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: key });
-
-  const save = useMutation({
-    mutationFn: async (values: Record<string, unknown>) =>
-      editing
-        ? client.patch(`${config.endpoint}/${editing.id}`, values, `"${editing.version}"`)
-        : client.post(config.endpoint, values),
-    onSuccess: () => {
-      message.success('Salvat');
-      setEditing(undefined);
-      form.resetFields();
-      invalidate();
-    },
-    onError: (err) =>
-      message.error(
-        err instanceof VersionConflictError
-          ? 'Modificat de altcineva — reîncarcă și încearcă din nou.'
-          : (err as Error).message || 'Eroare la salvare',
-      ),
-  });
-
   const remove = useMutation({
     mutationFn: (row: T) => client.del(`${config.endpoint}/${row.id}`, `"${row.version}"`),
     onSuccess: () => {
       message.success('Șters');
-      invalidate();
+      qc.invalidateQueries({ queryKey: key });
     },
     onError: (err) => message.error((err as Error).message || 'Eroare la ștergere'),
   });
@@ -88,13 +74,7 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
     render: (_v, row) =>
       canWrite ? (
         <Space>
-          <Button
-            size="small"
-            onClick={() => {
-              setEditing(row);
-              form.setFieldsValue(config.toValues ? config.toValues(row) : row);
-            }}
-          >
+          <Button size="small" onClick={() => navigate(`${basePath}/${row.id}`)}>
             Editează
           </Button>
           <Popconfirm title={`Ștergi ${config.singular}?`} onConfirm={() => remove.mutate(row)}>
@@ -107,45 +87,20 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
   };
 
   return (
-    <>
-      <ResourceTable<T>
-        title={config.title}
-        data={listQuery.data?.items ?? []}
-        total={listQuery.data?.total ?? 0}
-        page={page}
-        pageSize={pageSize}
-        loading={listQuery.isLoading}
-        error={listQuery.isError ? `Nu s-au putut încărca: ${config.title}` : null}
-        onCreate={
-          canWrite
-            ? () => {
-                setEditing(null);
-                form.resetFields();
-                if (config.defaults) form.setFieldsValue(config.defaults);
-              }
-            : undefined
-        }
-        onPageChange={(p, s) => {
-          setPage(p);
-          setPageSize(s);
-        }}
-        columns={[...config.columns, actionColumn]}
-      />
-
-      <Drawer
-        title={editing ? `Editează ${config.singular}` : `${config.singular} nou`}
-        open={editing !== undefined}
-        onClose={() => setEditing(undefined)}
-        size={520}
-        destroyOnHidden
-      >
-        <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
-          {config.form({ editing: editing ?? null, client })}
-          <Button type="primary" htmlType="submit" loading={save.isPending}>
-            Salvează
-          </Button>
-        </Form>
-      </Drawer>
-    </>
+    <ResourceTable<T>
+      title={config.title}
+      data={listQuery.data?.items ?? []}
+      total={listQuery.data?.total ?? 0}
+      page={page}
+      pageSize={pageSize}
+      loading={listQuery.isLoading}
+      error={listQuery.isError ? `Nu s-au putut încărca: ${config.title}` : null}
+      onCreate={canWrite ? () => navigate(`${basePath}/nou`) : undefined}
+      onPageChange={(p, s) => {
+        setPage(p);
+        setPageSize(s);
+      }}
+      columns={[...config.columns, actionColumn]}
+    />
   );
 }

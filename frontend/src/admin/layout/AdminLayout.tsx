@@ -21,7 +21,9 @@ import type { AdminClient } from '../api/adminClient';
 import { can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
 import { CommandPalette } from '../components/CommandPalette';
-import { screenForKey } from '../features/registry';
+import { getResourceConfig, screenForKey } from '../features/registry';
+import { ResourceScreen } from '../components/ResourceScreen';
+import { ResourceEditorScreen } from '../components/ResourceEditorScreen';
 import { ClinicsScreen } from '../features/clinics/ClinicsScreen';
 import { ClinicEditorScreen } from '../features/clinics/ClinicEditorScreen';
 import { TreatmentsScreen } from '../features/treatments/TreatmentsScreen';
@@ -175,17 +177,31 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
             <Route path="parteneri/nou" element={<PartnerEditorScreen client={client} />} />
             <Route path="parteneri/:partnerId" element={<PartnerEditorScreen client={client} />} />
             
-            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole' && item.slug !== 'clinici' && item.slug !== 'tratamente' && item.slug !== 'oferte' && item.slug !== 'echipa-medicala' && item.slug !== 'parteneri').map((item) => (
-              <Route
-                key={item.slug}
-                path={item.slug}
-                element={
-                  screenForKey(item.key, client, me) ?? (
-                    <Empty description={`Modulul „${item.label}” este în curs de adăugare`} />
-                  )
-                }
-              />
-            ))}
+            {ADMIN_NAV_ITEMS.filter(
+              (item) =>
+                !['articole', 'clinici', 'tratamente', 'oferte', 'echipa-medicala', 'parteneri'].includes(item.slug),
+            ).flatMap((item) => {
+              const config = getResourceConfig(item.key);
+              if (config) {
+                const basePath = `/admin/${item.slug}`;
+                return [
+                  <Route key={item.slug} path={item.slug} element={<ResourceScreen client={client} config={config} basePath={basePath} />} />,
+                  <Route key={`${item.slug}/nou`} path={`${item.slug}/nou`} element={<ResourceEditorScreen client={client} config={config} basePath={basePath} />} />,
+                  <Route key={`${item.slug}/:id`} path={`${item.slug}/:id`} element={<ResourceEditorScreen client={client} config={config} basePath={basePath} />} />,
+                ];
+              }
+              return [
+                <Route
+                  key={item.slug}
+                  path={item.slug}
+                  element={
+                    screenForKey(item.key, client, me) ?? (
+                      <Empty description={`Modulul „${item.label}” este în curs de adăugare`} />
+                    )
+                  }
+                />,
+              ];
+            })}
             <Route path="*" element={<Empty description="Secțiune inexistentă" />} />
           </Routes>
         </Content>

@@ -9,7 +9,7 @@ import { ClinicsScreen } from './clinics/ClinicsScreen';
 import { SiteSettingsScreen } from './site/SiteSettingsScreen';
 import { RemoteSelect } from '../components/RemoteSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
-import { ResourceScreen, type ResourceConfig } from '../components/ResourceScreen';
+import { type ResourceConfig } from '../components/ResourceScreen';
 import type { ResourceRow } from '../components/ResourceTable';
 import type { Me } from '../auth/permissions';
 
@@ -41,6 +41,12 @@ const legal = makeConfig({
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
     { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/${record.doc_type === 'privacy' ? 'confidentialitate' : record.doc_type}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
+  previewPath: (row) => {
+    const t = (row as { doc_type?: string } | null)?.doc_type;
+    if (!t) return null;
+    return `/${t === 'privacy' ? 'confidentialitate' : t}`;
+  },
+  previewHint: 'Salvează documentul pentru a-i vedea pagina publică.',
   form: ({ editing }) => (
     <>
       <Item name="doc_type" label="Tip" rules={[{ required: true }]}>
@@ -63,6 +69,8 @@ const quiz = makeConfig({
     { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href="/scor-igiena" target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: true },
+  previewPath: () => '/scor-igiena',
+  previewHint: 'Salvează quiz-ul pentru a-l vedea pe pagina /scor-igiena.',
   form: () => (
     <>
       <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
@@ -83,6 +91,16 @@ const news = makeConfig({
     { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/noutati#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { status: 'draft' },
+  previewPath: () => '/noutati',
+  previewHint: 'Salvează noutatea cu status „Publicat” pentru a o vedea pe pagina /noutati.',
+  sample: {
+    title: 'Program special de sărbători',
+    slug: 'program-special-sarbatori',
+    category: 'Program',
+    summary: 'În perioada sărbătorilor, programul clinicii se modifică. Vezi orarul actualizat.',
+    body_markdown: '## Program sărbători\n\nÎn perioada 24 decembrie – 2 ianuarie programul este redus.\n\n- 24–26 decembrie: Închis\n- 27–31 decembrie: 09:00–15:00',
+    status: 'published',
+  },
   form: () => (
     <>
       <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
@@ -115,6 +133,16 @@ const homepageServices = makeConfig({
     { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/#servicii" target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: true, position: 0 },
+  previewPath: () => '/#servicii',
+  previewHint: 'Salvează serviciul pentru a-l vedea în secțiunea „Tratamente uzuale” de pe prima pagină.',
+  sample: {
+    title: 'Fațete Dentare',
+    description: 'Fațete ceramice pentru un zâmbet natural și luminos, planificate digital.',
+    icon: '07',
+    link: '/tratamente#fatete',
+    position: 6,
+    active: true,
+  },
   form: () => (
     <>
       <Item name="title" label="Titlu" rules={[{ required: true }]}><Input placeholder="Ex: Implanturi Dentare" /></Item>
@@ -139,6 +167,15 @@ const gallery = makeConfig({
     { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/#clinica" target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: true, position: 0 },
+  previewPath: () => '/#clinica',
+  previewHint: 'Salvează imaginea pentru a o vedea în caruselul „Un spatiu clinic clar” de pe prima pagină.',
+  sample: {
+    title: 'Sala de așteptare',
+    caption: 'Spațiu primitor și relaxant pentru pacienți.',
+    alt_text: 'Sala de așteptare DentNow',
+    position: 6,
+    active: true,
+  },
   form: ({ client }) => (
     <>
       <Item name="media_id" label="Imagine (încarcă)">
@@ -157,8 +194,12 @@ const CONFIGS: Record<string, ResourceConfig<Row>> = {
   legal, quiz, news, 'homepage-services': homepageServices, gallery,
 };
 
+/** Generic list+editor config for a nav key, or null for bespoke/other screens. */
+export function getResourceConfig(key: string): ResourceConfig<Row> | null {
+  return CONFIGS[key] ?? null;
+}
+
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {
   if (key === 'settings') return <SiteSettingsScreen client={client} />;
-  const cfg = CONFIGS[key];
-  return cfg ? <ResourceScreen client={client} config={cfg} /> : null;
+  return null;
 }
