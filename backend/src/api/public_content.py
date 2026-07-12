@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import date
+import hashlib
 
 from flask import Response, jsonify, make_response
 from flask import request as flask_request
@@ -49,8 +50,16 @@ def _live(model):
 
 
 def _json_response(body: dict):
-    resp = make_response(jsonify(body), 200)
+    payload = jsonify(body)
+    content_hash = hashlib.sha256(payload.get_data()).hexdigest()
+    etag = f'"{content_hash}"'
+    if flask_request.headers.get("If-None-Match") == etag:
+        resp = make_response("", 304)
+    else:
+        resp = make_response(payload, 200)
+    resp.headers["ETag"] = etag
     resp.headers["Cache-Control"] = "no-cache"
+    resp.headers["X-Release-Version"] = str(body.get("release_version", 1))
     return resp
 
 
@@ -336,10 +345,10 @@ def _query_navigation(session):
 
 def _query_links(session):
     links = []
-    for l in session.scalars(_live(SiteLink).where(SiteLink.enabled.is_(True))).all():
+    for link in session.scalars(_live(SiteLink).where(SiteLink.enabled.is_(True))).all():
         links.append({
-            "kind": l.kind, "label": l.label, "value": l.value,
-            "display_value": l.display_value, "url": l.url, "position": l.position,
+            "kind": link.kind, "label": link.label, "value": link.value,
+            "display_value": link.display_value, "url": link.url, "position": link.position,
         })
     links.sort(key=lambda x: (x["kind"], x["position"], x["label"]))
     return links
