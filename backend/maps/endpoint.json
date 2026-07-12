@@ -2182,6 +2182,58 @@
     },
     {
       "namespace": "api",
+      "operation_name": "public_treatments",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/treatments",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "treatments"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_offers",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/offers",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "offers"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_reviews",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/reviews",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "reviews"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "public_clinics",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/clinics",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "clinics"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "preview_session_create",
       "model_name": "Empty",
       "request_method": [

@@ -81,6 +81,43 @@ def article_detail(app, operation, request, slug=None, **kw):
 
 
 @public_endpoint
+def treatments(app, operation, request, **kw):
+    """Per-route: the treatments list (loaded when /tratamente is opened)."""
+    snap, version, chash = _require_active()
+    return _public_json(
+        {"release_version": version, "items": snap.get("treatments", [])}, version, chash
+    )
+
+
+@public_endpoint
+def offers(app, operation, request, **kw):
+    """Per-route: the offers list (loaded when /oferte is opened)."""
+    snap, version, chash = _require_active()
+    return _public_json(
+        {"release_version": version, "items": snap.get("offers", [])}, version, chash
+    )
+
+
+@public_endpoint
+def reviews(app, operation, request, **kw):
+    """Per-route: the reviews list (loaded when /recenzii is opened)."""
+    snap, version, chash = _require_active()
+    editorial = snap.get("editorial") or {}
+    return _public_json(
+        {"release_version": version, "items": editorial.get("reviews", [])}, version, chash
+    )
+
+
+@public_endpoint
+def clinics(app, operation, request, **kw):
+    """Per-route: the full clinic list (bootstrap carries only what the shell needs)."""
+    snap, version, chash = _require_active()
+    return _public_json(
+        {"release_version": version, "items": snap.get("clinics", [])}, version, chash
+    )
+
+
+@public_endpoint
 def sitemap(app, operation, request, **kw):
     from src.config import Config
 

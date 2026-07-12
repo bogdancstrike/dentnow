@@ -282,3 +282,24 @@ services:
         export SECRET_KEY="$(cat /run/secrets/backend_secret_key)"
         exec gunicorn -c gunicorn.conf.py wsgi:app
     restart: unless-stopped
+
+  # ── Frontend (Vite build served by nginx; /api reverse-proxied to the API) ─
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: dentnow-frontend
+    networks: [dentnow]
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      api: {condition: service_healthy}
+    environment:
+      API_UPSTREAM: "http://api:5100"
+      APP_API_BASE: "/api"
+      APP_KEYCLOAK_URL: "${PUBLIC_KEYCLOAK_URL:-http://localhost:8080}"
+      APP_KEYCLOAK_REALM: "doncik"
+      APP_KEYCLOAK_CLIENT_ID: "dentnow-admin-spa"
+      APP_PREVIEW_URL: "${PUBLIC_PREVIEW_URL:-http://localhost:3001}"
+      BUILD_REVISION: "${BUILD_REVISION:-dev}"
+    restart: unless-stopped
