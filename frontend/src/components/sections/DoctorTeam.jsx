@@ -3,7 +3,7 @@ import './Sections.css';
 
 export default function DoctorTeam() {
   return (
-    <section className="section-wrap">
+    <section className="section-wrap" id="echipa">
       <div className="section-inner">
         <div className="section-kicker">Echipa</div>
         <h2 className="section-title">Medici prezentati clar, fara mister.</h2>

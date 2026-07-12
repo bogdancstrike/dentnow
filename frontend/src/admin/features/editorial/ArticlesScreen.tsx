@@ -14,6 +14,7 @@ import {
   EditOutlined,
   FileAddOutlined,
   FileTextOutlined,
+  EyeOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -129,6 +130,12 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
       dataIndex: 'updated_at',
       width: 140,
       render: formatUpdated,
+    },
+    {
+      title: 'View',
+      key: 'view',
+      width: 80,
+      render: (_value, article) => <Button type="link" icon={<EyeOutlined />} href={`/articole/${article.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button>,
     },
     {
       title: 'Acțiuni',

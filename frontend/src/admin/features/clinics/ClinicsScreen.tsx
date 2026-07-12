@@ -9,6 +9,7 @@ import {
   Popconfirm,
   App,
 } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
@@ -106,6 +107,7 @@ export function ClinicsScreen({ client }: { client: AdminClient }) {
           { title: 'Slug', dataIndex: 'slug' },
           { title: 'Zonă', dataIndex: 'area' },
           { title: 'Status', dataIndex: 'status' },
+          { title: 'View', render: (_, row) => <Button type="link" icon={<EyeOutlined />} href={`/stomatologie-${row.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
           {
             title: 'Acțiuni',
             key: 'actions',

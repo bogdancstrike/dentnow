@@ -1,7 +1,8 @@
 /** Maps admin nav keys to CRUD screens. Most reuse the generic ResourceScreen with a
  *  typed config; clinics has its own screen. Screens not yet built render a placeholder.
  */
-import { Form, Input, Select, Tag } from 'antd';
+import { Form, Input, Select, Tag, Button } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
 import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
 import { ClinicsScreen } from './clinics/ClinicsScreen';
@@ -31,7 +32,7 @@ const treatments = makeConfig({
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Slug', dataIndex: 'slug' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
-    { title: 'View', render: (_, record) => <a href={`/tratamente#${record.slug}`} target="_blank" rel="noopener noreferrer">View</a> },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/tratamente#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: true },
   form: ({ client }) => (
@@ -58,7 +59,7 @@ const offers = makeConfig({
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Slug', dataIndex: 'slug' },
     { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
-    { title: 'View', render: (_, record) => <a href={`/oferte#${record.slug}`} target="_blank" rel="noopener noreferrer">View</a> },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/oferte#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { status: 'draft' },
   form: () => (
@@ -82,7 +83,7 @@ const partners = makeConfig({
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Tip', dataIndex: 'relationship_type' },
     { title: 'Badge', dataIndex: 'badge' },
-    { title: 'View', render: () => <a href={`/parteneri`} target="_blank" rel="noopener noreferrer">View</a> },
+    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/parteneri" target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   form: () => (
     <>
@@ -101,7 +102,7 @@ const doctors = makeConfig({
   columns: [
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Rol', dataIndex: 'role' },
-    { title: 'View', render: () => <a href={`/`} target="_blank" rel="noopener noreferrer">View</a> },
+    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/#echipa" target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: true },
   form: () => (
@@ -122,7 +123,7 @@ const legal = makeConfig({
     { title: 'Tip', dataIndex: 'doc_type' },
     { title: 'Versiune', dataIndex: 'version_label' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
-    { title: 'View', render: (_, record) => <a href={`/${record.doc_type === 'privacy' ? 'confidentialitate' : record.doc_type}`} target="_blank" rel="noopener noreferrer">View</a> },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/${record.doc_type === 'privacy' ? 'confidentialitate' : record.doc_type}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   form: ({ editing }) => (
     <>
@@ -143,7 +144,7 @@ const quiz = makeConfig({
     { title: 'Titlu', dataIndex: 'title' },
     { title: 'Slug', dataIndex: 'slug' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
-    { title: 'View', render: (_, record) => <a href={`/scor-igiena`} target="_blank" rel="noopener noreferrer">View</a> },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href="/scor-igiena" target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: true },
   form: () => (
