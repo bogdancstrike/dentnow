@@ -75,7 +75,7 @@ export function DoctorsScreen({ client }: { client: AdminClient }) {
         { title: 'Nume', dataIndex: 'name' },
         { title: 'Rol', dataIndex: 'role' },
         { title: 'Activ', dataIndex: 'active', render: (v) => v ? 'Da' : 'Nu' },
-        { title: 'View', render: (_, row) => <Button type="link" icon={<EyeOutlined />} href="/#echipa" target="_blank" rel="noopener noreferrer">Vezi</Button> },
+        { title: 'View', render: (_, row) => <Button type="link" icon={<EyeOutlined />} href={`/echipa/${row.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
         {
           title: 'Acțiuni',
           key: 'actions',

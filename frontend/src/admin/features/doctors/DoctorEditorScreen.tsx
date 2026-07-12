@@ -179,11 +179,10 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
 
       <div className="article-editor-preview-panel">
         <LivePreview
-          path="/#echipa"
-          ready={editing && Boolean(query.data)}
-          notReadyHint="Salvează medicul pentru a-l vedea în secțiunea „Echipă” de pe prima pagină."
+          path={query.data?.slug ? `/echipa/${query.data.slug}` : null}
+          ready={editing && Boolean(query.data?.slug)}
+          notReadyHint="Salvează medicul pentru a-i vedea pagina publică."
           reloadToken={query.data?.version}
-          urlLabel="dentnow.ro/#echipa"
         />
       </div>
     </div>

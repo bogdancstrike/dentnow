@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useSiteData } from '../../public-site/SiteDataProvider';
 import { mediaUrl } from '../../api/publicClient';
 import './Sections.css';
@@ -20,7 +21,11 @@ export default function DoctorTeam() {
         <p className="section-lead">Profiluri scurte si verificabile — medicii care iti explica fiecare pas al tratamentului, inainte sa incepi.</p>
         <div className="doctor-grid">
           {doctors.map((doctor, index) => (
-            <article className="doctor-card" key={doctor.slug || doctor.name}>
+            <Link
+              to={doctor.slug ? `/echipa/${doctor.slug}` : '#'}
+              className="doctor-card"
+              key={doctor.slug || doctor.name}
+            >
               <img
                 src={doctor.portrait_media_id ? mediaUrl(doctor.portrait_media_id) : FALLBACK_PORTRAITS[index % FALLBACK_PORTRAITS.length]}
                 alt={`Portret ${doctor.name}`}
@@ -31,7 +36,7 @@ export default function DoctorTeam() {
                 {doctor.role && <p className="doctor-role">{doctor.role}</p>}
                 {doctor.focus && <p>{doctor.focus}</p>}
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </div>

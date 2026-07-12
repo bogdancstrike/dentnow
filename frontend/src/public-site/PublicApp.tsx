@@ -29,6 +29,7 @@ import ScorIgiena from '../pages/ScorIgiena';
 import Parteneri from '../pages/Parteneri';
 import Ebook from '../pages/Ebook';
 import LocationPage from '../pages/LocationPage';
+import DoctorPage from '../pages/DoctorPage';
 import UrgenteDentare from '../pages/UrgenteDentare';
 import DecontatCas from '../pages/DecontatCas';
 import GDPR from '../pages/GDPR';
@@ -56,6 +57,9 @@ export default function PublicApp() {
               <Route path="scor-igiena" element={<ScorIgiena />} />
               <Route path="parteneri" element={<Parteneri />} />
               <Route path="ebook" element={<Ebook />} />
+
+              {/* Per-doctor public profile */}
+              <Route path="echipa/:slug" element={<DoctorPage />} />
 
               {/* Neighborhood local-SEO routes */}
               <Route path="locatii/:citySlug" element={<LocationPage />} />

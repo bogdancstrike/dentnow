@@ -16,7 +16,7 @@ Later follow-up requests (session 2, batch 2):
 - [x] **Editor full-width + bigger preview** — removed the `maxWidth:1600` cap on all editors, widened the preview column (1.2fr) and made the preview panel a tall sticky pane; trimmed admin content padding.
 - [x] **Location page booking** — `/locatii/:slug` bottom CTA now calls/WhatsApps the current clinic directly instead of opening the all-locations picker.
 - [ ] **Draft preview** — preview unsaved form values without going live (postMessage draft injection), discarded on exit.
-- [ ] **Per-doctor page** — `/echipa/:slug` public page; admin view/preview point there.
+- [x] **Per-doctor page** — new `/echipa/:slug` public profile (portrait, role, credentials, focus, CTAs). Homepage team cards link to it; admin doctor „view” + editor preview now target `/echipa/:slug`.
 - [ ] **Clinic gallery CRUD** `/admin/clinica`.
 - [ ] **/decontat-cas CRUD** `/admin/decontat-cas`.
 
