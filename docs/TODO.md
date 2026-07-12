@@ -10,6 +10,33 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 
 ---
 
+## CURRENT STATE (snapshot)
+
+**Deployable now:** `./ops/init-secrets.sh && docker compose up --build -d` serves the whole
+app on `:3000` — public site (seeded content, per-route API loading) + hidden `/login` →
+Keycloak (`:8090`, `admin/admin` in realm `doncik`) → admin backoffice with CRUD + publish.
+Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live smoke green.
+
+| Area | State |
+|---|---|
+| Backend (Tasks 3–13) + admin search (18) | ✅ complete + tested |
+| Public site (14) | 🚧 API-gated shell + per-route endpoints; **pages still read seeded `src/data`** (matches, not yet pure-API) |
+| Admin shell (15) | ✅ Keycloak login, `/admin/me` gating, one AntD ConfigProvider |
+| Admin CRUD (16–17) | 🚧 13 screens via generic ResourceScreen; **missing: media, audit, nested quiz, FK dropdowns** |
+| cmdk (18) | 🚧 backend search done; palette UI pending |
+| Preview/publish (19) | 🚧 publish/validate/rollback UI + preview-token launch done; **isolated preview app pending** |
+| Deploy (20) | 🚧 frontend nginx + per-route serving in Compose done; preview service + prod edge pending |
+| Hardening/backup (21), tests (22), CI (23), docs (24) | ⬜ not started (agents hit session limit before starting) |
+
+## NEW REQUIREMENTS (user, this session) — to implement
+- [ ] **URL per admin tab** — React Router inside /admin so each section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
+- [ ] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id). *(RemoteSelect component built; wiring into forms pending.)*
+- [ ] **More CRUD**: nested quiz question/option/band editor; image-carousel/gallery media; offer→treatment selection; **live preview** of the real page.
+- [ ] **Reviews from Google** — "Recenzii" is not manually authored; sync automatically from Google reviews per clinic's Maps location. Needs `clinics.google_place_id` + Google Places API key. *(Reverses architecture §23 non-goal "no Google review scraping" — user override.)*
+- [ ] **Enterprise/professional look** + `cmdk` quick actions.
+
+---
+
 ## Environment (verified 2026-07-11)
 - [x] qf wheel present `backend/dist/qf-1.0.5-py3-none-any.whl` (sha256 `1863cd0d…` matches plan)
 - [x] Docker 29.6.1, Python 3.12.3, Node 23.11.1, npm 11.13.0 available
@@ -165,26 +192,34 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 ## Task 17 — Editorial/legal/quiz/media/audit admin (`feat(admin): manage editorial legal quiz media and audit`)
 - [ ] Steps 1–7 (editorial/legal/quiz/media/audit features + MediaPicker/Upload/Consent/AuditDiff)
 
-## Task 18 — `cmdk` rapid navigation + quick actions (`feat(admin): add cmdk navigation and quick actions`)
-- [ ] Steps 1–6 (backend `/admin/search` + CommandPalette + registry)
+## Task 17 — Editorial/legal/quiz/media/audit admin 🚧 PARTIAL
+- [x] editorial/legal/quiz screens via generic ResourceScreen (articles, reviews, legal, quiz, pages, navigation)
+- [ ] Media library (upload grid, consent controls), audit explorer, NESTED quiz editor (questions/options/bands), before/after case pairing
 
-## Task 19 — Preview/validate/publish/rollback UX (`feat(admin): preview publish and roll back site releases`)
-- [ ] Steps 1–5 (PreviewApp, isolated origin, PublicationBar/ValidationReport/History)
+## Task 18 — `cmdk` rapid navigation + quick actions 🚧 BACKEND DONE
+- [x] backend `/api/v1/admin/search` (permission-scoped, min-2-char, clinic-scoped, 4 tests) — commit `+search`
+- [ ] `CommandPalette.tsx` (Ctrl/Cmd+K, groups, remote search, quick actions) + mount in AdminLayout
 
-## Task 20 — Production images + one-command Compose (`feat(deploy): deliver complete docker compose stack`)
-- [ ] Steps 1–7 (backend+frontend images, nginx templates, preview origin, edge, secret boundaries)
+## Task 19 — Preview/validate/publish/rollback UX 🚧 PARTIAL
+- [x] `PublicationControls` (validate → errors, publish w/ confirm, history + rollback, preview-token launch)
+- [ ] Isolated preview ORIGIN app (`src/preview/main.tsx` + fragment exchange + sandboxed iframe render)
 
-## Task 21 — SEO/security/observability/recovery (`feat(platform): harden observe and back up dentnow`)
-- [ ] Steps 1–7 (sitemap/JSON-LD, CSP/headers, metrics/logs, backup/restore/verify)
+## Task 20 — Production images + one-command Compose 🚧 PARTIAL
+- [x] backend image (Task 4); frontend nginx image (Dockerfile + config.json entrypoint + /api proxy); `frontend` compose service; per-route public serving. `docker compose up --build` serves whole app on :3000
+- [ ] `preview` compose service (isolated origin), production `edge` (Caddy TLS) profile
 
-## Task 22 — Cross-stack test matrix (`test: cover public admin media and publication flows`)
-- [ ] Steps 1–6 (backend+frontend coverage, real-service Playwright, Makefile targets)
+## Task 21 — SEO/security/observability/recovery ⬜ NOT STARTED
+- [ ] CSP/security headers, redaction, prometheus metrics, safe JSON-LD; backup/restore/verify + minio_versions
 
-## Task 23 — GitHub CI paired pipelines (`ci: test and publish paired dentnow images`)
-- [ ] Steps 1–5 (ci.yml PR checks, paired image publish, safety scans)
+## Task 22 — Cross-stack test matrix 🚧 STARTED
+- [x] tester agent drives the LIVE app via Playwright (public render, requests, /login, admin) — reports bugs
+- [ ] full backend+frontend coverage floor, seeded E2E identities, Makefile `check` target
 
-## Task 24 — Ops docs + release rehearsal (`docs: add dentnow operations and deployment runbooks`)
-- [ ] Steps 1–6 (README, content/deploy/recovery/integration runbooks, rehearsal)
+## Task 23 — GitHub CI paired pipelines ⬜ NOT STARTED
+- [ ] `ci.yml` (frontend+backend checks + Compose integration), paired image publish, secret scans
+
+## Task 24 — Ops docs + release rehearsal ⬜ NOT STARTED
+- [ ] README rewrite, deployment/recovery/content runbooks, clean release rehearsal
 
 ---
 

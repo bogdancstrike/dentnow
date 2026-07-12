@@ -10,6 +10,25 @@
 
 ---
 
+## IMPLEMENTATION STATUS (live)
+
+See `docs/TODO.md` for the detailed per-task tracker. Summary:
+
+- **DONE + tested:** Tasks 1–13 (monorepo split, typed frontend, qf backend, PG18/MinIO/Keycloak Compose, DB schema + 7 migrations, Keycloak JWT auth + capability matrix + clinic scoping, full CMS CRUD across site/clinics/catalog/editorial, private MinIO media + consent gates, deterministic snapshot → atomic publish/rollback/preview + anonymous public API, integration/outbox boundary, content seed with exact parity) and Task 18 backend admin search. **124 backend + 18 frontend tests pass.**
+- **DEPLOYABLE:** `./ops/init-secrets.sh && docker compose up --build -d` serves the whole app on `:3000` (public site + hidden `/login` → Keycloak `:8090` `admin/admin` → admin CRUD + publish). Frontend nginx image with runtime `config.json` + `/api` proxy + per-route public content endpoints.
+- **PARTIAL:** Task 14 (public site API-gated, but pages still read seeded `src/data`), Tasks 15–17 (admin shell + 13 CRUD screens via generic ResourceScreen), Task 19 (publish/rollback UI done; isolated preview app pending), Task 20 (frontend service done; preview service + edge pending), Task 22 (Playwright tester agent).
+- **NOT STARTED:** Task 21 (security headers/metrics/backup), Task 23 (CI), Task 24 (docs/rehearsal).
+
+### Addendum — new product requirements (post-plan, user-directed)
+These extend/adjust the original plan:
+1. **URL per admin tab** (React Router deep-links: `/admin/clinici`, `/admin/echipa-medicala`, …).
+2. **Searchable dropdowns** for every existing-entity reference in /admin (`RemoteSelect`, never a free-text id).
+3. **More CRUD**: nested quiz editor, image-carousel/gallery media, offer→treatment selection, live real-page preview.
+4. **Reviews auto-synced from Google** per clinic Maps location (adds `clinics.google_place_id` + Google Places API key; **overrides §23 non-goal** on Google review ingestion).
+5. **Enterprise/professional visual polish** + `cmdk` command palette.
+
+---
+
 ## Delivery rules
 
 - Docker Compose is the release target for this plan. Kubernetes/Helm changes are explicitly deferred; the migration notes in `docs/architecture.md` preserve that future path.
