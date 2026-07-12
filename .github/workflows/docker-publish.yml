@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Images
 
 on:
   push:
@@ -13,13 +13,22 @@ concurrency:
   group: docker-publish-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  IMAGE_NAME: bogdancstrike/dentnow-website
-
 jobs:
   build-and-push:
-    name: Build and push Docker image
+    name: Build and push ${{ matrix.component }} image
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: frontend
+            image: bogdancstrike/dentnow-frontend
+            context: ./frontend
+            dockerfile: ./frontend/Dockerfile
+          - component: backend
+            image: bogdancstrike/dentnow-backend
+            context: ./backend
+            dockerfile: ./backend/Dockerfile
 
     steps:
       - name: Check out repository
@@ -34,23 +43,28 @@ jobs:
           username: bogdancstrike
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Generate Docker metadata
+      - name: Generate ${{ matrix.component }} Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ${{ matrix.image }}
           tags: |
             type=raw,value=latest
             type=ref,event=branch
-            type=sha,prefix={{branch}}-
+            type=sha,prefix={{branch}}-,format=short
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.title=DentNow ${{ matrix.component }}
 
-      - name: Build and push image
+      - name: Build and push ${{ matrix.component }} image
         uses: docker/build-push-action@v6
         with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          provenance: true
+          sbom: true
