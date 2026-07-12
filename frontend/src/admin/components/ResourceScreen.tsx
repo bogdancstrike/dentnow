@@ -17,7 +17,7 @@ export interface ResourceConfig<T extends ResourceRow> {
   endpoint: string; // e.g. /v1/admin/offers
   singular: string;
   columns: ColumnsType<T>;
-  form: (editing: T | null) => ReactNode;
+  form: (ctx: { editing: T | null; client: AdminClient }) => ReactNode;
   defaults?: Record<string, unknown>;
   toValues?: (row: T) => Record<string, unknown>;
   canWrite?: boolean;
@@ -140,7 +140,7 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
         destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
-          {config.form(editing ?? null)}
+          {config.form({ editing: editing ?? null, client })}
           <Button type="primary" htmlType="submit" loading={save.isPending}>
             Salvează
           </Button>

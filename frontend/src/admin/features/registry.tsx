@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
 import { ClinicsScreen } from './clinics/ClinicsScreen';
 import { SiteSettingsScreen } from './site/SiteSettingsScreen';
+import { RemoteSelect } from '../components/RemoteSelect';
 import { ResourceScreen, type ResourceConfig } from '../components/ResourceScreen';
 import type { ResourceRow } from '../components/ResourceTable';
 import type { Me } from '../auth/permissions';
