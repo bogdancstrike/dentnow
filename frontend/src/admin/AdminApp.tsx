@@ -7,6 +7,7 @@
  */
 import { useEffect, useState } from 'react';
 import { ConfigProvider, App as AntApp, Spin } from 'antd';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MissingAdminConfigError, requireAdminConfig } from '../config/runtime';
 import { AdminClient, UnauthorizedError } from './api/adminClient';
 import { getAdminToken, initKeycloak } from './auth/keycloak';
@@ -14,6 +15,10 @@ import { MeSchema, type Me } from './auth/permissions';
 import { adminTheme } from './theme';
 import { AdminLayout } from './layout/AdminLayout';
 import { AccessDeniedPage } from './pages/AccessDeniedPage';
+
+const adminQueryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
+});
 
 type State =
   | { phase: 'init' }
@@ -60,6 +65,7 @@ export default function AdminApp() {
 
   return (
     <ConfigProvider theme={adminTheme}>
+      <QueryClientProvider client={adminQueryClient}>
       <AntApp>
         {state.phase === 'init' && (
           <div style={{ display: 'flex', minHeight: '60vh', alignItems: 'center', justifyContent: 'center' }}>
@@ -73,6 +79,7 @@ export default function AdminApp() {
         {state.phase === 'error' && <AccessDeniedPage title="Eroare" detail={state.message} />}
         {state.phase === 'ready' && <AdminLayout me={state.me} client={state.client} />}
       </AntApp>
+      </QueryClientProvider>
     </ConfigProvider>
   );
 }
