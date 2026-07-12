@@ -13,6 +13,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 ## CODE REVIEW & REPAIR + FOLLOW-UPS (2026-07-12, session 2)
 
 Later follow-up requests (session 2, batch 2):
+- [x] **cmdk quick actions** — command palette now has a „Creează” group (clinic, medic, tratament, ofertă, partener, articol, noutate, serviciu, imagine galerie), gated on write capability, plus section navigation + content search.
 - [x] **Editor full-width + bigger preview** — removed the `maxWidth:1600` cap on all editors, widened the preview column (1.2fr) and made the preview panel a tall sticky pane; trimmed admin content padding.
 - [x] **Location page booking** — `/locatii/:slug` bottom CTA now calls/WhatsApps the current clinic directly instead of opening the all-locations picker.
 - [ ] **Draft preview** — preview unsaved form values without going live (postMessage draft injection), discarded on exit.

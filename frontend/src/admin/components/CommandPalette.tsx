@@ -19,8 +19,9 @@ import {
   TeamOutlined,
   TagsOutlined,
 } from '@ant-design/icons';
+import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
-import { can, type Me } from '../auth/permissions';
+import { CAP, can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
 import { ADMIN_NAVIGATION } from '../layout/adminNavigation';
 import { COMMAND_PALETTE_EVENT } from '../layout/adminEvents';
@@ -96,12 +97,35 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
     [me, normalizedQuery],
   );
 
+  const canWrite = can(me, CAP.contentWrite);
+  const CREATE_ACTIONS: { id: string; label: string; keywords: string; icon: ReactNode; path: string }[] = useMemo(
+    () =>
+      !canWrite
+        ? []
+        : [
+            { id: 'new-clinic', label: 'Clinică nouă', keywords: 'creare adaugă locație', icon: <ShopOutlined />, path: '/admin/clinici/nou' },
+            { id: 'new-doctor', label: 'Medic nou (echipă medicală)', keywords: 'creare adaugă doctor echipa', icon: <TeamOutlined />, path: '/admin/echipa-medicala/nou' },
+            { id: 'new-treatment', label: 'Tratament nou', keywords: 'creare adaugă serviciu', icon: <MedicineBoxOutlined />, path: '/admin/tratamente/nou' },
+            { id: 'new-offer', label: 'Ofertă nouă', keywords: 'creare adaugă promoție', icon: <TagsOutlined />, path: '/admin/oferte/nou' },
+            { id: 'new-partner', label: 'Partener nou', keywords: 'creare adaugă', icon: <SolutionOutlined />, path: '/admin/parteneri/nou' },
+            { id: 'new-article', label: 'Articol nou', keywords: 'creare adaugă blog', icon: <FileAddOutlined />, path: '/admin/articole/nou' },
+            { id: 'new-news', label: 'Noutate nouă', keywords: 'creare adaugă știre', icon: <FileTextOutlined />, path: '/admin/noutati' },
+            { id: 'new-service', label: 'Serviciu prima pagină', keywords: 'creare adaugă homepage card', icon: <MedicineBoxOutlined />, path: '/admin/servicii-dentnow' },
+            { id: 'new-gallery', label: 'Imagine galerie clinică', keywords: 'creare adaugă foto poză', icon: <PictureOutlined />, path: '/admin/clinica' },
+          ],
+    [canWrite],
+  );
+
   const actions = useMemo(
+    () => CREATE_ACTIONS.filter((action) => matches(`${action.label} ${action.keywords}`, normalizedQuery)),
+    [CREATE_ACTIONS, normalizedQuery],
+  );
+
+  const extraActions = useMemo(
     () =>
       [
-        { id: 'new-article', label: 'Articol nou', keywords: 'creare adaugă noutate blog' },
-        { id: 'public-site', label: 'Deschide site-ul public', keywords: 'website live public' },
-        { id: 'logout', label: 'Deconectare', keywords: 'logout ieșire cont' },
+        { id: 'public-site', label: 'Deschide site-ul public', keywords: 'website live public', icon: <GlobalOutlined /> },
+        { id: 'logout', label: 'Deconectare', keywords: 'logout ieșire cont', icon: <LogoutOutlined /> },
       ].filter((action) => matches(`${action.label} ${action.keywords}`, normalizedQuery)),
     [normalizedQuery],
   );
@@ -162,14 +186,18 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
     navigate(path);
   };
 
-  const runAction = (id: string) => {
+  const runExtra = (id: string) => {
     setOpen(false);
-    if (id === 'new-article') go('/admin/articole/nou');
     if (id === 'public-site') window.open('/', '_blank', 'noopener');
     if (id === 'logout') void logout();
   };
 
-  const nothing = navigation.length === 0 && actions.length === 0 && results.length === 0 && !searching;
+  const nothing =
+    navigation.length === 0 &&
+    actions.length === 0 &&
+    extraActions.length === 0 &&
+    results.length === 0 &&
+    !searching;
 
   return (
     <>
@@ -212,14 +240,21 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
           )}
 
           {actions.length > 0 && (
-            <Command.Group heading="Acțiuni rapide">
+            <Command.Group heading="Creează">
               {actions.map((action) => (
-                <Command.Item key={action.id} value={`action ${action.label}`} onSelect={() => runAction(action.id)}>
-                  <span className="dent-cmdk-icon">
-                    {action.id === 'new-article' && <FileAddOutlined />}
-                    {action.id === 'public-site' && <GlobalOutlined />}
-                    {action.id === 'logout' && <LogoutOutlined />}
-                  </span>
+                <Command.Item key={action.id} value={`create ${action.label} ${action.keywords}`} onSelect={() => go(action.path)}>
+                  <span className="dent-cmdk-icon">{action.icon}</span>
+                  <span className="dent-cmdk-label">{action.label}</span>
+                </Command.Item>
+              ))}
+            </Command.Group>
+          )}
+
+          {extraActions.length > 0 && (
+            <Command.Group heading="Acțiuni">
+              {extraActions.map((action) => (
+                <Command.Item key={action.id} value={`action ${action.label}`} onSelect={() => runExtra(action.id)}>
+                  <span className="dent-cmdk-icon">{action.icon}</span>
                   <span className="dent-cmdk-label">{action.label}</span>
                 </Command.Item>
               ))}
