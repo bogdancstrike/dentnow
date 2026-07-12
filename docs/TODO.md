@@ -148,18 +148,19 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Partial: `SiteDataProvider` (explicit loading/error, no compiled fallback) built + verified; typecheck/11 tests/lint/build pass
 - [ ] Step 7: Commit (final)
 
-## Task 15 — Keycloak-authenticated admin shell (`feat(admin): add keycloak protected administration shell`)
-- [ ] Step 1: failing route/auth/client tests
-- [ ] Step 2: lazy Keycloak init (PKCE S256, in-memory tokens)
-- [ ] Step 3: admin API client (refresh, bearer, If-Match, 409 typed)
-- [ ] Step 4: shell with one AntD ConfigProvider
-- [ ] Step 5: load `/admin/me` before protected nav
-- [ ] Step 6: disposable E2E identity fixture (`seed_e2e_identities.py`)
-- [ ] Step 7: verify auth behavior
-- [ ] Step 8: Commit
+## Task 15 — Keycloak-authenticated admin shell ✅ DONE (commit `0e79ba2`)
+- [x] Step 1: `admin-client.test.ts` (bearer/correlation/ETag, If-Match, 409/401/500 mapping)
+- [x] Step 2: `auth/keycloak.ts` lazy init (PKCE S256, login-required, in-memory, refresh)
+- [x] Step 3: `api/adminClient.ts` (bearer + If-Match + correlation; typed VersionConflict/Unauthorized)
+- [x] Step 4: `AdminApp.tsx` one AntD ConfigProvider + App; `theme.ts`
+- [x] Step 5: loads `/admin/me` → shell or AccessDenied; permission-aware `AdminLayout` nav; `OverviewPage`
+- [ ] Step 6: disposable E2E identity fixture (`seed_e2e_identities.py`) — deferred to Task 22
+- [x] Step 7: **15 frontend tests pass**; antd+keycloak-js in lazy admin chunk only; typecheck/lint/build clean
+- [x] Step 8: committed
 
-## Task 16 — Admin CRUD foundations + site/clinic/catalog screens (`feat(admin): manage site clinics catalog and offers`)
-- [ ] Steps 1–7 (ResourceTable/Drawer, site/clinic/catalog/offers features)
+## Task 16 — Admin CRUD foundations + site/clinic/catalog screens 🚧 SLICE DONE (commit `e1a7ef6`)
+- [x] Reusable `ResourceTable` (server paging, rowKey=id, error state); `ClinicsScreen` full CRUD (Drawer form, If-Match edits, 409→explicit conflict message); QueryClientProvider wired; jsdom antd polyfills; 16 tests pass
+- [ ] Remaining: site settings/links/menus/pages/SEO, catalog (treatments/prices/offers/partners), doctors screens — each follows the ClinicsScreen pattern
 
 ## Task 17 — Editorial/legal/quiz/media/audit admin (`feat(admin): manage editorial legal quiz media and audit`)
 - [ ] Steps 1–7 (editorial/legal/quiz/media/audit features + MediaPicker/Upload/Consent/AuditDiff)
