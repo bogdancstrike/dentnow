@@ -27,12 +27,24 @@ export const ClinicSchema = z.object({
   name: z.string(),
   area: z.string().nullable().optional(),
   address_full: z.string().nullable().optional(),
+  postal_code: z.string().nullable().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
   map_embed_url: z.string().nullable().optional(),
   map_link_url: z.string().nullable().optional(),
   contacts: z.array(ContactSchema).default([]),
   hours: z.array(HoursSchema).default([]),
+  transit: z.array(z.object({
+    mode: z.string().nullable().optional(),
+    label: z.string(),
+    detail: z.string().nullable().optional(),
+    position: z.number().optional(),
+  })).default([]),
+  faqs: z.array(z.object({
+    question: z.string(),
+    answer: z.string(),
+    position: z.number().optional(),
+  })).default([]),
 });
 
 export const LinkSchema = z.object({
@@ -103,7 +115,50 @@ export const ArticleSummarySchema = z.object({
   published_at: z.string().nullable().optional(),
 });
 
+export const TreatmentPriceSchema = z.object({
+  price_kind: z.enum(['exact', 'from', 'range', 'on_request']),
+  amount: z.number().nullable().optional(),
+  amount_max: z.number().nullable().optional(),
+  old_amount: z.number().nullable().optional(),
+  currency: z.string().default('RON'),
+  note: z.string().nullable().optional(),
+  clinic_id: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
+export const TreatmentSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  category_slug: z.string().nullable().optional(),
+  category_label: z.string().nullable().optional(),
+  summary: z.string().nullable().optional(),
+  detail_html: z.string().nullable().optional(),
+  prices: z.array(TreatmentPriceSchema).default([]),
+  homepage_featured: z.boolean().default(false),
+  homepage_label: z.string().nullable().optional(),
+  homepage_icon: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
+export const OfferSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  summary: z.string().nullable().optional(),
+  badge: z.string().nullable().optional(),
+  price_amount: z.number().nullable().optional(),
+  old_amount: z.number().nullable().optional(),
+  currency: z.string().default('RON'),
+  starts_at: z.string().nullable().optional(),
+  ends_at: z.string().nullable().optional(),
+  features: z.array(z.string()).default([]),
+  featured: z.boolean().default(false),
+  position: z.number().default(0),
+});
+
 export type Bootstrap = z.infer<typeof BootstrapSchema>;
 export type Clinic = z.infer<typeof ClinicSchema>;
 export type Page = z.infer<typeof PageSchema>;
 export type ArticleSummary = z.infer<typeof ArticleSummarySchema>;
+export type Treatment = z.infer<typeof TreatmentSchema>;
+export type TreatmentPrice = z.infer<typeof TreatmentPriceSchema>;
+export type Offer = z.infer<typeof OfferSchema>;

@@ -20,7 +20,7 @@ from src.core.db import Base
 from src.core.mixins import WorkspaceRoot
 
 CLINIC_STATUSES = ("active", "coming_soon", "closed")
-CONTACT_KINDS = ("phone", "whatsapp", "email", "booking")
+CONTACT_KINDS = ("phone", "whatsapp", "email", "booking", "social")
 
 
 class Clinic(WorkspaceRoot, Base):
@@ -50,7 +50,7 @@ class Clinic(WorkspaceRoot, Base):
 class ClinicContact(WorkspaceRoot, Base):
     __tablename__ = "clinic_contacts"
     __table_args__ = (
-        CheckConstraint("kind IN ('phone','whatsapp','email','booking')", name="ck_clinic_contacts_kind"),
+        CheckConstraint("kind IN ('phone','whatsapp','email','booking','social')", name="ck_clinic_contacts_kind"),
         Index("ix_clinic_contacts_clinic", "clinic_id"),
     )
 

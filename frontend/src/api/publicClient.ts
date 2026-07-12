@@ -8,9 +8,13 @@ import {
   BootstrapSchema,
   PageSchema,
   ArticleSummarySchema,
+  TreatmentSchema,
+  OfferSchema,
   type Bootstrap,
   type Page,
   type ArticleSummary,
+  type Treatment,
+  type Offer,
 } from './publicContracts';
 
 export async function fetchBootstrap(): Promise<Bootstrap> {
@@ -40,9 +44,21 @@ export async function fetchArticle(slug: string): Promise<ArticleDetail> {
   return data.article;
 }
 
+export async function fetchTreatments(): Promise<Treatment[]> {
+  const data = await apiGetJson<{ items: unknown[] }>('/v1/public/treatments');
+  return data.items.map((item) => TreatmentSchema.parse(item));
+}
+
+export async function fetchOffers(): Promise<Offer[]> {
+  const data = await apiGetJson<{ items: unknown[] }>('/v1/public/offers');
+  return data.items.map((item) => OfferSchema.parse(item));
+}
+
 export const publicQueryKeys = {
   bootstrap: ['public', 'bootstrap'] as const,
   page: (path: string) => ['public', 'page', path] as const,
   articles: ['public', 'articles'] as const,
   article: (slug: string) => ['public', 'article', slug] as const,
+  treatments: ['public', 'treatments'] as const,
+  offers: ['public', 'offers'] as const,
 };

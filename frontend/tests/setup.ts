@@ -22,6 +22,24 @@ if (!('ResizeObserver' in globalThis)) {
     disconnect() {}
   };
 }
+// ProseMirror measures the current selection when typing. jsdom does not implement
+// DOM range geometry, so provide stable zero-sized rectangles for editor tests.
+if (!Range.prototype.getClientRects) {
+  Range.prototype.getClientRects = (() => ({
+    length: 0,
+    item: () => null,
+    [Symbol.iterator]: function* () {},
+  })) as unknown as typeof Range.prototype.getClientRects;
+}
+if (!Range.prototype.getBoundingClientRect) {
+  Range.prototype.getBoundingClientRect = (() => ({
+    x: 0, y: 0, width: 0, height: 0, top: 0, right: 0, bottom: 0, left: 0,
+    toJSON: () => ({}),
+  })) as typeof Range.prototype.getBoundingClientRect;
+}
+if (!document.elementFromPoint) {
+  document.elementFromPoint = (() => document.body) as typeof document.elementFromPoint;
+}
 
 // Tests that pass an explicit fetch implementation bypass MSW; component tests that
 // hit `/config.json` or API routes are served by the handlers above.

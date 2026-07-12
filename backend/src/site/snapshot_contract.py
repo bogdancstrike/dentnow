@@ -87,6 +87,9 @@ class TreatmentPublic(_Model):
     summary: str | None = None
     detail_html: str | None = None
     prices: list[dict[str, Any]] = []
+    homepage_featured: bool = False
+    homepage_label: str | None = None
+    homepage_icon: str | None = None
     position: int = 0
 
 

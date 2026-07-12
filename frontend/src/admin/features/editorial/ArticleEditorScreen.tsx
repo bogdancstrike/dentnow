@@ -21,6 +21,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
+import { RichTextEditor } from '../../components/RichTextEditor';
 import type { ArticleRow } from './ArticlesScreen';
 import { ArticleLivePreview, type ArticlePreviewValues } from './ArticleLivePreview';
 import './articles.css';
@@ -268,16 +269,12 @@ export function ArticleEditorScreen({ client }: { client: AdminClient }) {
               <div className="article-body-label">
                 <div>
                   <Typography.Text className="article-form-kicker">Corpul articolului</Typography.Text>
-                  <Typography.Paragraph>Folosește Markdown pentru subtitluri, liste și evidențieri.</Typography.Paragraph>
+                  <Typography.Paragraph>Selectează textul și folosește bara de formatare.</Typography.Paragraph>
                 </div>
-                <Typography.Text type="secondary">## Subtitlu · **bold** · - listă</Typography.Text>
+                <Typography.Text type="secondary">Editor vizual</Typography.Text>
               </div>
               <Form.Item name="body_markdown" label="Conținut" rules={[{ required: true, message: 'Adaugă conținutul articolului.' }]}>
-                <Input.TextArea
-                  className="article-markdown-input"
-                  rows={20}
-                  placeholder={'## Introducere\n\nScrie conținutul articolului...\n\n- Recomandare practică'}
-                />
+                <RichTextEditor placeholder="Scrie conținutul articolului…" />
               </Form.Item>
             </div>
 

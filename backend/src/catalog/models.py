@@ -50,6 +50,9 @@ class Treatment(WorkspaceRoot, Base):
     visits: Mapped[str | None] = mapped_column(Text, nullable=True)
     anesthesia: Mapped[str | None] = mapped_column(Text, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    homepage_featured: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    homepage_label: Mapped[str | None] = mapped_column(Text, nullable=True)
+    homepage_icon: Mapped[str | None] = mapped_column(Text, nullable=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 

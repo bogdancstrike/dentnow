@@ -40,9 +40,10 @@ describe('ArticleEditorScreen', () => {
       http.get('/api/v1/admin/articles', () => HttpResponse.json({ items: [], total: 0 })),
     );
     renderEditor();
+    const user = userEvent.setup();
     fireEvent.change(screen.getByLabelText('Titlu'), { target: { value: 'Igiena orală în fiecare zi' } });
     fireEvent.change(screen.getByLabelText(/^Rezumat/), { target: { value: 'Un ghid simplu pentru o rutină corectă.' } });
-    fireEvent.change(screen.getByLabelText('Conținut'), { target: { value: '## Pașii esențiali\n\n- Periaj de două ori pe zi' } });
+    await user.type(screen.getByRole('textbox', { name: 'Editor vizual pentru conținut' }), 'Pașii esențiali. Periaj de două ori pe zi.');
 
     const preview = screen.getByTitle('Previzualizare live a articolului');
     await waitFor(() => {
@@ -88,7 +89,7 @@ describe('ArticleEditorScreen', () => {
     const user = userEvent.setup();
 
     fireEvent.change(screen.getByLabelText('Titlu'), { target: { value: 'Articol test' } });
-    fireEvent.change(screen.getByLabelText('Conținut'), { target: { value: 'Conținut test' } });
+    await user.type(screen.getByRole('textbox', { name: 'Editor vizual pentru conținut' }), 'Conținut test');
     await user.click(screen.getByRole('button', { name: /Salvează articolul/i }));
 
     await waitFor(() => expect(submitted).toMatchObject({

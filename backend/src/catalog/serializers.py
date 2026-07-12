@@ -28,7 +28,9 @@ def serialize_treatment(o: Any) -> dict:
         "category_id": str(o.category_id) if o.category_id else None,
         "slug": o.slug, "name": o.name, "summary": o.summary,
         "detail_markdown": o.detail_markdown, "duration": o.duration,
-        "visits": o.visits, "anesthesia": o.anesthesia, "active": o.active, "position": o.position,
+        "visits": o.visits, "anesthesia": o.anesthesia, "active": o.active,
+        "homepage_featured": o.homepage_featured, "homepage_label": o.homepage_label,
+        "homepage_icon": o.homepage_icon, "position": o.position,
     }
 
 

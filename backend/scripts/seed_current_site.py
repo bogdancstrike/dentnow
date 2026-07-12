@@ -203,12 +203,24 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
 
     # ── categories (10) + prices (20) ────────────────────────────────────────
     price_rows = 0
+    quick_by_category = {
+        item.get("link", "").partition("#")[2]: item
+        for item in data.get("quickServices", [])
+        if "#" in item.get("link", "")
+    }
     for pos, cat in enumerate(data["treatmentCategories"]):
         category = TreatmentCategory(slug=_slug(cat["id"]), label=cat["title"], position=pos)
         session.add(category)
         session.flush()
         for j, row in enumerate(cat["rows"]):
-            t = Treatment(slug=f"cat-{cat['id']}-{j}", name=row["name"], category_id=category.id, position=j)
+            quick = quick_by_category.get(cat["id"]) if j == 0 else None
+            t = Treatment(
+                slug=f"cat-{cat['id']}-{j}", name=row["name"], category_id=category.id,
+                homepage_featured=quick is not None,
+                homepage_label=quick.get("label") if quick else None,
+                homepage_icon=quick.get("icon") if quick else None,
+                position=j,
+            )
             session.add(t)
             session.flush()
             kind, amount, amount_max = _parse_price(row.get("price", ""))

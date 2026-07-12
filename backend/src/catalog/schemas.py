@@ -45,6 +45,9 @@ class TreatmentCreate(_Strict):
     visits: Optional[str] = None
     anesthesia: Optional[str] = None
     active: bool = True
+    homepage_featured: bool = False
+    homepage_label: Optional[str] = None
+    homepage_icon: Optional[str] = None
     position: int = 0
     _s = field_validator("slug")(classmethod(lambda cls, v: _validate_slug(v)))
 
@@ -59,6 +62,9 @@ class TreatmentUpdate(_Strict):
     visits: Optional[str] = None
     anesthesia: Optional[str] = None
     active: Optional[bool] = None
+    homepage_featured: Optional[bool] = None
+    homepage_label: Optional[str] = None
+    homepage_icon: Optional[str] = None
     position: Optional[int] = None
 
 

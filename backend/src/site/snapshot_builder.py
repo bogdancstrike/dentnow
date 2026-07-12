@@ -162,7 +162,9 @@ def build_snapshot(session) -> SiteSnapshotV1:
             category_slug=category.slug if category else None,
             category_label=category.label if category else None,
             detail_html=render_markdown(t.detail_markdown) if t.detail_markdown else None,
-            prices=prices, position=t.position,
+            prices=prices, homepage_featured=t.homepage_featured,
+            homepage_label=t.homepage_label, homepage_icon=t.homepage_icon,
+            position=t.position,
         ))
     treatments.sort(key=lambda x: x.slug)
 

@@ -84,7 +84,7 @@ class ContactCreate(_Strict):
     @field_validator("kind")
     @classmethod
     def _kind(cls, v: str) -> str:
-        if v not in ("phone", "whatsapp", "email", "booking"):
+        if v not in ("phone", "whatsapp", "email", "booking", "social"):
             raise ValueError("invalid contact kind")
         return v
 

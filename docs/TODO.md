@@ -15,16 +15,19 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 **Deployable now:** `./ops/init-secrets.sh && docker compose up --build -d` serves the whole
 app on `:3000` — public site (seeded content, per-route API loading) + hidden `/login` →
 Keycloak (`:8090`, `admin/admin` in realm `doncik`) → admin backoffice with CRUD + publish.
-Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live smoke green.
+Backend API and the public/admin shells run in Compose. The current branch is moving
+all authored content to backend-owned seed data and replacing drawer CRUD with dedicated
+enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehearsal for
+0008/default/loaded seeds is still pending.
 
 | Area | State |
 |---|---|
 | Backend (Tasks 3–13) + admin search (18) | ✅ complete + tested |
 | Public site (14) | 🚧 API-gated shell + per-route endpoints; **pages still read seeded `src/data`** (matches, not yet pure-API) |
 | Admin shell (15) | ✅ Keycloak login, `/admin/me` gating, one AntD ConfigProvider |
-| Admin CRUD (16–17) | 🚧 13 screens via generic ResourceScreen; **missing: media, audit, nested quiz, FK dropdowns** |
-| cmdk (18) | 🚧 backend search done; palette UI pending |
-| Preview/publish (19) | 🚧 publish/validate/rollback UI + preview-token launch done; **isolated preview app pending** |
+| Admin CRUD (16–17) | 🚧 article editor complete; clinic/treatment/offer/doctor/partner dedicated editors pending |
+| cmdk (18) | 🚧 enterprise palette + search + article/public-site actions done; entity-create actions pending |
+| Contextual preview (19) | 🚧 article iframe done; clinic/treatment/offer/media full-page previews pending |
 | Deploy (20) | 🚧 frontend nginx + per-route serving in Compose done; preview service + prod edge pending |
 | Hardening/backup (21), tests (22), CI (23), docs (24) | ⬜ not started (agents hit session limit before starting) |
 
@@ -40,7 +43,15 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 - [x] Removed manual **Recenzii** CRUD navigation; reviews will be a Google-synced clinic data source, not an authored page.
 - [x] Removed website publication/version controls from `/admin`. Preview is contextual per edited entity, never a global publish action.
 - [x] **Articles newsroom slice**: `/admin/articole`, `/admin/articole/nou`, and `/admin/articole/:id`; full-screen create/edit form, status workflow, existing-category dropdown, safe unsaved-change handling, desktop/mobile sandboxed iframe preview.
-- [ ] Apply the same contextual iframe preview pattern to clinics/addresses, treatments, offers, and media/carousels.
+- [x] **Non-technical article authoring:** Tiptap visual editor with headings, bold, italic, strike, links, lists, quote, undo/redo; Markdown remains the safe backend storage format and is no longer the default UI.
+- [ ] Standardize every authored entity on the same pattern: list page + `/nou` + `/:id` edit page with prefilled data, unsaved-change protection, sticky desktop/mobile live iframe, and explicit save.
+- [ ] Migrate in this order: clinics → treatments → offers → doctors → partners → media/carousels → quiz. Retire generic side drawers after each dedicated editor lands.
+- [ ] **Clinic editor:** name/slug/status/order, complete address/postal/GPS, Google Maps link+embed, multiple phone/WhatsApp/email/booking/social contacts, hours, transit, FAQs, page route, and full location-page preview.
+- [ ] **Partner editor:** optional logo upload/media selection from MinIO, relationship/badge/link/rights metadata, and desktop/mobile card/page preview.
+- [ ] **Homepage quick-treatment strip:** the Implant/Albire/GBT/Obturații cards are treatment-backed fields (`homepage_featured`, label, icon, price/link); finish admin controls and public API renderer so no card text is hardcoded.
+- [x] Public navbar places **Decontare CAS** immediately after Acasă; duplicate “Decontare CAS / Gratuit copii” was removed from the Tratamente dropdown and seed fixture.
+- [x] Keycloak bootstrap and local realm now register the exact public homepage post-logout redirect; infrastructure regression check added for the previous “Invalid redirect uri” failure.
+- [ ] Remove `/recenzii` as a standalone page/route and render Google-synced reviews only inside relevant clinic/site sections.
 
 ---
 
@@ -162,7 +173,7 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 - [x] Step 5: **5 tests pass** — event `.v1` enforcement, transactional outbox insert, dependency rule (no vendor SDK/adapter in domain code), no patient/registration endpoint
 - [x] Step 6: committed
 
-## Task 13 — Export + seed current content ✅ DONE (commit `47ec24e`)
+## Task 13 — Export + seed current content 🚧 REOPENED FOR COMPLETE PARITY
 - [x] Step 1: parity manifest + `test_seed_parity.py`/`test_seed_idempotency.py` (opt-in RUN_SEED_TESTS)
 - [x] Step 2: `export-current-content.mjs` (esbuild-defines import.meta.env from content-source.env; imports data modules) → `current-site.json` + 20 assets w/ SHA-256
 - [x] Step 3: page-local + config mapping (clinics/phones/schedule/social/routes)
@@ -170,7 +181,13 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 - [x] Step 5: **verified** — seed→parity OK (all 14 counts match), double-seed no-op, 5 seed tests + 120 general pass
 - [x] Step 6: committed; `content-source.env` deleted (values captured; config.js fallbacks identical)
 
-> Note: MinIO asset upload in the seed is stubbed (assets copied to `backend/seeds/assets`, committed); wiring the MinIO push + media rows into the seed is a small follow-up (Task 20 stack run exercises it).
+- [x] Added canonical `backend/seed.py`; it imports the audited current-site fixture and uploads a replaceable placeholder through the real MinIO media service.
+- [~] `backend/seeds/current-site.json` contains clinics, contacts, schedules, social links, navigation, services, prices, offers, doctors, partners, articles, reviews, news, ebooks, technology, cases and quiz data from the current frontend.
+- [ ] **Parity gap:** import every remaining page-local value, especially complete GDPR/confidentiality/terms copy, CAS/emergency/local SEO page content, clinic transit/FAQ data, treatment-detail copy, footer/home sections and any data still declared inside JSX/config files.
+- [ ] Make `seed.py` seed every parity item above into typed backend records/page sections; no placeholder legal body and no current public text left only in frontend code.
+- [x] Added deterministic `backend/seed_loaded.py` that layers a large synthetic prod-like dataset (clinics, doctors, treatments, prices, offers, articles) over the default seed.
+- [x] Added Make targets: `make seed default` and `make seed loaded` (loaded chooses `seed_loaded.py`).
+- [ ] Run clean-volume default and loaded seed rehearsals, parity verifier, idempotency, migrations 0001–0008 and Compose smoke before marking this task complete.
 
 ## Task 14 — Refactor public site to render backend data only 🚧 FOUNDATION DONE (commit `226a917`)
 - [x] Step 1: `site-data-provider.test.tsx` (MSW loading/success/error, no leaked content)
@@ -180,6 +197,10 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 - [ ] Step 5: remove retired `src/data` + `config.js` business fallbacks after parity
 - [ ] Step 6: verify all public routes anonymously (mock Playwright)
 - [x] Partial: `SiteDataProvider` (explicit loading/error, no compiled fallback) built + verified; typecheck/11 tests/lint/build pass
+- [~] Typed treatment/offer/expanded-clinic public contracts and client calls added; route components still need conversion before deleting `src/data`.
+- [ ] Navbar/footer must render the seeded backend navigation/links, not `src/data/navigation.js`.
+- [ ] Home must render services, quick treatments, clinics, doctors, technology, partners and review sections from API data.
+- [ ] Convert `/tratamente`, `/oferte`, `/articole`, local clinic routes, CAS/emergency/legal and all remaining routes; request only the route payload needed.
 - [ ] Step 7: Commit (final)
 
 ## Task 15 — Keycloak-authenticated admin shell ✅ DONE (commit `0e79ba2`)
@@ -194,7 +215,8 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 
 ## Task 16 — Admin CRUD foundations + site/clinic/catalog screens 🚧 SLICE DONE (commit `e1a7ef6`)
 - [x] Reusable `ResourceTable` (server paging, rowKey=id, error state); `ClinicsScreen` full CRUD (Drawer form, If-Match edits, 409→explicit conflict message); QueryClientProvider wired; jsdom antd polyfills; 16 tests pass
-- [ ] Remaining: site settings/links/menus/pages/SEO, catalog (treatments/prices/offers/partners), doctors screens — each follows the ClinicsScreen pattern
+- [ ] Replace the old “generic drawer” target with the article-editor standard: dedicated URLs, comprehensive typed forms and real desktop/mobile contextual previews for every create/edit workflow.
+- [ ] Add cmdk quick-create routes for clinic, treatment, offer, doctor and partner when each `/nou` editor becomes available.
 
 ## Task 17 — Editorial/legal/quiz/media/audit admin (`feat(admin): manage editorial legal quiz media and audit`)
 - [ ] Steps 1–7 (editorial/legal/quiz/media/audit features + MediaPicker/Upload/Consent/AuditDiff)
@@ -206,6 +228,8 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 ## Task 18 — `cmdk` rapid navigation + quick actions 🚧 UI + BACKEND DONE, POLISH CONTINUES
 - [x] backend `/api/v1/admin/search` (permission-scoped, min-2-char, clinic-scoped, 4 tests) — commit `+search`
 - [x] `CommandPalette.tsx` (Ctrl/Cmd+K, permission-aware groups, debounced remote search, quick actions) + mounted in AdminLayout
+- [x] Enterprise visual treatment inspired by `testing_platform`; safe actions include article creation and opening the public site.
+- [ ] Add quick-create entity actions only when their dedicated `/nou` routes exist; preserve permission filtering and keep destructive actions out of cmdk.
 
 ## Task 19 — Contextual live preview UX 🚧 REDEFINED BY USER
 - [x] Removed `PublicationControls` from admin; administrators do not publish/activate website versions in the UI.
