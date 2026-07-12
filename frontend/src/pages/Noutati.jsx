@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useRevealAll } from '../hooks/useReveal';
 import { useQuery } from '@tanstack/react-query';
-import { fetchNews, publicQueryKeys } from '../api/publicClient';
+import { fetchNews, mediaUrl, publicQueryKeys } from '../api/publicClient';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import './Noutati.css';
@@ -24,7 +24,7 @@ export default function Noutati() {
       <div className="news-grid">
         {mainNews ? (
           <article className="news-main rv">
-            <img className="news-main-img" src={mainNews.media_id ? `/media/${mainNews.media_id}` : "/assets/dentnow/clinic-exterior.svg"} alt={mainNews.title} />
+            <img className="news-main-img" src={mainNews.media_id ? mediaUrl(mainNews.media_id, 'hero') : "/assets/dentnow/clinic-exterior.svg"} alt={mainNews.title} />
             <div className="news-main-body">
               <div className="news-cat">{mainNews.category || 'Noutate'}</div>
               <h2 className="news-main-title">{mainNews.title}</h2>

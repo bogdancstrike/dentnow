@@ -89,6 +89,7 @@ const news = makeConfig({
       <Item name="category" label="Categorie"><Input placeholder="Eveniment, Lansare etc." /></Item>
       <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
       <Item name="body_markdown" label="Conținut (Markdown)"><Input.TextArea rows={6} /></Item>
+      <Item name="published_at" label="Data publicării (YYYY-MM-DD)"><Input placeholder="2026-07-15" /></Item>
       <Item name="status" label="Status" rules={[{ required: true }]}>
         <Select options={[
           { value: 'draft', label: 'Draft' },
