@@ -20,7 +20,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] `/noutati/:slug` public detail pages render admin-authored content, every `/noutati` card has a visible „Citește mai mult” action, and news media/detail preview are admin-configurable.
 - [x] Restored grouped quiz question/answer CRUD with per-question „Adaugă răspuns”, answer editing/removal under its parent, result bands, and persisted drag ordering for whole question groups.
 - [x] Built `/admin/before-after` CRUD with separate before/after uploads, clinic/treatment links, consent approval/revocation, browser-only live draft preview, and persisted drag ordering.
-- [ ] Audit and rebuild Footer links with dynamic clinics/contact destinations.
+- [x] Rebuilt Footer from live API data: dynamic treatment services, dynamic clinics, per-clinic phone/WhatsApp/map contacts, API social/email links, and a tested allow-list of valid internal resource/legal routes.
 - [ ] Connect `/confidentialitate`, `/gdpr`, and `/termeni` to legal-document CRUD and update seed data.
 
 ---

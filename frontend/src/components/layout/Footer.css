@@ -1,5 +1,5 @@
 .footer { background: var(--dark2); padding: 80px 48px 40px; color: rgba(255,255,255,.6); }
-.footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 56px; margin-bottom: 56px; }
+.footer-top { display: grid; grid-template-columns: minmax(220px,1.6fr) repeat(4,minmax(150px,1fr)); gap: 42px; margin-bottom: 56px; }
 .footer-logo { font-family: var(--fd); font-size: 26px; font-weight: 700; color: #f5f5f7; text-decoration: none; display: block; margin-bottom: 14px; }
 .footer-logo span { color: var(--accent); }
 .footer-desc { font-size: 14px; font-weight: 300; line-height: 1.7; margin-bottom: 24px; }
@@ -12,13 +12,18 @@
 .footer-links a:hover { color: #fff; }
 .footer-loc-area { font-size: 12px; color: rgba(255,255,255,.4); }
 .footer-phone { display: flex; flex-direction: column; gap: 2px; }
-.footer-phone-actions { display: flex; gap: 14px; align-items: baseline; }
+.footer-phone-actions { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.footer-phone-actions a { display: inline-flex; align-items: center; gap: 5px; }
+.footer-contact-list { gap: 16px; }
+.footer-contact-clinic { color: rgba(255,255,255,.82)!important; font-weight: 700; }
 .footer-wa { font-size: 13px; color: rgba(255,255,255,.55); }
 .footer-wa:hover { color: #35d07f; }
+.footer-map-link { font-size: 13px!important; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
 .footer-copy { font-size: 13px; }
 .footer-legal { display: flex; gap: 20px; }
 .footer-legal a { font-size: 13px; color: rgba(255,255,255,.35); text-decoration: none; }
 .footer-legal a:hover { color: #fff; }
-@media (max-width: 1024px) { .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; } }
+@media (max-width: 1200px) { .footer-top { grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; } }
+@media (max-width: 900px) { .footer-top { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 768px) { .footer { padding: 60px 20px 32px; } .footer-top { grid-template-columns: 1fr; gap: 36px; } }

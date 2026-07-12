@@ -59,22 +59,3 @@ export const mobileNavLinks = [
   { label: 'Articole', to: '/articole' },
   { label: 'Scor Igiena', to: '/scor-igiena' },
 ];
-
-export const footerServices = [
-  { label: 'Implant Dentar București', to: '/implant-dentar-bucuresti' },
-  { label: 'Aparat Dentar Dristor', to: '/aparat-dentar-dristor' },
-  { label: 'Albire Dentară Laser', to: '/albire-dentara-laser' },
-  { label: 'Protetică Zirconiu', to: '/protetica-zirconiu' },
-  { label: 'Urgențe Dentare', to: '/urgente-dentare-bucuresti' },
-];
-
-export const footerClinic = [
-  { label: 'DentNow Dristor', to: '/stomatologie-dristor' },
-  { label: 'DentNow Baba Novac', to: '/stomatologie-baba-novac' },
-  { label: 'DentNow Prelungirea Ghencea', to: '/stomatologie-prelungirea-ghencea' },
-  { label: 'Recenzii Pacienti (Google)', to: '/recenzie' },
-  { label: 'Before & After', to: '/before-after' },
-  { label: 'Noutati', to: '/noutati' },
-  { label: 'Parteneri', to: '/parteneri' },
-  { label: 'E-bookuri', to: '/ebook' },
-];
