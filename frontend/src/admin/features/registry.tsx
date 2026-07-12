@@ -191,7 +191,6 @@ const CONFIGS: Record<string, ResourceConfig<Row>> = {
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {
-  if (key === 'clinics') return <ClinicsScreen client={client} />;
   if (key === 'settings') return <SiteSettingsScreen client={client} />;
   const cfg = CONFIGS[key];
   return cfg ? <ResourceScreen client={client} config={cfg} /> : null;

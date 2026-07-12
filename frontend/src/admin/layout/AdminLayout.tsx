@@ -21,6 +21,8 @@ import { can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
 import { CommandPalette } from '../components/CommandPalette';
 import { screenForKey } from '../features/registry';
+import { ClinicsScreen } from '../features/clinics/ClinicsScreen';
+import { ClinicEditorScreen } from '../features/clinics/ClinicEditorScreen';
 import { ArticleEditorScreen } from '../features/editorial/ArticleEditorScreen';
 import { ArticlesScreen } from '../features/editorial/ArticlesScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
@@ -139,10 +141,13 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
         <Content id="admin-main" className="admin-content">
           <Routes>
             <Route index element={<Navigate to="clinici" replace />} />
+            <Route path="clinici" element={<ClinicsScreen client={client} />} />
+            <Route path="clinici/nou" element={<ClinicEditorScreen client={client} />} />
+            <Route path="clinici/:clinicId" element={<ClinicEditorScreen client={client} />} />
             <Route path="articole" element={<ArticlesScreen client={client} />} />
             <Route path="articole/nou" element={<ArticleEditorScreen client={client} />} />
             <Route path="articole/:articleId" element={<ArticleEditorScreen client={client} />} />
-            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole').map((item) => (
+            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole' && item.slug !== 'clinici').map((item) => (
               <Route
                 key={item.slug}
                 path={item.slug}
