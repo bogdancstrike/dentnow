@@ -51,7 +51,7 @@ class ArticleService(CrudService, _Slug):
     entity_type = "article"
     event_prefix = "article"
     manager_writable = False
-    sortable = ("position", "published_at", "title", "created_at")
+    sortable = ("position", "published_at", "title", "created_at", "updated_at")
     search_columns = ("title", "slug", "excerpt")
 
     def serialize(self, obj): return serialize_article(obj)
@@ -63,7 +63,7 @@ class NewsService(CrudService, _Slug):
     entity_type = "news_item"
     event_prefix = "news"
     manager_writable = False
-    sortable = ("position", "published_at", "title", "created_at")
+    sortable = ("position", "published_at", "title", "created_at", "updated_at")
     search_columns = ("title", "slug", "summary")
 
     def serialize(self, obj): return serialize_news(obj)
@@ -75,7 +75,7 @@ class ReviewService(CrudService):
     entity_type = "review"
     event_prefix = "review"
     clinic_scope_column = "clinic_id"
-    sortable = ("review_date", "rating", "position", "created_at")
+    sortable = ("review_date", "rating", "position", "created_at", "updated_at")
     search_columns = ("author", "text_body")
 
     def serialize(self, obj): return serialize_review(obj)

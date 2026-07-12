@@ -104,6 +104,22 @@ def _legacy_html_to_markdown(raw: str | None) -> str | None:
     return re.sub(r"\n{3,}", "\n\n", value).strip()
 
 
+def _legal_to_markdown(sections: list[dict] | None) -> str:
+    if not sections:
+        return ""
+    md = []
+    for s in sections:
+        if s.get("title"):
+            md.append(f"## {s['title']}\n")
+        for p in s.get("paragraphs", []):
+            md.append(f"{p}\n")
+        if s.get("list"):
+            for li in s["list"]:
+                md.append(f"- {li}")
+            md.append("")
+    return "\n".join(md).strip()
+
+
 def _hours(raw: str | None) -> tuple[time | None, time | None]:
     matches = re.findall(r"(\d{1,2}):(\d{2})", raw or "")
     if len(matches) < 2:
@@ -318,10 +334,14 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
     counts["quiz_questions"] = qcount
     counts["quiz_options"] = ocount
 
-    # ── legal (needs_review baseline) ────────────────────────────────────────
+    # ── legal (migration baseline) ───────────────────────────────────────────
+    legal_data = data.get("legal", {})
     for t in ("gdpr", "privacy", "terms"):
+        body = _legal_to_markdown(legal_data.get(t))
+        if not body:
+            body = f"{t} placeholder — needs review."
         session.add(LegalDocument(doc_type=t, version_label="migration-baseline",
-                               body_markdown=f"{t} placeholder — needs review.", active=True))
+                               body_markdown=body, active=True))
 
     # ── pages (route inventory) ──────────────────────────────────────────────
     pages_by_path = {}

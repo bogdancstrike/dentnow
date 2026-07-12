@@ -51,6 +51,8 @@ const articles = await import(path.join(FE, 'src', 'data', 'articles.js'));
 const reviews = await import(path.join(FE, 'src', 'data', 'reviews.js'));
 const navigation = await import(path.join(FE, 'src', 'data', 'navigation.js'));
 const clinicProof = await import(path.join(FE, 'src', 'data', 'clinicProof.js'));
+const casData = await import(path.join(FE, 'src', 'data', 'cas.js'));
+const legalData = await import(path.join(FE, 'src', 'data', 'legal.js'));
 const config = await loadConfig();
 
 // ── collect + copy referenced assets ────────────────────────────────────────
@@ -112,6 +114,8 @@ const site = {
     desktop: navigation.navLinks, mobile: navigation.mobileNavLinks,
     footerServices: navigation.footerServices, footerClinic: navigation.footerClinic,
   },
+  cas: casData.casData,
+  legal: legalData.legalContent,
 };
 
 fs.writeFileSync(path.join(SEEDS, 'current-site.json'), JSON.stringify(site, null, 2) + '\n');

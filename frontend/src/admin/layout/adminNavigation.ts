@@ -28,7 +28,6 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
     items: [
       { slug: 'articole', key: 'articles', label: 'Articole & noutăți', capability: CAP.contentRead },
       { slug: 'quiz', key: 'quiz', label: 'Quiz', capability: CAP.contentRead },
-      { slug: 'meniuri', key: 'navigation', label: 'Meniuri', capability: CAP.contentRead },
       { slug: 'setari', key: 'settings', label: 'Setări site', capability: CAP.contentRead },
     ],
   },

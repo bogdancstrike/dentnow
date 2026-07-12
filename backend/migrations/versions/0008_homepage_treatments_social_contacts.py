@@ -8,7 +8,7 @@ import sqlalchemy as sa
 
 
 revision = "0008_home_cards"
-down_revision = "0007_publication_guards"
+down_revision = "0007"
 branch_labels = None
 depends_on = None
 

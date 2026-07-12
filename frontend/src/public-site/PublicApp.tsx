@@ -21,6 +21,7 @@ import Tratamente from '../pages/Tratamente';
 import TreatmentDetail from '../pages/TreatmentDetail';
 import Oferte from '../pages/Oferte';
 import Articole from '../pages/Articole';
+import Recenzii from '../pages/Recenzii';
 import RecenzieRedirect from '../pages/RecenzieRedirect';
 import BeforeAfter from '../pages/BeforeAfter';
 import Noutati from '../pages/Noutati';
@@ -48,6 +49,7 @@ export default function PublicApp() {
               <Route path="oferte" element={<Oferte />} />
               <Route path="articole" element={<Articole />} />
               <Route path="articole/:slug" element={<Articole />} />
+              <Route path="recenzii" element={<Recenzii />} />
               <Route path="recenzie" element={<RecenzieRedirect />} />
               <Route path="before-after" element={<BeforeAfter />} />
               <Route path="noutati" element={<Noutati />} />
