@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntApp, ConfigProvider } from 'antd';
+import { MemoryRouter } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { server } from '../msw/server';
 import { ClinicsScreen } from '../../src/admin/features/clinics/ClinicsScreen';
@@ -17,13 +18,15 @@ function renderScreen() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const client = new AdminClient(async () => 'token');
   return render(
-    <ConfigProvider>
-      <AntApp>
-        <QueryClientProvider client={qc}>
-          <ClinicsScreen client={client} />
-        </QueryClientProvider>
-      </AntApp>
-    </ConfigProvider>,
+    <MemoryRouter>
+      <ConfigProvider>
+        <AntApp>
+          <QueryClientProvider client={qc}>
+            <ClinicsScreen client={client} />
+          </QueryClientProvider>
+        </AntApp>
+      </ConfigProvider>
+    </MemoryRouter>,
   );
 }
 

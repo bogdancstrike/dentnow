@@ -10,6 +10,23 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 
 ---
 
+## CODE REVIEW & REPAIR + FOLLOW-UPS (2026-07-12, session 2)
+
+Review of the Gemini-authored commits (`4d94d3b..HEAD`) plus new product fixes. Committed task-by-task.
+
+- [x] **Offers 400 `features` extra_forbidden** — `OfferCreate/OfferUpdate` now accept `features` (list or comma-string, coerced); `OfferService` syncs the `offer_features` child table and round-trips it in the serializer. Verified against live DB.
+- [x] **Stale failing frontend unit tests** — `resource-screen`/`clinics-screen` tests updated for dedicated screens + Router. 22/22 green, tsc clean.
+- [ ] **Reusable, accurate live preview** — one `LivePreview` matching the public page, used across clinics/doctors/treatments/offers/articles/news (echipa-medicala + offers currently show "în curând").
+- [ ] **Clinic editor missing fields** — orar/telefon/whatsapp/faq/„cum ajungi”, gallery, full preview.
+- [ ] **Doctors editor** — image upload/edit + working live preview.
+- [ ] **Noutăți** — wire `Noutati.jsx` to backend + `/admin/noutati` CRUD.
+- [ ] **Precompletează** prefill button on every `/nou` editor.
+- [ ] **Home „Tratamente uzuale”** — match master styling + `/admin/servicii-dentnow` CRUD.
+- [ ] **Clinic gallery CRUD** at `/admin/clinica`.
+- [ ] **`/decontat-cas` CRUD** at `/admin/decontat-cas` with live preview.
+
+---
+
 ## CURRENT STATE (snapshot)
 
 **Deployable now:** `./ops/init-secrets.sh && docker compose up --build -d` serves the whole

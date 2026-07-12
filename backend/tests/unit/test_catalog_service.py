@@ -8,7 +8,7 @@ from pydantic import ValidationError as PydValidationError
 from sqlalchemy.exc import IntegrityError
 
 from src.catalog.models import Offer, TreatmentPrice
-from src.catalog.schemas import OfferCreate, PriceCreate
+from src.catalog.schemas import OfferCreate, OfferUpdate, PriceCreate
 from src.catalog.service import (
     CategoryService,
     OfferService,
@@ -67,6 +67,34 @@ def test_db_rejects_offer_bad_date_window(db_session):
     db_session.add(Offer(slug="bad", name="Bad", currency="RON", starts_at="2026-02-01", ends_at="2026-01-01"))
     with pytest.raises(IntegrityError):
         db_session.flush()
+
+
+def test_offer_features_sync_roundtrip(db_session):
+    """features is edited inline but persisted in the offer_features child table."""
+    svc = OfferService(db_session, ADMIN)
+    created, _ = svc.create(
+        OfferCreate(slug="promo-feat", name="Promo", features=["A", "B", "C"]).model_dump()
+    )
+    assert created["features"] == ["A", "B", "C"]
+    # Round-trips via GET/serialize (reads live child rows, ordered by position).
+    fetched, etag = svc.get(uuid.UUID(created["id"]))
+    assert fetched["features"] == ["A", "B", "C"]
+    # Update replaces the whole set; empty list clears it.
+    updated, etag = svc.update(
+        uuid.UUID(created["id"]), OfferUpdate(features=["X"]).model_dump(exclude_unset=True), etag
+    )
+    assert updated["features"] == ["X"]
+    fetched2, _ = svc.get(uuid.UUID(created["id"]))
+    assert fetched2["features"] == ["X"]
+
+
+def test_offer_features_accepts_comma_string(db_session):
+    """The editor sends a single comma-separated string; the schema coerces it."""
+    svc = OfferService(db_session, ADMIN)
+    created, _ = svc.create(
+        OfferCreate(slug="promo-csv", name="Promo", features="  One, Two ,, Three ").model_dump()
+    )
+    assert created["features"] == ["One", "Two", "Three"]
 
 
 def test_manager_cannot_write_global_catalog(db_session):

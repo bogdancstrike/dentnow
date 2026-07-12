@@ -129,6 +129,15 @@ class TreatmentFaqUpdate(_Strict):
     position: Optional[int] = None
 
 
+def _coerce_features(v):
+    """Accept either a list of labels or a single comma-separated string."""
+    if v is None:
+        return None
+    if isinstance(v, str):
+        v = v.split(",")
+    return [s.strip() for s in v if s is not None and str(s).strip()]
+
+
 class OfferCreate(_Strict):
     slug: str
     name: str
@@ -142,7 +151,10 @@ class OfferCreate(_Strict):
     status: str = "draft"
     featured: bool = False
     position: int = 0
+    # Convenience: manage the offer_features child rows inline from the editor.
+    features: Optional[list[str]] = None
     _s = field_validator("slug")(classmethod(lambda cls, v: _validate_slug(v)))
+    _f = field_validator("features", mode="before")(classmethod(lambda cls, v: _coerce_features(v)))
 
     @field_validator("status")
     @classmethod
@@ -171,6 +183,8 @@ class OfferUpdate(_Strict):
     status: Optional[str] = None
     featured: Optional[bool] = None
     position: Optional[int] = None
+    features: Optional[list[str]] = None
+    _f = field_validator("features", mode="before")(classmethod(lambda cls, v: _coerce_features(v)))
 
 
 class OfferFeatureCreate(_Strict):

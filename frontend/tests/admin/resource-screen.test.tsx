@@ -32,27 +32,31 @@ function renderKey(key: string) {
 }
 
 describe('generic ResourceScreen via registry', () => {
-  it('renders the offers list from the admin API', async () => {
+  it('renders a generic resource list (news) from the admin API', async () => {
     server.use(
-      http.get('/api/v1/admin/offers', () =>
+      http.get('/api/v1/admin/news', () =>
         HttpResponse.json({
-          items: [{ id: 'o1', version: 1, slug: 'implant', name: 'Implant Promo', status: 'active' }],
+          items: [{ id: 'n1', version: 1, slug: 'eveniment', title: 'Eveniment Nou', status: 'published' }],
           total: 1,
         }),
       ),
     );
-    renderKey('offers');
-    await waitFor(() => expect(screen.getByText('Implant Promo')).toBeInTheDocument());
+    renderKey('news');
+    await waitFor(() => expect(screen.getByText('Eveniment Nou')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'Adaugă' })).toBeInTheDocument();
   });
 
-  it('maps generic resource keys to a screen and leaves dedicated/removed modules out', () => {
-    for (const key of ['partners', 'doctors', 'legal', 'treatments']) {
+  it('maps only generic keys to a screen; dedicated full-page editors route in AdminLayout', () => {
+    // These stay on the generic ResourceScreen.
+    for (const key of ['legal', 'quiz', 'news', 'settings']) {
       expect(screenForKey(key, new AdminClient(async () => 't'), ME)).not.toBeNull();
     }
-    expect(screenForKey('articles', new AdminClient(async () => 't'), ME)).toBeNull();
-    expect(screenForKey('reviews', new AdminClient(async () => 't'), ME)).toBeNull();
-    expect(screenForKey('pages', new AdminClient(async () => 't'), ME)).toBeNull();
-    expect(screenForKey('does-not-exist', new AdminClient(async () => 't'), ME)).toBeNull();
+    // These have dedicated screens/routes (or were removed), so screenForKey returns null.
+    for (const key of [
+      'clinics', 'treatments', 'offers', 'doctors', 'partners',
+      'articles', 'reviews', 'pages', 'does-not-exist',
+    ]) {
+      expect(screenForKey(key, new AdminClient(async () => 't'), ME)).toBeNull();
+    }
   });
 });

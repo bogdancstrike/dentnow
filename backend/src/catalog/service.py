@@ -28,6 +28,7 @@ from src.catalog.serializers import (
     serialize_treatment,
     serialize_treatment_faq,
 )
+from src.core.clock import utcnow
 from src.core.crud import CrudService
 from src.core.errors import ConflictError, ValidationError
 
@@ -133,8 +134,58 @@ class OfferService(CrudService, _SlugUnique):
     sortable = ("position", "name", "status", "created_at")
     search_columns = ("name", "slug", "summary")
 
-    def serialize(self, obj): return serialize_offer(obj)
+    def serialize(self, obj):
+        data = serialize_offer(obj)
+        rows = self.session.scalars(
+            select(OfferFeature)
+            .where(OfferFeature.offer_id == obj.id, OfferFeature.deleted_at.is_(None))
+            .order_by(OfferFeature.position, OfferFeature.label)
+        ).all()
+        data["features"] = [r.label for r in rows]
+        return data
+
     def before_write(self, obj, data, *, creating): self._slug_unique(obj, creating)
+
+    # `features` is edited inline but stored in the offer_features child table.
+    def to_create_kwargs(self, data):
+        data = dict(data)
+        data.pop("features", None)
+        return data
+
+    def to_update_values(self, data, obj):
+        data = dict(data)
+        data.pop("features", None)
+        return data
+
+    def create(self, data):
+        after, etag = super().create(data)
+        if data.get("features") is not None:
+            self._sync_features(uuid.UUID(after["id"]), data["features"])
+            after["features"] = list(data["features"])
+        return after, etag
+
+    def update(self, obj_id, data, if_match):
+        after, etag = super().update(obj_id, data, if_match)
+        if data.get("features") is not None:
+            self._sync_features(uuid.UUID(str(obj_id)), data["features"])
+            after["features"] = list(data["features"])
+        return after, etag
+
+    def _sync_features(self, offer_id, labels):
+        """Replace the live offer_features rows for this offer with `labels`."""
+        existing = self.session.scalars(
+            select(OfferFeature).where(
+                OfferFeature.offer_id == offer_id, OfferFeature.deleted_at.is_(None)
+            )
+        ).all()
+        for row in existing:
+            row.deleted_at = utcnow()
+        for i, label in enumerate(labels):
+            self.session.add(OfferFeature(
+                offer_id=offer_id, label=label, position=i,
+                created_by=self.principal.subject, updated_by=self.principal.subject,
+            ))
+        self.session.flush()
 
 
 class OfferFeatureService(CrudService):

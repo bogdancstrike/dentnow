@@ -13,6 +13,7 @@ import {
 import {
   ArrowLeftOutlined,
   SaveOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -40,7 +41,12 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
 
   useEffect(() => {
     if (query.data) {
-      form.setFieldsValue(query.data);
+      const { features, ...rest } = query.data as OfferRow & { features?: string[] | string };
+      form.setFieldsValue({
+        ...rest,
+        // features round-trips as an array from the API but edits as a comma list.
+        features: Array.isArray(features) ? features.join(', ') : features,
+      } as OfferFormValues);
       setDirty(false);
     }
   }, [query.data, form]);
@@ -122,6 +128,27 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
           >
             Salvează
           </Button>
+          {!editing && (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                form.setFieldsValue({
+                  name: 'Pachet Igienizare Completă',
+                  slug: 'pachet-igienizare-completa',
+                  status: 'active',
+                  summary: 'Igienizare profesională GBT + consultație gratuită + plan de tratament personalizat.',
+                  badge: '-30% reducere',
+                  price_amount: 350,
+                  old_amount: 500,
+                  featured: true,
+                  features: 'Igienizare GBT profesională, Consultație gratuită, Plan de tratament, Radiografie panoramică',
+                });
+                setDirty(true);
+              }}
+            >
+              Precompletează
+            </Button>
+          )}
         </Space>
 
         <Form
