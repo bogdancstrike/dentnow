@@ -9,13 +9,13 @@
 .locations-gallery{max-width:1180px;margin:0 auto}
 .locations-gallery .location-card{border-radius:20px;min-height:440px}
 .locations-gallery .location-map{height:240px}
-.locations-gallery .gallery-thumb{grid-template-columns:40px 1fr;background:var(--white,#fff);box-shadow:0 8px 24px rgba(23,33,43,.06)}
+.locations-gallery .gallery-thumb{grid-template-columns:40px 1fr}
 .loc-thumb-icon{display:flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:10px;background:var(--bg);font-size:18px}
-.location-card{background:var(--white,#fff);border:1px solid var(--light2,var(--border));border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow,0 12px 32px rgba(23,33,43,.08));transition:transform var(--transition),box-shadow var(--transition)}
+.location-card{border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform var(--transition),box-shadow var(--transition)}
 .location-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
 .location-map{height:200px;background:var(--bg);border-bottom:1px solid var(--border)}
 .location-map iframe{width:100%;height:100%;border:none;display:block}
-.location-info{padding:22px;display:flex;flex-direction:column;gap:8px;flex:1;background:var(--white,#fff)}
+.location-info{padding:22px;display:flex;flex-direction:column;gap:8px;flex:1}
 .location-area{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 .location-name{font-family:var(--fd);font-size:22px;line-height:1.1;color:var(--text-primary)}
 .location-line{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5;color:var(--muted-text)}
@@ -25,6 +25,11 @@
 .location-hours .loc-hour{display:block}
 .location-link{margin-top:auto;padding-top:8px;font-size:14px;font-weight:700;color:var(--accent);text-decoration:none}
 .location-link:hover{text-decoration:underline}
+#contact .location-card,#contact .location-info,#contact .gallery-thumb{background-color:#fff;background-image:none}
+#contact .location-card{border:1px solid #d9e2e4;box-shadow:0 14px 38px rgba(23,33,43,.13)}
+#contact .gallery-thumb{border:1px solid #d9e2e4;box-shadow:0 8px 22px rgba(23,33,43,.1)}
+#contact .gallery-thumb.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--focus-soft),0 10px 26px rgba(23,33,43,.12)}
+[data-theme='dark'] #contact .location-card,[data-theme='dark'] #contact .location-info,[data-theme='dark'] #contact .gallery-thumb{background-color:var(--surface-raised);border-color:var(--border)}
 .contact-social{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:1120px;margin:44px auto 0}
 .contact-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:60px;max-width:1120px;margin:0 auto;align-items:start}.contact-item{display:flex;gap:16px;align-items:flex-start;margin-bottom:24px}.ci-icon{width:44px;height:44px;flex-shrink:0;background:var(--surface-raised);border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--accent)}.ci-label{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-text);margin-bottom:3px}.ci-value{font-size:15px;color:var(--text-primary);line-height:1.5}.ci-value a{color:var(--accent);text-decoration:none;font-weight:700}.ci-value a:hover{text-decoration:underline}.social-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:32px}.social-btn{display:flex;align-items:center;gap:8px;background:var(--surface-raised);border:1px solid var(--border);padding:9px 18px;border-radius:980px;font-size:14px;font-weight:700;color:var(--text-primary);text-decoration:none;transition:background .2s,color .2s,transform .15s}.social-btn:hover{background:var(--button-primary-bg);color:var(--button-primary-text);transform:translateY(-1px)}.map-wrapper{border-radius:20px;overflow:hidden;height:440px;border:1px solid var(--border);background:var(--surface-raised)}.map-wrapper iframe{width:100%;height:100%;border:none}
 @keyframes fu{to{opacity:1;transform:none}}
