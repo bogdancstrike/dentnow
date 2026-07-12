@@ -28,45 +28,7 @@ function makeConfig(cfg: ResourceConfig<Row>): ResourceConfig<Row> {
 
 // offers has been moved to dedicated screen
 
-const partners = makeConfig({
-  title: 'Parteneri',
-  singular: 'partener',
-  endpoint: '/v1/admin/partners',
-  columns: [
-    { title: 'Nume', dataIndex: 'name' },
-    { title: 'Tip', dataIndex: 'relationship_type' },
-    { title: 'Badge', dataIndex: 'badge' },
-    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/parteneri" target="_blank" rel="noopener noreferrer">Vezi</Button> },
-  ],
-  form: () => (
-    <>
-      <Item name="name" label="Nume" rules={[{ required: true }]}><Input /></Item>
-      <Item name="relationship_type" label="Tip relație"><Input /></Item>
-      <Item name="badge" label="Badge"><Input /></Item>
-      <Item name="link_url" label="Link"><Input /></Item>
-    </>
-  ),
-});
-
-const doctors = makeConfig({
-  title: 'Echipă medicală',
-  singular: 'doctor',
-  endpoint: '/v1/admin/doctors',
-  columns: [
-    { title: 'Nume', dataIndex: 'name' },
-    { title: 'Rol', dataIndex: 'role' },
-    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/#echipa" target="_blank" rel="noopener noreferrer">Vezi</Button> },
-  ],
-  defaults: { active: true },
-  form: () => (
-    <>
-      <Item name="name" label="Nume" rules={[{ required: true }]}><Input /></Item>
-      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input /></Item>
-      <Item name="role" label="Rol"><Input /></Item>
-      <Item name="focus" label="Focus"><Input.TextArea rows={2} /></Item>
-    </>
-  ),
-});
+// doctors has been moved to dedicated screen
 
 const legal = makeConfig({
   title: 'Documente legale',
@@ -140,7 +102,7 @@ const news = makeConfig({
 });
 
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  partners, doctors, legal, quiz, news,
+  legal, quiz, news,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {

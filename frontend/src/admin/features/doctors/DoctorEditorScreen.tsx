@@ -7,8 +7,6 @@ import {
   Space,
   Typography,
   Skeleton,
-  Select,
-  InputNumber,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -18,23 +16,23 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
-import type { OfferRow } from './OffersScreen';
+import type { DoctorRow } from './DoctorsScreen';
 import '../editorial/articles.css'; // Reuse layout CSS
 
-interface OfferFormValues extends OfferRow {}
+interface DoctorFormValues extends DoctorRow {}
 
-export function OfferEditorScreen({ client }: { client: AdminClient }) {
-  const { offerId } = useParams();
-  const editing = Boolean(offerId);
+export function DoctorEditorScreen({ client }: { client: AdminClient }) {
+  const { doctorId } = useParams();
+  const editing = Boolean(doctorId);
   const navigate = useNavigate();
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
-  const [form] = Form.useForm<OfferFormValues>();
+  const [form] = Form.useForm<DoctorFormValues>();
   const [dirty, setDirty] = useState(false);
 
   const query = useQuery({
-    queryKey: ['admin', 'offer', offerId],
-    queryFn: async () => (await client.get<OfferRow>(`/v1/admin/offers/${offerId}`)).data,
+    queryKey: ['admin', 'doctor', doctorId],
+    queryFn: async () => (await client.get<DoctorRow>(`/v1/admin/doctors/${doctorId}`)).data,
     enabled: editing,
   });
 
@@ -56,37 +54,37 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
   }, [dirty]);
 
   const save = useMutation({
-    mutationFn: async (payload: OfferFormValues) => {
+    mutationFn: async (payload: DoctorFormValues) => {
       if (query.data) {
         return (
-          await client.patch<OfferRow>(
-            `/v1/admin/offers/${query.data.id}`,
+          await client.patch<DoctorRow>(
+            `/v1/admin/doctors/${query.data.id}`,
             payload,
             `"${query.data.version}"`,
           )
         ).data;
       }
-      return (await client.post<OfferRow>('/v1/admin/offers', payload)).data;
+      return (await client.post<DoctorRow>('/v1/admin/doctors', payload)).data;
     },
-    onSuccess: (offer) => {
+    onSuccess: (doctor) => {
       setDirty(false);
-      message.success(editing ? 'Oferta a fost actualizată.' : 'Oferta a fost creată.');
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'offers'] });
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'offer', offer.id] });
-      if (!editing) navigate(`/admin/oferte/${offer.id}`, { replace: true });
+      message.success(editing ? 'Informațiile au fost actualizate.' : 'Doctorul a fost adăugat.');
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'doctors'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'doctor', doctor.id] });
+      if (!editing) navigate(`/admin/echipa-medicala/${doctor.id}`, { replace: true });
     },
     onError: (error) => {
       message.error(
         error instanceof VersionConflictError
-          ? 'Oferta a fost modificată între timp. Reîncarcă pagina înainte de a salva din nou.'
-          : (error as Error).message || 'Oferta nu a putut fi salvată.',
+          ? 'Informațiile au fost modificate între timp. Reîncarcă pagina înainte de a salva din nou.'
+          : (error as Error).message || 'Modificările nu au putut fi salvate.',
       );
     },
   });
 
   const leaveEditor = () => {
     if (!dirty) {
-      navigate('/admin/oferte');
+      navigate('/admin/echipa-medicala');
       return;
     }
     modal.confirm({
@@ -97,7 +95,7 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
       cancelText: 'Continuă editarea',
       onOk: () => {
         setDirty(false);
-        setTimeout(() => navigate('/admin/oferte'), 0);
+        setTimeout(() => navigate('/admin/echipa-medicala'), 0);
       },
     });
   };
@@ -129,54 +127,31 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
           layout="vertical"
           onValuesChange={() => setDirty(true)}
           onFinish={(v) => save.mutate(v)}
-          initialValues={{ status: 'draft', featured: false }}
+          initialValues={{ active: true }}
         >
           <div className="article-form-section">
-            <Typography.Title level={4}>Informații Ofertă</Typography.Title>
-            <Form.Item name="name" label="Nume Ofertă" rules={[{ required: true }]}>
-              <Input placeholder="Ex: Pachet Implant Dentar" />
+            <Typography.Title level={4}>Informații Doctor</Typography.Title>
+            <Form.Item name="name" label="Nume și Prenume" rules={[{ required: true }]}>
+              <Input placeholder="Ex: Dr. Popescu Ion" />
             </Form.Item>
             <Form.Item name="slug" label="Slug (URL)" rules={[{ required: true }]}>
-              <Input placeholder="ex: pachet-implant" />
+              <Input placeholder="ex: dr-popescu-ion" />
             </Form.Item>
-            <Form.Item name="status" label="Status">
-              <Select
-                options={[
-                  { value: 'draft', label: 'Draft' },
-                  { value: 'active', label: 'Activă' },
-                  { value: 'archived', label: 'Arhivată' },
-                ]}
-              />
+            <Form.Item name="role" label="Rol / Specializare">
+              <Input placeholder="Ex: Medic Specialist Ortodonție" />
             </Form.Item>
-            <Form.Item name="summary" label="Sumar / Scurtă descriere">
-              <Input.TextArea rows={2} placeholder="Rezumatul care apare în liste..." />
+            <Form.Item name="focus" label="Focus (Scurtă descriere)">
+              <Input.TextArea rows={3} placeholder="Scurtă prezentare a competențelor și experienței..." />
             </Form.Item>
-            <Form.Item name="badge" label="Badge (etichetă colorată)">
-              <Input placeholder="Ex: -20% reducere" />
-            </Form.Item>
-
-            <Typography.Title level={4} style={{ marginTop: 24 }}>Prețuri și Promovare</Typography.Title>
-            <Space size="large" style={{ width: '100%' }}>
-              <Form.Item name="price_amount" label="Preț Nou (RON)">
-                <InputNumber style={{ width: 160 }} />
-              </Form.Item>
-              <Form.Item name="old_amount" label="Preț Vechi (RON)">
-                <InputNumber style={{ width: 160 }} />
-              </Form.Item>
-            </Space>
-            <Form.Item name="featured" label="Ofertă recomandată (Featured)" valuePropName="checked">
+            <Form.Item name="active" label="Activ pe site?" valuePropName="checked">
               <input type="checkbox" />
-            </Form.Item>
-
-            <Form.Item name="features" label="Funcționalități (lista de beneficii separate prin virgulă)">
-              <Input.TextArea rows={3} placeholder="Consultație gratuită, Plan de tratament, Radiografie..." />
             </Form.Item>
           </div>
         </Form>
       </div>
-      
+
       <div className="article-editor-preview-panel" style={{ display: 'grid', placeItems: 'center', color: '#8b93a1', padding: '40px' }}>
-        Preview live pentru oferte (în curând)
+        Preview live pentru echipa medicală (în curând)
       </div>
     </div>
   );

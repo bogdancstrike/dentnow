@@ -30,6 +30,10 @@ import { OffersScreen } from '../features/offers/OffersScreen';
 import { OfferEditorScreen } from '../features/offers/OfferEditorScreen';
 import { ArticleEditorScreen } from '../features/editorial/ArticleEditorScreen';
 import { ArticlesScreen } from '../features/editorial/ArticlesScreen';
+import { DoctorsScreen } from '../features/doctors/DoctorsScreen';
+import { DoctorEditorScreen } from '../features/doctors/DoctorEditorScreen';
+import { PartnersScreen } from '../features/partners/PartnersScreen';
+import { PartnerEditorScreen } from '../features/partners/PartnerEditorScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
 import { openCommandPalette } from './adminEvents';
 import './adminLayout.css';
@@ -176,7 +180,16 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
             <Route path="articole" element={<ArticlesScreen client={client} />} />
             <Route path="articole/nou" element={<ArticleEditorScreen client={client} />} />
             <Route path="articole/:articleId" element={<ArticleEditorScreen client={client} />} />
-            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole' && item.slug !== 'clinici' && item.slug !== 'tratamente' && item.slug !== 'oferte').map((item) => (
+
+            <Route path="echipa-medicala" element={<DoctorsScreen client={client} />} />
+            <Route path="echipa-medicala/nou" element={<DoctorEditorScreen client={client} />} />
+            <Route path="echipa-medicala/:doctorId" element={<DoctorEditorScreen client={client} />} />
+
+            <Route path="parteneri" element={<PartnersScreen client={client} />} />
+            <Route path="parteneri/nou" element={<PartnerEditorScreen client={client} />} />
+            <Route path="parteneri/:partnerId" element={<PartnerEditorScreen client={client} />} />
+            
+            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole' && item.slug !== 'clinici' && item.slug !== 'tratamente' && item.slug !== 'oferte' && item.slug !== 'echipa-medicala' && item.slug !== 'parteneri').map((item) => (
               <Route
                 key={item.slug}
                 path={item.slug}

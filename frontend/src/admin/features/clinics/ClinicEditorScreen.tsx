@@ -119,8 +119,8 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
   }
 
   return (
-    <div className="clinic-editor-layout">
-      <div className="clinic-editor-sidebar">
+    <div className="article-editor-grid" style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <div className="article-editor-form-panel">
         <Space className="editor-sidebar-actions" style={{ marginBottom: 24 }}>
           <Button icon={<ArrowLeftOutlined />} onClick={leaveEditor}>
             Înapoi
@@ -143,7 +143,7 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
           onFinish={(v) => save.mutate(v)}
           initialValues={{ status: 'active' }}
         >
-          <div className="editor-paper">
+          <div className="article-form-section">
             <Typography.Title level={4}>Informații de bază</Typography.Title>
             <Form.Item name="name" label="Nume" rules={[{ required: true }]}>
               <Input placeholder="DentNow Dristor" />
@@ -179,29 +179,27 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
                 <InputNumber style={{ width: 160 }} />
               </Form.Item>
             </Space>
-            <Form.Item name="google_place_id" label="Google Place ID">
-              <Input placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4" />
+            <Form.Item name="map_embed_url" label="URL Iframe (Google Maps Embed)">
+              <Input.TextArea rows={2} placeholder="https://www.google.com/maps/embed?pb=..." />
             </Form.Item>
-            <Form.Item name="map_link_url" label="Link Google Maps">
+            <Form.Item name="map_link_url" label="URL Link (Google Maps)">
               <Input placeholder="https://maps.app.goo.gl/..." />
-            </Form.Item>
-            <Form.Item name="map_embed_url" label="URL Iframe Google Maps">
-              <Input.TextArea rows={3} placeholder="https://www.google.com/maps/embed?pb=..." />
             </Form.Item>
           </div>
         </Form>
-        {editing && clinicId && (
-          <div className="editor-paper" style={{ marginTop: 24, marginBottom: 40 }}>
-            <ClinicContacts clinicId={clinicId} client={client} />
-            <ClinicHours clinicId={clinicId} client={client} />
-            <ClinicTransit clinicId={clinicId} client={client} />
-            <ClinicFaqs clinicId={clinicId} client={client} />
+        {editing && (
+          <div className="article-form-section">
+            <Typography.Title level={4} style={{ marginBottom: 24 }}>Setări Adiționale</Typography.Title>
+            <ClinicContacts clinicId={clinicId!} client={client} />
+            <ClinicHours clinicId={clinicId!} client={client} />
+            <ClinicTransit clinicId={clinicId!} client={client} />
+            <ClinicFaqs clinicId={clinicId!} client={client} />
           </div>
         )}
       </div>
 
-      <div className="clinic-editor-preview">
-        <div className="preview-toolbar">
+      <div className="article-editor-preview-panel">
+        <div className="article-preview-toolbar">
           <Typography.Text strong>Previzualizare Live</Typography.Text>
           <Select
             size="small"

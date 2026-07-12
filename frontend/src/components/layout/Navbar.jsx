@@ -5,6 +5,7 @@ import { navLinks, mobileNavLinks } from '../../data/navigation';
 import { fetchTreatments, publicQueryKeys } from '../../api/publicClient';
 import { useTheme } from '../../hooks/useTheme';
 import { useClinicPicker } from '../../hooks/useClinicPicker';
+import { useSiteData } from '../../public-site/SiteDataProvider';
 import { IconSun, IconMoon, IconPhone } from '../ui/Icons';
 import './Navbar.css';
 
@@ -21,6 +22,9 @@ export default function Navbar() {
     queryFn: fetchTreatments,
   });
 
+  const siteData = useSiteData();
+  const clinics = siteData?.clinics || [];
+
   const dynamicNavLinks = useMemo(() => {
     const categories = [];
     const catMap = new Map();
@@ -33,6 +37,11 @@ export default function Navbar() {
       }
     });
 
+    const clinicLinks = clinics.map(c => ({
+      label: c.name,
+      to: `/locatii/${c.slug}`
+    }));
+
     return navLinks.map(link => {
       if (link.label === 'Tratamente') {
         return {
@@ -44,9 +53,16 @@ export default function Navbar() {
           ]
         };
       }
+      if (link.label === 'Locații') {
+        return {
+          ...link,
+          to: clinicLinks.length > 0 ? clinicLinks[0].to : '#',
+          children: clinicLinks
+        };
+      }
       return link;
     });
-  }, [treatments]);
+  }, [treatments, clinics]);
 
   const dynamicMobileNavLinks = useMemo(() => {
     const categories = [];
@@ -60,23 +76,31 @@ export default function Navbar() {
       }
     });
 
-    // Keep 'Acasa', 'Decontare CAS', 'Tratamente si tarife' then insert treatments, then the rest
+    const clinicLinks = clinics.map(c => ({
+      label: c.name,
+      to: `/locatii/${c.slug}`
+    }));
+
+    // Keep 'Acasa', 'Decontare CAS', 'Tratamente si tarife' then insert treatments, then clinics, then the rest
     const treatmentsIndex = mobileNavLinks.findIndex(l => l.label === 'Tratamente si tarife');
     if (treatmentsIndex !== -1) {
-      // Find where 'Oferte' starts to remove hardcoded treatments
-      const oferteIndex = mobileNavLinks.findIndex(l => l.label === 'Oferte');
+      // Find where 'Before & After' starts to remove hardcoded treatments and clinics
+      const beforeAfterIndex = mobileNavLinks.findIndex(l => l.label === 'Before & After');
       
       const before = mobileNavLinks.slice(0, treatmentsIndex + 1);
       const dynamic = [
         ...categories,
-        { label: 'Urgențe Dentare București', to: '/urgente-dentare-bucuresti' }
+        { label: 'Urgențe Dentare București', to: '/urgente-dentare-bucuresti' },
+        { label: 'Implant Dentar București', to: '/implant-dentar-bucuresti' },
+        { label: 'Oferte', to: '/oferte' },
+        ...clinicLinks
       ];
-      const after = oferteIndex !== -1 ? mobileNavLinks.slice(oferteIndex) : [];
+      const after = beforeAfterIndex !== -1 ? mobileNavLinks.slice(beforeAfterIndex) : [];
       
       return [...before, ...dynamic, ...after];
     }
     return mobileNavLinks;
-  }, [treatments]);
+  }, [treatments, clinics]);
 
   const closeMenus = () => { setMobileOpen(false); setOpenMenu(''); };
 

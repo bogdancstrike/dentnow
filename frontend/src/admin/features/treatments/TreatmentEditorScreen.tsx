@@ -112,8 +112,8 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
   }
 
   return (
-    <div className="article-editor-layout">
-      <div className="article-editor-sidebar">
+    <div className="article-editor-grid" style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <div className="article-editor-form-panel">
         <Space className="editor-sidebar-actions" style={{ marginBottom: 24 }}>
           <Button icon={<ArrowLeftOutlined />} onClick={leaveEditor}>
             Înapoi
@@ -136,7 +136,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
           onFinish={(v) => save.mutate(v)}
           initialValues={{ active: true, homepage_featured: false }}
         >
-          <div className="editor-paper">
+          <div className="article-form-section">
             <Typography.Title level={4}>Informații de bază</Typography.Title>
             <Form.Item name="name" label="Nume Tratament" rules={[{ required: true }]}>
               <Input placeholder="Ex: Implant Dentar" />
@@ -169,7 +169,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
             </Form.Item>
           </div>
 
-          <div className="editor-paper" style={{ marginTop: 24, marginBottom: 40 }}>
+          <div className="article-form-section" style={{ marginTop: 24, marginBottom: 40 }}>
             <Typography.Title level={4}>Conținut Pagina Detaliată</Typography.Title>
             <Form.Item name="body_markdown" label="Conținut (suportă Markdown)">
               <RichTextEditor />
@@ -178,8 +178,8 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
         </Form>
       </div>
 
-      <div className="article-editor-preview">
-        <div className="preview-toolbar">
+      <div className="article-editor-preview-panel">
+        <div className="article-preview-toolbar">
           <Typography.Text strong>Previzualizare Live</Typography.Text>
           <Select
             size="small"
