@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  Alert,
   App,
   Button,
   Form,
@@ -207,13 +208,28 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
             </Form.Item>
           </div>
         </Form>
-        {editing && (
+        {editing ? (
           <div className="article-form-section">
-            <Typography.Title level={4} style={{ marginBottom: 24 }}>Setări Adiționale</Typography.Title>
+            <Typography.Title level={4} style={{ marginBottom: 8 }}>Setări adiționale</Typography.Title>
+            <Typography.Paragraph type="secondary" style={{ marginBottom: 24 }}>
+              Telefon &amp; WhatsApp, orar, „cum ajungi la clinică” și întrebări frecvente. Fiecare
+              rând se salvează individual și apare imediat pe pagina publică (vezi previzualizarea).
+            </Typography.Paragraph>
             <ClinicContacts clinicId={clinicId!} client={client} />
             <ClinicHours clinicId={clinicId!} client={client} />
             <ClinicTransit clinicId={clinicId!} client={client} />
             <ClinicFaqs clinicId={clinicId!} client={client} />
+          </div>
+        ) : (
+          <div className="article-form-section">
+            <Alert
+              type="info"
+              showIcon
+              message="Salvează clinica pentru a adăuga contacte, orar, transport și FAQ"
+              description="Telefon, WhatsApp, orar, „cum ajungi la clinică” și întrebările frecvente se
+                adaugă după ce clinica are un ID. Completează informațiile de bază și apasă „Salvează” —
+                vei fi dus automat la pagina de editare unde apar aceste secțiuni."
+            />
           </div>
         )}
       </div>

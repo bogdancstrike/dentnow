@@ -77,11 +77,22 @@ export function ClinicContacts({ clinicId, client }: { clinicId: string; client:
       />
       <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Contact" destroyOnHidden>
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
-          <Form.Item name="kind" label="Tip (phone, whatsapp, email)" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="display_value" label="Valoare afișată" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="normalized_value" label="Valoare tehnică (tel:+40...)"><Input /></Form.Item>
+          <Form.Item name="kind" label="Tip" rules={[{ required: true }]}>
+            <Select
+              placeholder="Alege tipul de contact"
+              options={[
+                { value: 'phone', label: 'Telefon' },
+                { value: 'whatsapp', label: 'WhatsApp' },
+                { value: 'email', label: 'E-mail' },
+                { value: 'booking', label: 'Programări online' },
+                { value: 'fax', label: 'Fax' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item name="display_value" label="Valoare afișată (ex. 0721 234 567)" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="normalized_value" label="Valoare tehnică (tel:+40..., https://wa.me/40...)"><Input /></Form.Item>
           <Form.Item name="url" label="URL extern"><Input /></Form.Item>
-          <Form.Item name="label" label="Etichetă (ex. Receptie)"><Input /></Form.Item>
+          <Form.Item name="label" label="Etichetă (ex. Recepție)"><Input /></Form.Item>
           <Button type="primary" htmlType="submit">Salvează</Button>
         </Form>
       </Drawer>
@@ -298,9 +309,22 @@ export function ClinicTransit({ clinicId, client }: { clinicId: string; client: 
       />
       <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Transport" destroyOnHidden>
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
-          <Form.Item name="mode" label="Mod (metrou, autobuz, tramvai)"><Input /></Form.Item>
+          <Form.Item name="mode" label="Mod de transport">
+            <Select
+              allowClear
+              placeholder="Alege mijlocul de transport"
+              options={[
+                { value: 'metrou', label: 'Metrou' },
+                { value: 'autobuz', label: 'Autobuz' },
+                { value: 'tramvai', label: 'Tramvai' },
+                { value: 'troleibuz', label: 'Troleibuz' },
+                { value: 'parcare', label: 'Parcare' },
+                { value: 'masina', label: 'Mașină' },
+              ]}
+            />
+          </Form.Item>
           <Form.Item name="label" label="Etichetă (ex. M1 Dristor)" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="detail" label="Detalii"><Input /></Form.Item>
+          <Form.Item name="detail" label="Detalii (ex. la 2 minute de ieșire)"><Input /></Form.Item>
           <Form.Item name="position" label="Ordine"><InputNumber /></Form.Item>
           <Button type="primary" htmlType="submit">Salvează</Button>
         </Form>

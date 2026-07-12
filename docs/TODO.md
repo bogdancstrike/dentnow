@@ -17,7 +17,7 @@ Review of the Gemini-authored commits (`4d94d3b..HEAD`) plus new product fixes. 
 - [x] **Offers 400 `features` extra_forbidden** — `OfferCreate/OfferUpdate` now accept `features` (list or comma-string, coerced); `OfferService` syncs the `offer_features` child table and round-trips it in the serializer. Verified against live DB.
 - [x] **Stale failing frontend unit tests** — `resource-screen`/`clinics-screen` tests updated for dedicated screens + Router. 22/22 green, tsc clean.
 - [~] **Reusable, accurate live preview** — new `LivePreview` renders the REAL public route in a same-origin iframe (zero drift; shows every section because it *is* the page). Wired into clinic (`/locatii/:slug`), treatment (`/tratamente/:slug`), offer (`/oferte`) editors; auto-reloads on save + manual refresh + desktop/mobile. Removed the old hand-built approximations. Doctors/news pending (their public pages read static data — wired under #5/#6).
-- [ ] **Clinic editor missing fields** — orar/telefon/whatsapp/faq/„cum ajungi”, gallery, full preview.
+- [~] **Clinic editor missing fields** — contacts (telefon/WhatsApp/email via dropdown), orar, „cum ajungi” (transport, dropdown mode), FAQ already exist as sub-editors; now discoverable via a clear prompt on `/nou` (child rows need a saved parent) and the real-page preview shows them. Gallery still pending (#9).
 - [ ] **Doctors editor** — image upload/edit + working live preview.
 - [ ] **Noutăți** — wire `Noutati.jsx` to backend + `/admin/noutati` CRUD.
 - [ ] **Precompletează** prefill button on every `/nou` editor.
