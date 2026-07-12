@@ -1,16 +1,29 @@
-/**
- * Admin command palette (Ctrl/Cmd+K or the header search button). Static navigation
- * commands + debounced remote search (`/v1/admin/search`) share one list via
- * `shouldFilter={false}`. Reset on open, 180ms debounce, looped keyboard nav, Escape
- * to close. Publish/rollback are intentionally NOT one-keystroke here — they live on
- * the Publicare card behind a confirm.
- */
 import { Command } from 'cmdk';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  AuditOutlined,
+  FileAddOutlined,
+  FileTextOutlined,
+  GlobalOutlined,
+  LogoutOutlined,
+  MedicineBoxOutlined,
+  MenuOutlined,
+  PictureOutlined,
+  QuestionCircleOutlined,
+  SafetyCertificateOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  ShopOutlined,
+  SolutionOutlined,
+  TeamOutlined,
+  TagsOutlined,
+} from '@ant-design/icons';
 import type { AdminClient } from '../api/adminClient';
+import { can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
-import { NAV } from '../layout/AdminLayout';
+import { ADMIN_NAVIGATION } from '../layout/adminNavigation';
+import { COMMAND_PALETTE_EVENT } from '../layout/adminEvents';
 
 interface SearchHit {
   type: string;
@@ -19,31 +32,93 @@ interface SearchHit {
   route: string;
 }
 
-const PALETTE_EVENT = 'dentnow:cmdk-open';
+const NAV_ICONS: Record<string, React.ReactNode> = {
+  clinics: <ShopOutlined />,
+  doctors: <TeamOutlined />,
+  treatments: <MedicineBoxOutlined />,
+  offers: <TagsOutlined />,
+  partners: <SolutionOutlined />,
+  articles: <FileTextOutlined />,
+  quiz: <QuestionCircleOutlined />,
+  navigation: <MenuOutlined />,
+  settings: <SettingOutlined />,
+  media: <PictureOutlined />,
+  legal: <SafetyCertificateOutlined />,
+  audit: <AuditOutlined />,
+};
 
-export function openCommandPalette() {
-  window.dispatchEvent(new CustomEvent(PALETTE_EVENT));
+const RESULT_ICONS: Record<string, React.ReactNode> = {
+  clinic: <ShopOutlined />,
+  doctor: <TeamOutlined />,
+  treatment: <MedicineBoxOutlined />,
+  offer: <TagsOutlined />,
+  article: <FileTextOutlined />,
+  news: <FileTextOutlined />,
+  media: <PictureOutlined />,
+};
+
+function matches(value: string, query: string): boolean {
+  if (!query) return true;
+  const haystack = value.toLocaleLowerCase('ro-RO');
+  return query
+    .toLocaleLowerCase('ro-RO')
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((term) => haystack.includes(term));
 }
 
-export function CommandPalette({ client }: { client: AdminClient }) {
+function routeForResult(result: SearchHit): string | null {
+  if (result.type === 'article') return `/admin/articole/${result.id}`;
+  const modules: Record<string, string> = {
+    clinic: '/admin/clinici',
+    doctor: '/admin/echipa-medicala',
+    treatment: '/admin/tratamente',
+    offer: '/admin/oferte',
+    media: '/admin/media',
+    news: '/admin/articole',
+  };
+  return modules[result.type] ?? null;
+}
+
+export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchHit[]>([]);
+  const [searching, setSearching] = useState(false);
   const navigate = useNavigate();
+  const normalizedQuery = query.trim();
+
+  const navigation = useMemo(
+    () =>
+      ADMIN_NAVIGATION.flatMap((group) => group.items)
+        .filter((item) => !item.capability || can(me, item.capability))
+        .filter((item) => matches(item.label, normalizedQuery)),
+    [me, normalizedQuery],
+  );
+
+  const actions = useMemo(
+    () =>
+      [
+        { id: 'new-article', label: 'Articol nou', keywords: 'creare adaugă noutate blog' },
+        { id: 'public-site', label: 'Deschide site-ul public', keywords: 'website live public' },
+        { id: 'logout', label: 'Deconectare', keywords: 'logout ieșire cont' },
+      ].filter((action) => matches(`${action.label} ${action.keywords}`, normalizedQuery)),
+    [normalizedQuery],
+  );
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setOpen((o) => !o);
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setOpen((value) => !value);
       }
     };
     const onEvent = () => setOpen(true);
-    document.addEventListener('keydown', onKey);
-    window.addEventListener(PALETTE_EVENT, onEvent);
+    window.addEventListener('keydown', onKey);
+    window.addEventListener(COMMAND_PALETTE_EVENT, onEvent);
     return () => {
-      document.removeEventListener('keydown', onKey);
-      window.removeEventListener(PALETTE_EVENT, onEvent);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener(COMMAND_PALETTE_EVENT, onEvent);
     };
   }, []);
 
@@ -51,70 +126,123 @@ export function CommandPalette({ client }: { client: AdminClient }) {
     if (open) {
       setQuery('');
       setResults([]);
+      setSearching(false);
     }
   }, [open]);
 
   useEffect(() => {
-    if (query.trim().length < 2) {
+    if (normalizedQuery.length < 2) {
       setResults([]);
+      setSearching(false);
       return;
     }
-    const handle = setTimeout(async () => {
+    const controller = new AbortController();
+    const handle = window.setTimeout(async () => {
+      setSearching(true);
       try {
         const { data } = await client.get<{ results: SearchHit[] }>(
-          `/v1/admin/search?q=${encodeURIComponent(query.trim())}`,
+          `/v1/admin/search?q=${encodeURIComponent(normalizedQuery)}`,
+          controller.signal,
         );
-        setResults(data.results ?? []);
+        setResults((data.results ?? []).filter((result) => routeForResult(result) !== null));
       } catch {
-        setResults([]);
+        if (!controller.signal.aborted) setResults([]);
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
       }
     }, 180);
-    return () => clearTimeout(handle);
-  }, [query, client]);
+    return () => {
+      window.clearTimeout(handle);
+      controller.abort();
+    };
+  }, [normalizedQuery, client]);
 
   const go = (path: string) => {
     setOpen(false);
     navigate(path);
   };
 
+  const runAction = (id: string) => {
+    setOpen(false);
+    if (id === 'new-article') go('/admin/articole/nou');
+    if (id === 'public-site') window.open('/', '_blank', 'noopener');
+    if (id === 'logout') void logout();
+  };
+
+  const nothing = navigation.length === 0 && actions.length === 0 && results.length === 0 && !searching;
+
   return (
     <>
       <style>{PALETTE_CSS}</style>
-      <Command.Dialog open={open} onOpenChange={setOpen} shouldFilter={false} label="Comenzi" loop>
-        <Command.Input value={query} onValueChange={setQuery} placeholder="Caută sau navighează…  (Ctrl/⌘K)" />
+      <Command.Dialog
+        open={open}
+        onOpenChange={setOpen}
+        shouldFilter={false}
+        label="Comenzi administrare"
+        overlayClassName="dent-cmdk-overlay"
+        contentClassName="dent-cmdk-content"
+        loop
+      >
+        <div className="dent-cmdk-input-row">
+          <SearchOutlined className="dent-cmdk-search-icon" aria-hidden />
+          <Command.Input
+            value={query}
+            onValueChange={setQuery}
+            autoFocus
+            placeholder="Caută pagini, articole, clinici, tratamente…"
+          />
+          <kbd className="dent-cmdk-esc">esc</kbd>
+        </div>
         <Command.List>
-          <Command.Empty>Niciun rezultat.</Command.Empty>
+          {nothing && <Command.Empty>Niciun rezultat.</Command.Empty>}
 
-          <Command.Group heading="Pagini">
-            {NAV.flatMap((g) => g.items).map((i) => (
-              <Command.Item key={i.slug || 'overview'} value={`nav ${i.label}`} onSelect={() => go(i.slug ? `/admin/${i.slug}` : '/admin')}>
-                {i.label}
-              </Command.Item>
-            ))}
-          </Command.Group>
-
-          {results.length > 0 && (
-            <Command.Group heading="Rezultate">
-              {results.map((r) => (
-                <Command.Item key={`${r.type}:${r.id}`} value={`${r.type} ${r.title} ${r.id}`} onSelect={() => go(r.route)}>
-                  {r.title}
-                  <span className="cmdk-badge">{r.type}</span>
+          {navigation.length > 0 && (
+            <Command.Group heading="Navigare">
+              {navigation.map((item) => (
+                <Command.Item
+                  key={item.slug}
+                  value={`nav ${item.label}`}
+                  onSelect={() => go(`/admin/${item.slug}`)}
+                >
+                  <span className="dent-cmdk-icon">{NAV_ICONS[item.key]}</span>
+                  <span className="dent-cmdk-label">{item.label}</span>
                 </Command.Item>
               ))}
             </Command.Group>
           )}
 
-          <Command.Group heading="Acțiuni">
-            <Command.Item value="action publish" onSelect={() => go('/admin')}>
-              Validează / Publică…
-            </Command.Item>
-            <Command.Item value="action live" onSelect={() => { setOpen(false); window.open('/', '_blank', 'noopener'); }}>
-              Deschide site-ul public
-            </Command.Item>
-            <Command.Item value="action logout" onSelect={() => logout()}>
-              Deconectare
-            </Command.Item>
-          </Command.Group>
+          {actions.length > 0 && (
+            <Command.Group heading="Acțiuni rapide">
+              {actions.map((action) => (
+                <Command.Item key={action.id} value={`action ${action.label}`} onSelect={() => runAction(action.id)}>
+                  <span className="dent-cmdk-icon">
+                    {action.id === 'new-article' && <FileAddOutlined />}
+                    {action.id === 'public-site' && <GlobalOutlined />}
+                    {action.id === 'logout' && <LogoutOutlined />}
+                  </span>
+                  <span className="dent-cmdk-label">{action.label}</span>
+                </Command.Item>
+              ))}
+            </Command.Group>
+          )}
+
+          {results.length > 0 && (
+            <Command.Group heading="Rezultate din conținut">
+              {results.map((result) => (
+                <Command.Item
+                  key={`${result.type}:${result.id}`}
+                  value={`${result.type} ${result.title}`}
+                  onSelect={() => go(routeForResult(result) ?? '/admin/clinici')}
+                >
+                  <span className="dent-cmdk-icon">{RESULT_ICONS[result.type] ?? <FileTextOutlined />}</span>
+                  <span className="dent-cmdk-label">{result.title}</span>
+                  <span className="dent-cmdk-meta">{result.type}</span>
+                </Command.Item>
+              ))}
+            </Command.Group>
+          )}
+
+          {searching && <div className="dent-cmdk-searching">Se caută…</div>}
         </Command.List>
       </Command.Dialog>
     </>
@@ -122,20 +250,26 @@ export function CommandPalette({ client }: { client: AdminClient }) {
 }
 
 const PALETTE_CSS = `
-[cmdk-overlay]{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1200;}
-[cmdk-dialog]{position:fixed;top:14vh;left:50%;transform:translateX(-50%);width:min(640px,92vw);z-index:1201;}
-[cmdk-root]{background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(2,6,23,.35);overflow:hidden;font-family:system-ui,sans-serif;}
-[cmdk-input]{width:100%;border:0;outline:0;padding:16px 18px;font-size:15px;border-bottom:1px solid #e2e8f0;}
-[cmdk-list]{max-height:min(60vh,420px);overflow:auto;padding:8px;}
-[cmdk-group-heading]{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;padding:8px 10px 4px;}
-[cmdk-item]{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;font-size:14px;cursor:pointer;color:#0f172a;}
-[cmdk-item][data-selected="true"]{background:#0ea5a41a;color:#0f766e;}
-[cmdk-empty]{padding:20px;text-align:center;color:#94a3b8;font-size:14px;}
-.cmdk-badge{margin-left:auto;font-size:11px;color:#64748b;background:#f1f5f9;border-radius:6px;padding:2px 8px;}
-@media (prefers-color-scheme: dark){
-  [cmdk-root]{background:#0f172a;color:#e2e8f0;}
-  [cmdk-input]{background:#0f172a;color:#e2e8f0;border-bottom-color:#1e293b;}
-  [cmdk-item]{color:#e2e8f0;}
-  .cmdk-badge{background:#1e293b;color:#94a3b8;}
-}
+.dent-cmdk-overlay{position:fixed;inset:0;z-index:1090;background:rgba(2,6,23,.5);backdrop-filter:blur(2px);animation:dent-scrim-in .16s ease;}
+.dent-cmdk-content{position:fixed;z-index:1100;top:14vh;left:50%;transform:translateX(-50%);display:flex;width:min(640px,92vw);max-height:70vh;flex-direction:column;overflow:hidden;border:1px solid #e7e9ee;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(16,24,40,.12);animation:dent-cmdk-in .16s ease;}
+@keyframes dent-scrim-in{from{opacity:0}to{opacity:1}}
+@keyframes dent-cmdk-in{from{opacity:0;transform:translateX(-50%) translateY(-6px) scale(.985)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+.dent-cmdk-content:focus,.dent-cmdk-content:focus-visible{outline:none;}
+.dent-cmdk-input-row{display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #e7e9ee;}
+.dent-cmdk-search-icon{color:#8b93a1;font-size:15px;}
+.dent-cmdk-content [cmdk-input]{height:52px;min-width:0;flex:1;border:0;outline:0;background:transparent;color:#191b21;font:14px/1.4 "Inter Variable",Inter,system-ui,sans-serif;}
+.dent-cmdk-content [cmdk-input]::placeholder{color:#8b93a1;}
+.dent-cmdk-esc{border:1px solid #e7e9ee;border-radius:5px;background:#f7f8fa;padding:3px 6px;color:#8b93a1;font:11px/1 "JetBrains Mono",ui-monospace,monospace;}
+.dent-cmdk-content [cmdk-list]{overflow-x:hidden;overflow-y:auto;padding:6px;scroll-padding-block:6px;}
+.dent-cmdk-content [cmdk-list]::-webkit-scrollbar{width:10px}.dent-cmdk-content [cmdk-list]::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:rgba(148,163,184,.5);background-clip:content-box;}
+.dent-cmdk-content [cmdk-group-heading]{padding:10px 10px 4px;color:#8b93a1;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.dent-cmdk-content [cmdk-item]{display:flex;min-height:38px;align-items:center;gap:10px;border-radius:8px;padding:9px 10px;color:#5a6472;font-size:14px;cursor:pointer;user-select:none;}
+.dent-cmdk-content [cmdk-item][data-selected="true"]{background:#e9f7f8;color:#191b21;}
+.dent-cmdk-content [cmdk-item]:focus-visible{outline:2px solid #0f7f8d;outline-offset:1px;}
+.dent-cmdk-icon{display:inline-flex;width:18px;flex-shrink:0;justify-content:center;color:#8b93a1;font-size:15px;}
+.dent-cmdk-content [cmdk-item][data-selected="true"] .dent-cmdk-icon{color:#0f7f8d;}
+.dent-cmdk-label{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dent-cmdk-meta{flex-shrink:0;color:#8b93a1;font:11.5px/1 "JetBrains Mono",ui-monospace,monospace;}
+.dent-cmdk-content [cmdk-empty],.dent-cmdk-searching{padding:28px 12px;color:#8b93a1;font-size:13.5px;text-align:center;}.dent-cmdk-searching{padding:10px 12px;}
+@media(prefers-reduced-motion:reduce){.dent-cmdk-overlay,.dent-cmdk-content{animation:none;}}
 `;

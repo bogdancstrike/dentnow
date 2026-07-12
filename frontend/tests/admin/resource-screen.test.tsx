@@ -46,10 +46,13 @@ describe('generic ResourceScreen via registry', () => {
     expect(screen.getByRole('button', { name: 'Adaugă' })).toBeInTheDocument();
   });
 
-  it('maps articles/reviews/partners/doctors/legal keys to a screen', () => {
-    for (const key of ['articles', 'reviews', 'partners', 'doctors', 'legal', 'treatments']) {
+  it('maps generic resource keys to a screen and leaves dedicated/removed modules out', () => {
+    for (const key of ['partners', 'doctors', 'legal', 'treatments']) {
       expect(screenForKey(key, new AdminClient(async () => 't'), ME)).not.toBeNull();
     }
+    expect(screenForKey('articles', new AdminClient(async () => 't'), ME)).toBeNull();
+    expect(screenForKey('reviews', new AdminClient(async () => 't'), ME)).toBeNull();
+    expect(screenForKey('pages', new AdminClient(async () => 't'), ME)).toBeNull();
     expect(screenForKey('does-not-exist', new AdminClient(async () => 't'), ME)).toBeNull();
   });
 });

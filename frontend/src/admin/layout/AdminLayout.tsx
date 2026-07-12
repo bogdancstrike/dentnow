@@ -1,123 +1,140 @@
-import { useMemo } from 'react';
-import { Button, Layout, Menu, Space, Typography, Empty } from 'antd';
+import { useMemo, useState } from 'react';
+import {
+  Button,
+  Empty,
+  Layout,
+  Menu,
+  Space,
+  Typography,
+} from 'antd';
 import type { MenuProps } from 'antd';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import {
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../api/adminClient';
-import { CAP, can, type Me } from '../auth/permissions';
+import { can, type Me } from '../auth/permissions';
 import { logout } from '../auth/keycloak';
-import { OverviewPage } from '../pages/OverviewPage';
+import { CommandPalette } from '../components/CommandPalette';
 import { screenForKey } from '../features/registry';
-import { CommandPalette, openCommandPalette } from '../components/CommandPalette';
+import { ArticleEditorScreen } from '../features/editorial/ArticleEditorScreen';
+import { ArticlesScreen } from '../features/editorial/ArticlesScreen';
+import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
+import { openCommandPalette } from './adminEvents';
+import './adminLayout.css';
 
 const { Header, Sider, Content } = Layout;
-
-interface NavItem {
-  slug: string; // URL segment after /admin/ ('' = overview index)
-  key: string; // registry key
-  label: string;
-  capability?: string;
-}
-
-export const NAV: { group: string; items: NavItem[] }[] = [
-  { group: 'Prezentare', items: [{ slug: '', key: 'overview', label: 'Prezentare generală' }] },
-  {
-    group: 'Clinici & echipă',
-    items: [
-      { slug: 'clinici', key: 'clinics', label: 'Clinici', capability: CAP.contentRead },
-      { slug: 'echipa-medicala', key: 'doctors', label: 'Echipă medicală', capability: CAP.contentRead },
-    ],
-  },
-  {
-    group: 'Catalog',
-    items: [
-      { slug: 'tratamente', key: 'treatments', label: 'Tratamente & prețuri', capability: CAP.contentRead },
-      { slug: 'oferte', key: 'offers', label: 'Oferte', capability: CAP.contentRead },
-      { slug: 'parteneri', key: 'partners', label: 'Parteneri', capability: CAP.contentRead },
-    ],
-  },
-  {
-    group: 'Site',
-    items: [
-      { slug: 'pagini', key: 'pages', label: 'Pagini & SEO', capability: CAP.contentRead },
-      { slug: 'meniuri', key: 'navigation', label: 'Meniuri', capability: CAP.contentRead },
-      { slug: 'setari', key: 'settings', label: 'Setări site', capability: CAP.contentRead },
-    ],
-  },
-  {
-    group: 'Editorial',
-    items: [
-      { slug: 'articole', key: 'articles', label: 'Articole & noutăți', capability: CAP.contentRead },
-      { slug: 'recenzii', key: 'reviews', label: 'Recenzii', capability: CAP.contentRead },
-      { slug: 'quiz', key: 'quiz', label: 'Quiz', capability: CAP.contentRead },
-    ],
-  },
-  {
-    group: 'Media & guvernanță',
-    items: [
-      { slug: 'media', key: 'media', label: 'Bibliotecă media', capability: CAP.contentRead },
-      { slug: 'legal', key: 'legal', label: 'Legal / GDPR', capability: CAP.contentRead },
-      { slug: 'audit', key: 'audit', label: 'Istoric audit', capability: CAP.audit },
-    ],
-  },
-];
-
-const ALL_ITEMS = NAV.flatMap((g) => g.items);
 
 export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const currentSlug = location.pathname.replace(/^\/admin\/?/, '').split('/')[0] ?? '';
+  const [collapsed, setCollapsed] = useState(false);
+  const currentSlug = location.pathname.replace(/^\/admin\/?/, '').split('/')[0] || 'clinici';
 
   const menuItems: MenuProps['items'] = useMemo(
     () =>
-      NAV.filter((g) => g.items.some((i) => !i.capability || can(me, i.capability))).map((g) => ({
-        key: g.group,
-        label: g.group,
+      ADMIN_NAVIGATION.filter((group) =>
+        group.items.some((item) => !item.capability || can(me, item.capability)),
+      ).map((group) => ({
+        key: group.group,
+        label: group.group,
         type: 'group',
-        children: g.items
-          .filter((i) => !i.capability || can(me, i.capability))
-          .map((i) => ({ key: i.slug || 'overview', label: i.label })),
+        children: group.items
+          .filter((item) => !item.capability || can(me, item.capability))
+          .map((item) => ({ key: item.slug, label: item.label })),
       })),
     [me],
   );
 
+  const currentItem = ADMIN_NAV_ITEMS.find((item) => item.slug === currentSlug);
+
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <CommandPalette client={client} />
-      <Sider theme="dark" width={248} breakpoint="lg" collapsedWidth={0}>
-        <div style={{ color: '#fff', padding: '18px 22px', fontWeight: 700, fontSize: 18, letterSpacing: 0.3 }}>
-          DentNow <span style={{ color: '#0ea5a4' }}>Admin</span>
-        </div>
+    <Layout className="admin-shell" hasSider>
+      <a className="admin-skip-link" href="#admin-main">Sari la conținut</a>
+      <CommandPalette client={client} me={me} />
+      <Sider
+        className="admin-sidebar"
+        theme="dark"
+        width={264}
+        collapsedWidth={80}
+        collapsed={collapsed}
+        breakpoint="lg"
+        onBreakpoint={setCollapsed}
+        trigger={null}
+      >
+        <button
+          type="button"
+          className="admin-brand"
+          aria-label="Deschide secțiunea Clinici"
+          onClick={() => navigate('/admin/clinici')}
+        >
+          <span className="admin-brand-mark">DN</span>
+          {!collapsed && (
+            <span className="admin-brand-copy">
+              <strong>DentNow</strong>
+              <small>Content operations</small>
+            </span>
+          )}
+        </button>
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[currentSlug || 'overview']}
+          inlineCollapsed={collapsed}
+          selectedKeys={[currentSlug]}
           items={menuItems}
-          onClick={(e) => navigate(e.key === 'overview' ? '/admin' : `/admin/${e.key}`)}
+          onClick={(event) => navigate(`/admin/${event.key}`)}
         />
       </Sider>
+
       <Layout>
-        <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingInline: 24, gap: 12 }}>
-          <Button type="text" onClick={() => openCommandPalette()} style={{ color: '#94a3b8' }}>
-            🔍 Caută…  <kbd style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>Ctrl K</kbd>
-          </Button>
-          <Space>
-            <Typography.Text style={{ color: '#cbd5e1' }}>{me.username ?? me.subject}</Typography.Text>
-            <Button size="small" onClick={() => logout()}>
-              Deconectare
+        <Header className="admin-header">
+          <Space size="middle">
+            <Button
+              type="text"
+              className="admin-collapse-button"
+              aria-label={collapsed ? 'Extinde meniul' : 'Restrânge meniul'}
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed((value) => !value)}
+            />
+            <div className="admin-context">
+              <Typography.Text className="admin-context-kicker">Workspace</Typography.Text>
+              <Typography.Text strong className="admin-context-title">
+                {currentItem?.label ?? 'Administrare conținut'}
+              </Typography.Text>
+            </div>
+          </Space>
+
+          <Space size="small" className="admin-header-actions">
+            <Button icon={<SearchOutlined />} onClick={openCommandPalette}>
+              <span className="admin-action-label">Caută</span>
+              <kbd>Ctrl K</kbd>
             </Button>
+            <Typography.Text className="admin-user">{me.username ?? me.subject}</Typography.Text>
+            <Button
+              type="text"
+              aria-label="Deconectare"
+              icon={<LogoutOutlined />}
+              onClick={() => logout()}
+            />
           </Space>
         </Header>
-        <Content style={{ margin: 24 }}>
+
+        <Content id="admin-main" className="admin-content">
           <Routes>
-            <Route index element={<OverviewPage me={me} client={client} />} />
-            {ALL_ITEMS.filter((i) => i.slug).map((item) => (
+            <Route index element={<Navigate to="clinici" replace />} />
+            <Route path="articole" element={<ArticlesScreen client={client} />} />
+            <Route path="articole/nou" element={<ArticleEditorScreen client={client} />} />
+            <Route path="articole/:articleId" element={<ArticleEditorScreen client={client} />} />
+            {ADMIN_NAV_ITEMS.filter((item) => item.slug !== 'articole').map((item) => (
               <Route
                 key={item.slug}
                 path={item.slug}
                 element={
                   screenForKey(item.key, client, me) ?? (
-                    <Empty description={`Modulul „${item.label}” — în curs de adăugare`} />
+                    <Empty description={`Modulul „${item.label}” este în curs de adăugare`} />
                   )
                 }
               />

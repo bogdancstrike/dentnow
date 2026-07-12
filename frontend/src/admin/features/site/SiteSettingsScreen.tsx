@@ -55,7 +55,7 @@ export function SiteSettingsScreen({ client }: { client: AdminClient }) {
   });
 
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
       <h2 style={{ margin: 0 }}>Setări site</h2>
       <Card size="small">
         {query.isLoading ? (

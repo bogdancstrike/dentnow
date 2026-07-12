@@ -69,7 +69,7 @@ export default function AdminApp() {
       <AntApp>
         {state.phase === 'init' && (
           <div style={{ display: 'flex', minHeight: '60vh', alignItems: 'center', justifyContent: 'center' }}>
-            <Spin size="large" tip="Se conectează la administrare…" />
+            <Spin size="large" description="Se conectează la administrare…" />
           </div>
         )}
         {state.phase === 'config-error' && <AccessDeniedPage title="Configurare indisponibilă" detail={state.message} />}

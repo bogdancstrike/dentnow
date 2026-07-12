@@ -1,7 +1,7 @@
 /** Maps admin nav keys to CRUD screens. Most reuse the generic ResourceScreen with a
  *  typed config; clinics has its own screen. Screens not yet built render a placeholder.
  */
-import { Form, Input, InputNumber, Select, Tag } from 'antd';
+import { Form, Input, Select, Tag } from 'antd';
 import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
 import { ClinicsScreen } from './clinics/ClinicsScreen';
@@ -33,10 +33,13 @@ const treatments = makeConfig({
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
   ],
   defaults: { active: true },
-  form: () => (
+  form: ({ client }) => (
     <>
       <Item name="name" label="Nume" rules={[{ required: true }]}><Input /></Item>
       <Item name="slug" label="Slug" rules={[{ required: true }]}><Input placeholder="implant-dentar" /></Item>
+      <Item name="category_id" label="Categorie existentă">
+        <RemoteSelect client={client} endpoint="/v1/admin/treatment-categories" labelKey="label" placeholder="Selectează categoria" />
+      </Item>
       <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
       <Item name="active" label="Activ" valuePropName="checked"><input type="checkbox" /></Item>
     </>
@@ -104,51 +107,6 @@ const doctors = makeConfig({
   ),
 });
 
-const articles = makeConfig({
-  title: 'Articole',
-  singular: 'articol',
-  endpoint: '/v1/admin/articles',
-  columns: [
-    { title: 'Titlu', dataIndex: 'title' },
-    { title: 'Categorie', dataIndex: 'category' },
-    { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
-  ],
-  defaults: { status: 'draft' },
-  form: () => (
-    <>
-      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
-      <Item name="slug" label="Slug" rules={[{ required: true }]}><Input /></Item>
-      <Item name="category" label="Categorie"><Input /></Item>
-      <Item name="excerpt" label="Rezumat"><Input.TextArea rows={2} /></Item>
-      <Item name="body_markdown" label="Conținut (Markdown)"><Input.TextArea rows={6} /></Item>
-      <Item name="status" label="Status">
-        <Select options={[{ value: 'draft', label: 'Draft' }, { value: 'needs_review', label: 'Necesită review' }, { value: 'published', label: 'Publicat' }]} />
-      </Item>
-    </>
-  ),
-});
-
-const reviews = makeConfig({
-  title: 'Recenzii',
-  singular: 'recenzie',
-  endpoint: '/v1/admin/reviews',
-  columns: [
-    { title: 'Autor', dataIndex: 'author' },
-    { title: 'Rating', dataIndex: 'rating' },
-    { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
-  ],
-  defaults: { rating: 5, status: 'draft', source: 'google' },
-  form: () => (
-    <>
-      <Item name="author" label="Autor" rules={[{ required: true }]}><Input /></Item>
-      <Item name="review_date" label="Dată (YYYY-MM-DD)" rules={[{ required: true }]}><Input placeholder="2026-01-15" /></Item>
-      <Item name="rating" label="Rating" rules={[{ required: true }]}><InputNumber min={1} max={5} /></Item>
-      <Item name="text_body" label="Text"><Input.TextArea rows={3} /></Item>
-      <Item name="source" label="Sursă"><Input /></Item>
-    </>
-  ),
-});
-
 const legal = makeConfig({
   title: 'Documente legale',
   singular: 'document',
@@ -158,35 +116,13 @@ const legal = makeConfig({
     { title: 'Versiune', dataIndex: 'version_label' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
   ],
-  form: (editing) => (
+  form: ({ editing }) => (
     <>
       <Item name="doc_type" label="Tip" rules={[{ required: true }]}>
         <Select disabled={!!editing} options={[{ value: 'gdpr', label: 'GDPR' }, { value: 'privacy', label: 'Confidențialitate' }, { value: 'terms', label: 'Termeni' }, { value: 'cookies', label: 'Cookies' }]} />
       </Item>
       <Item name="version_label" label="Versiune" rules={[{ required: true }]}><Input /></Item>
       <Item name="body_markdown" label="Conținut (Markdown)"><Input.TextArea rows={8} /></Item>
-    </>
-  ),
-});
-
-const pages = makeConfig({
-  title: 'Pagini',
-  singular: 'pagină',
-  endpoint: '/v1/admin/pages',
-  columns: [
-    { title: 'Cale', dataIndex: 'path' },
-    { title: 'Route key', dataIndex: 'route_key' },
-    { title: 'Template', dataIndex: 'template_key' },
-  ],
-  defaults: { enabled: true, indexable: true, template_key: 'generic' },
-  form: () => (
-    <>
-      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
-      <Item name="path" label="Cale" rules={[{ required: true }]}><Input placeholder="/tratamente" /></Item>
-      <Item name="route_key" label="Route key" rules={[{ required: true }]}><Input placeholder="treatments" /></Item>
-      <Item name="template_key" label="Template">
-        <Select options={['home', 'treatment-index', 'treatment-detail', 'clinic-detail', 'article-index', 'article-detail', 'quiz', 'legal', 'offers-index', 'generic'].map((v) => ({ value: v, label: v }))} />
-      </Item>
     </>
   ),
 });
@@ -227,7 +163,7 @@ const quiz = makeConfig({
 });
 
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  treatments, offers, partners, doctors, articles, reviews, legal, pages, navigation, quiz,
+  treatments, offers, partners, doctors, legal, navigation, quiz,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {

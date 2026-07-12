@@ -35,7 +35,7 @@ export function ResourceTable<T extends ResourceRow>({
   onPageChange,
 }: Props<T>) {
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
       <Space style={{ justifyContent: 'space-between', width: '100%' }}>
         <h2 style={{ margin: 0 }}>{title}</h2>
         {onCreate && (
@@ -44,7 +44,7 @@ export function ResourceTable<T extends ResourceRow>({
           </Button>
         )}
       </Space>
-      {error && <Alert type="error" message={error} showIcon />}
+      {error && <Alert type="error" title={error} showIcon />}
       <Table<T>
         rowKey="id"
         columns={columns}

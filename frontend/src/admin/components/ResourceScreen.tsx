@@ -136,8 +136,8 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
         title={editing ? `Editează ${config.singular}` : `${config.singular} nou`}
         open={editing !== undefined}
         onClose={() => setEditing(undefined)}
-        width={520}
-        destroyOnClose
+        size={520}
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
           {config.form({ editing: editing ?? null, client })}

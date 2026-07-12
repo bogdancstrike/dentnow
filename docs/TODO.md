@@ -29,11 +29,17 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 | Hardening/backup (21), tests (22), CI (23), docs (24) | ⬜ not started (agents hit session limit before starting) |
 
 ## NEW REQUIREMENTS (user, this session) — to implement
-- [ ] **URL per admin tab** — React Router inside /admin so each section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
-- [ ] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id). *(RemoteSelect component built; wiring into forms pending.)*
+- [x] **URL per admin tab** — React Router inside /admin so each useful section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
+- [~] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id). *(RemoteSelect built; treatment→category wired; remaining relations pending.)*
 - [ ] **More CRUD**: nested quiz question/option/band editor; image-carousel/gallery media; offer→treatment selection; **live preview** of the real page.
 - [ ] **Reviews from Google** — "Recenzii" is not manually authored; sync automatically from Google reviews per clinic's Maps location. Needs `clinics.google_place_id` + Google Places API key. *(Reverses architecture §23 non-goal "no Google review scraping" — user override.)*
-- [ ] **Enterprise/professional look** + `cmdk` quick actions.
+- [~] **Enterprise/professional look** + `cmdk` quick actions. *(Shell/cmdk restyled after the simpler `testing_platform` design system; remaining screens are being migrated.)*
+- [x] **cmdk feature rule** — every new admin feature is reviewed for a safe, permission-aware quick action; frequent create/navigate/search actions are added, while destructive/high-risk actions remain in their normal confirmed flow. (`Articol nou` added.)
+- [x] Removed the user-rejected **Prezentare generală** and generic **Pagini & SEO** admin pages; `/admin` now opens `/admin/clinici`.
+- [x] Removed manual **Recenzii** CRUD navigation; reviews will be a Google-synced clinic data source, not an authored page.
+- [x] Removed website publication/version controls from `/admin`. Preview is contextual per edited entity, never a global publish action.
+- [x] **Articles newsroom slice**: `/admin/articole`, `/admin/articole/nou`, and `/admin/articole/:id`; full-screen create/edit form, status workflow, existing-category dropdown, safe unsaved-change handling, desktop/mobile sandboxed iframe preview.
+- [ ] Apply the same contextual iframe preview pattern to clinics/addresses, treatments, offers, and media/carousels.
 
 ---
 
@@ -196,13 +202,16 @@ Backend **124 tests**, frontend **18 tests**, migrations 0001–0007 clean, live
 - [x] editorial/legal/quiz screens via generic ResourceScreen (articles, reviews, legal, quiz, pages, navigation)
 - [ ] Media library (upload grid, consent controls), audit explorer, NESTED quiz editor (questions/options/bands), before/after case pairing
 
-## Task 18 — `cmdk` rapid navigation + quick actions 🚧 BACKEND DONE
+## Task 18 — `cmdk` rapid navigation + quick actions 🚧 UI + BACKEND DONE, POLISH CONTINUES
 - [x] backend `/api/v1/admin/search` (permission-scoped, min-2-char, clinic-scoped, 4 tests) — commit `+search`
-- [ ] `CommandPalette.tsx` (Ctrl/Cmd+K, groups, remote search, quick actions) + mount in AdminLayout
+- [x] `CommandPalette.tsx` (Ctrl/Cmd+K, permission-aware groups, debounced remote search, quick actions) + mounted in AdminLayout
 
-## Task 19 — Preview/validate/publish/rollback UX 🚧 PARTIAL
-- [x] `PublicationControls` (validate → errors, publish w/ confirm, history + rollback, preview-token launch)
-- [ ] Isolated preview ORIGIN app (`src/preview/main.tsx` + fragment exchange + sandboxed iframe render)
+## Task 19 — Contextual live preview UX 🚧 REDEFINED BY USER
+- [x] Removed `PublicationControls` from admin; administrators do not publish/activate website versions in the UI.
+- [x] Article create/edit has a sandboxed, responsive iframe rendering unsaved values in a blog-detail page.
+- [ ] Clinic editor iframe at the matching `/stomatologie-*` route, including address/contact/map changes.
+- [ ] Treatment/offer iframe at the matching public route/card, including selected entity relations.
+- [ ] Media/carousel iframe with real crop/aspect/order treatment in every affected page.
 
 ## Task 20 — Production images + one-command Compose 🚧 PARTIAL
 - [x] backend image (Task 4); frontend nginx image (Dockerfile + config.json entrypoint + /api proxy); `frontend` compose service; per-route public serving. `docker compose up --build` serves whole app on :3000

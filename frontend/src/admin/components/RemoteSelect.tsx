@@ -55,8 +55,7 @@ export function RemoteSelect({
 
   return (
     <Select
-      showSearch
-      optionFilterProp="label"
+      showSearch={{ optionFilterProp: 'label' }}
       mode={multiple ? 'multiple' : undefined}
       loading={query.isLoading}
       options={options}

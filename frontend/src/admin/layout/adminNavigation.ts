@@ -1,0 +1,46 @@
+import { CAP } from '../auth/permissions';
+
+export interface AdminNavItem {
+  slug: string;
+  key: string;
+  label: string;
+  capability?: string;
+}
+
+export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
+  {
+    group: 'Clinici & echipă',
+    items: [
+      { slug: 'clinici', key: 'clinics', label: 'Clinici', capability: CAP.contentRead },
+      { slug: 'echipa-medicala', key: 'doctors', label: 'Echipă medicală', capability: CAP.contentRead },
+    ],
+  },
+  {
+    group: 'Catalog',
+    items: [
+      { slug: 'tratamente', key: 'treatments', label: 'Tratamente & prețuri', capability: CAP.contentRead },
+      { slug: 'oferte', key: 'offers', label: 'Oferte', capability: CAP.contentRead },
+      { slug: 'parteneri', key: 'partners', label: 'Parteneri', capability: CAP.contentRead },
+    ],
+  },
+  {
+    group: 'Conținut',
+    items: [
+      { slug: 'articole', key: 'articles', label: 'Articole & noutăți', capability: CAP.contentRead },
+      { slug: 'quiz', key: 'quiz', label: 'Quiz', capability: CAP.contentRead },
+      { slug: 'meniuri', key: 'navigation', label: 'Meniuri', capability: CAP.contentRead },
+      { slug: 'setari', key: 'settings', label: 'Setări site', capability: CAP.contentRead },
+    ],
+  },
+  {
+    group: 'Media & guvernanță',
+    items: [
+      { slug: 'media', key: 'media', label: 'Bibliotecă media', capability: CAP.contentRead },
+      { slug: 'legal', key: 'legal', label: 'Legal / GDPR', capability: CAP.contentRead },
+      { slug: 'audit', key: 'audit', label: 'Istoric audit', capability: CAP.audit },
+    ],
+  },
+];
+
+export const ADMIN_NAV_ITEMS = ADMIN_NAVIGATION.flatMap((group) => group.items);
+

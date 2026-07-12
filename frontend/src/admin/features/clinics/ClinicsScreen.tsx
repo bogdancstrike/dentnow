@@ -129,8 +129,8 @@ export function ClinicsScreen({ client }: { client: AdminClient }) {
         title={editing ? 'Editează clinica' : 'Clinică nouă'}
         open={editing !== undefined}
         onClose={() => setEditing(undefined)}
-        width={480}
-        destroyOnClose
+        size={480}
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={(v) => saveMutation.mutate(v)}>
           <Form.Item name="name" label="Nume" rules={[{ required: true }]}>
