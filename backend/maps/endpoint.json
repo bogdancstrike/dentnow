@@ -2325,6 +2325,19 @@
     },
     {
       "namespace": "api",
+      "operation_name": "admin_search",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/search",
+      "exec_method": {
+        "module_name": "src.api.admin_search",
+        "method_name": "admin_search"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "principals_list",
       "model_name": "Empty",
       "request_method": [

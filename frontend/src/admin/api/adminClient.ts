@@ -98,7 +98,42 @@ export class AdminClient {
   patch<T>(path: string, body: unknown, ifMatch: string) {
     return this.request<T>(path, { method: 'PATCH', body, ifMatch });
   }
-  del<T>(path: string, ifMatch: string) {
+  del<T>(path: string, ifMatch?: string) {
     return this.request<T>(path, { method: 'DELETE', ifMatch });
+  }
+
+  /**
+   * Multipart upload. The browser sets the `multipart/form-data` boundary itself, so
+   * we must NOT force a JSON `Content-Type`. Still carries the bearer token and a
+   * correlation id, and surfaces the same typed errors as {@link request}.
+   */
+  async upload<T>(path: string, form: FormData, signal?: AbortSignal): Promise<{ data: T; etag: string | null }> {
+    const { apiBase } = getRuntimeConfig();
+    const token = await this.getToken();
+    const response = await fetch(`${apiBase}${path}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'X-Correlation-Id': uuid(),
+      },
+      body: form,
+      signal,
+    });
+
+    if (!response.ok) {
+      let envelope: ApiErrorEnvelope | undefined;
+      try {
+        const body: unknown = await response.json();
+        if (isApiErrorEnvelope(body)) envelope = body;
+      } catch {
+        /* non-JSON error body */
+      }
+      if (response.status === 409) throw new VersionConflictError(envelope);
+      if (response.status === 401) throw new UnauthorizedError(401, envelope);
+      throw new AdminApiError(response.status, envelope);
+    }
+
+    const data = (await response.json()) as T;
+    return { data, etag: response.headers.get('ETag') };
   }
 }
