@@ -1,33 +1,78 @@
 /**
  * Administration application — lazy-loaded ONLY for bare `/admin` and `/admin/*`.
  *
- * Task 2 placeholder. Keeping `keycloak-js` and Ant Design out of this module for now
- * guarantees they stay out of the eager public bundle. Task 15 replaces this with the
- * real Keycloak-authenticated shell (PKCE, in-memory tokens, `/admin/me` gating).
+ * Flow: require admin runtime config → Keycloak login-required (PKCE S256) → load
+ * `/api/v1/admin/me` → render the shell (or an access-denied page for a principal with
+ * no DentNow role). One Ant Design ConfigProvider + App wraps the whole shell.
  */
-import { requireAdminConfig, MissingAdminConfigError } from '../config/runtime';
+import { useEffect, useState } from 'react';
+import { ConfigProvider, App as AntApp, Spin } from 'antd';
+import { MissingAdminConfigError, requireAdminConfig } from '../config/runtime';
+import { AdminClient, UnauthorizedError } from './api/adminClient';
+import { getAdminToken, initKeycloak } from './auth/keycloak';
+import { MeSchema, type Me } from './auth/permissions';
+import { adminTheme } from './theme';
+import { AdminLayout } from './layout/AdminLayout';
+import { AccessDeniedPage } from './pages/AccessDeniedPage';
+
+type State =
+  | { phase: 'init' }
+  | { phase: 'config-error'; message: string }
+  | { phase: 'denied' }
+  | { phase: 'ready'; me: Me; client: AdminClient }
+  | { phase: 'error'; message: string };
 
 export default function AdminApp() {
-  let error: string | null = null;
-  try {
-    requireAdminConfig();
-  } catch (err) {
-    error =
-      err instanceof MissingAdminConfigError
-        ? `Administration is unavailable: ${err.message}.`
-        : 'Administration configuration could not be validated.';
-  }
+  const [state, setState] = useState<State>({ phase: 'init' });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        requireAdminConfig();
+      } catch (err) {
+        const message =
+          err instanceof MissingAdminConfigError
+            ? err.message
+            : 'admin configuration invalid';
+        if (!cancelled) setState({ phase: 'config-error', message });
+        return;
+      }
+      try {
+        await initKeycloak();
+        const client = new AdminClient(getAdminToken);
+        const { data } = await client.get('/v1/admin/me');
+        if (!cancelled) setState({ phase: 'ready', me: MeSchema.parse(data), client });
+      } catch (err) {
+        if (err instanceof UnauthorizedError) {
+          if (!cancelled) setState({ phase: 'denied' });
+        } else if (err && typeof err === 'object' && 'status' in err && (err as { status: number }).status === 403) {
+          if (!cancelled) setState({ phase: 'denied' });
+        } else {
+          if (!cancelled) setState({ phase: 'error', message: (err as Error).message });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
-    <main style={{ padding: '3rem', font: '15px/1.5 system-ui, sans-serif' }}>
-      <h1>DentNow Administration</h1>
-      {error ? (
-        <p role="alert" style={{ color: '#b91c1c' }}>
-          {error}
-        </p>
-      ) : (
-        <p>Authentication shell is added in Task 15.</p>
-      )}
-    </main>
+    <ConfigProvider theme={adminTheme}>
+      <AntApp>
+        {state.phase === 'init' && (
+          <div style={{ display: 'flex', minHeight: '60vh', alignItems: 'center', justifyContent: 'center' }}>
+            <Spin size="large" tip="Se conectează la administrare…" />
+          </div>
+        )}
+        {state.phase === 'config-error' && <AccessDeniedPage title="Configurare indisponibilă" detail={state.message} />}
+        {state.phase === 'denied' && (
+          <AccessDeniedPage title="Acces restricționat" detail="Contul tău nu are un rol DentNow atribuit." />
+        )}
+        {state.phase === 'error' && <AccessDeniedPage title="Eroare" detail={state.message} />}
+        {state.phase === 'ready' && <AdminLayout me={state.me} client={state.client} />}
+      </AntApp>
+    </ConfigProvider>
   );
 }
