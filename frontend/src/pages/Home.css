@@ -10,13 +10,13 @@
 .locations-gallery{max-width:1180px;margin:0 auto}
 .locations-gallery .location-card{border-radius:20px;min-height:440px}
 .locations-gallery .location-map{height:240px}
-.locations-gallery .gallery-thumb{grid-template-columns:40px 1fr}
+.locations-gallery .gallery-thumb{grid-template-columns:40px 1fr;background:var(--white,#fff);box-shadow:0 8px 24px rgba(23,33,43,.06)}
 .loc-thumb-icon{display:flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:10px;background:var(--bg);font-size:18px}
-.location-card{background:var(--surface-raised);border:1px solid var(--border);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform var(--transition),box-shadow var(--transition)}
+.location-card{background:var(--white,#fff);border:1px solid var(--light2,var(--border));border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow,0 12px 32px rgba(23,33,43,.08));transition:transform var(--transition),box-shadow var(--transition)}
 .location-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
 .location-map{height:200px;background:var(--bg);border-bottom:1px solid var(--border)}
 .location-map iframe{width:100%;height:100%;border:none;display:block}
-.location-info{padding:22px;display:flex;flex-direction:column;gap:8px;flex:1}
+.location-info{padding:22px;display:flex;flex-direction:column;gap:8px;flex:1;background:var(--white,#fff)}
 .location-area{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 .location-name{font-family:var(--fd);font-size:22px;line-height:1.1;color:var(--text-primary)}
 .location-line{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5;color:var(--muted-text)}
