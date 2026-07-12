@@ -150,14 +150,15 @@ def restore_workspace(session, principal, publication_id: str) -> dict:
 
 
 def active_snapshot(session) -> tuple[dict, int, str] | None:
-    """Return (snapshot_dict, version, content_hash) for the active publication."""
-    state = session.get(SiteState, 1)
-    if state is None or state.active_publication_id is None:
-        return None
-    pub = session.get(SitePublication, state.active_publication_id)
-    if pub is None:
-        return None
-    return pub.snapshot, pub.version, pub.content_hash
+    """Build a live snapshot directly from the database.
+
+    This removes the need for a manual "publish" step — every admin change
+    is immediately reflected on the public site.
+    """
+    snapshot = build_snapshot(session)
+    chash = content_hash(snapshot)
+    snap_dict = snapshot.model_dump(mode="json")
+    return snap_dict, 1, chash
 
 
 def list_publications(session, limit: int = 50) -> list[dict]:

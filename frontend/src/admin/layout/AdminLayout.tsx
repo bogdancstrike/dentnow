@@ -134,20 +134,6 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
           </Space>
 
           <Space size="small" className="admin-header-actions">
-            <Button
-              type="primary"
-              icon={<GlobalOutlined />}
-              onClick={async () => {
-                try {
-                  await client.post('/v1/admin/publications', {});
-                  message.success('Site-ul a fost publicat cu succes! Va fi online în curând.');
-                } catch (e) {
-                  message.error('Eroare la publicarea site-ului: ' + (e as Error).message);
-                }
-              }}
-            >
-              Publică site
-            </Button>
             <Button icon={<SearchOutlined />} onClick={openCommandPalette}>
               <span className="admin-action-label">Caută</span>
               <kbd>Ctrl K</kbd>
