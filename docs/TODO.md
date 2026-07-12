@@ -48,7 +48,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [ ] Migrate in this order: clinics → treatments → offers → doctors → partners → media/carousels → quiz. Retire generic side drawers after each dedicated editor lands.
 - [ ] **Clinic editor:** name/slug/status/order, complete address/postal/GPS, Google Maps link+embed, multiple phone/WhatsApp/email/booking/social contacts, hours, transit, FAQs, page route, and full location-page preview.
 - [ ] **Partner editor:** optional logo upload/media selection from MinIO, relationship/badge/link/rights metadata, and desktop/mobile card/page preview.
-- [ ] **Homepage quick-treatment strip:** the Implant/Albire/GBT/Obturații cards are treatment-backed fields (`homepage_featured`, label, icon, price/link); finish admin controls and public API renderer so no card text is hardcoded.
+- [x] **Homepage quick-treatment strip:** the Implant/Albire/GBT/Obturații cards are treatment-backed fields (`homepage_featured`, label, icon, price/link); finish admin controls and public API renderer so no card text is hardcoded.
 - [x] Public navbar places **Decontare CAS** immediately after Acasă; duplicate “Decontare CAS / Gratuit copii” was removed from the Tratamente dropdown and seed fixture.
 - [x] Keycloak bootstrap and local realm now register the exact public homepage post-logout redirect; infrastructure regression check added for the previous “Invalid redirect uri” failure.
 - [x] Remove `/recenzii` as a standalone page/route and render Google-synced reviews only inside relevant clinic/site sections.

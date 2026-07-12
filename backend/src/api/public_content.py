@@ -46,6 +46,7 @@ def bootstrap(app, operation, request, **kw):
         "links": snap.get("links", []),
         "navigation": snap.get("navigation", {}),
         "clinics": snap.get("clinics", []),
+        "homepage_treatments": [t for t in snap.get("treatments", []) if t.get("homepage_featured")],
     }
     return _public_json(body, version, chash)
 

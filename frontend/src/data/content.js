@@ -8,13 +8,6 @@ export const services = [
   { icon: '06', title: 'Pedodontie', desc: 'Tratament prietenos pentru copii, cu explicatii pentru parinti si suport CAS unde se aplica.', link: '/tratamente#pediatrie' },
 ];
 
-// ── Quick services strip on homepage ──
-export const quickServices = [
-  { icon: 'Implant', label: 'Implanturi', price: '1.490 lei', link: '/tratamente#implanturi' },
-  { icon: 'Albire', label: 'Albire', price: '390 lei', link: '/tratamente#albire' },
-  { icon: 'GBT', label: 'Igienizare GBT', price: '320 lei', link: '/tratamente#igienizare' },
-  { icon: 'Obt', label: 'Obturații', price: '290 lei', link: '/tratamente#obturatii' },
-];
 
 // ── Why DentNow ──
 export const whyItems = [

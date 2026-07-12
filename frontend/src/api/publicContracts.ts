@@ -71,6 +71,31 @@ export interface NavItem {
   children: NavItem[];
 }
 
+export const TreatmentPriceSchema = z.object({
+  price_kind: z.enum(['exact', 'from', 'range', 'on_request']),
+  amount: z.number().nullable().optional(),
+  amount_max: z.number().nullable().optional(),
+  old_amount: z.number().nullable().optional(),
+  currency: z.string().default('RON'),
+  note: z.string().nullable().optional(),
+  clinic_id: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
+export const TreatmentSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  category_slug: z.string().nullable().optional(),
+  category_label: z.string().nullable().optional(),
+  summary: z.string().nullable().optional(),
+  detail_html: z.string().nullable().optional(),
+  prices: z.array(TreatmentPriceSchema).default([]),
+  homepage_featured: z.boolean().default(false),
+  homepage_label: z.string().nullable().optional(),
+  homepage_icon: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
 export const BootstrapSchema = z.object({
   release_version: z.number(),
   site: z.object({
@@ -81,6 +106,7 @@ export const BootstrapSchema = z.object({
   links: z.array(LinkSchema).default([]),
   navigation: z.record(z.string(), z.array(NavItemSchema)).default({}),
   clinics: z.array(ClinicSchema).default([]),
+  homepage_treatments: z.array(TreatmentSchema).default([]),
 });
 
 export const SectionSchema = z.object({
@@ -115,30 +141,6 @@ export const ArticleSummarySchema = z.object({
   published_at: z.string().nullable().optional(),
 });
 
-export const TreatmentPriceSchema = z.object({
-  price_kind: z.enum(['exact', 'from', 'range', 'on_request']),
-  amount: z.number().nullable().optional(),
-  amount_max: z.number().nullable().optional(),
-  old_amount: z.number().nullable().optional(),
-  currency: z.string().default('RON'),
-  note: z.string().nullable().optional(),
-  clinic_id: z.string().nullable().optional(),
-  position: z.number().default(0),
-});
-
-export const TreatmentSchema = z.object({
-  slug: z.string(),
-  name: z.string(),
-  category_slug: z.string().nullable().optional(),
-  category_label: z.string().nullable().optional(),
-  summary: z.string().nullable().optional(),
-  detail_html: z.string().nullable().optional(),
-  prices: z.array(TreatmentPriceSchema).default([]),
-  homepage_featured: z.boolean().default(false),
-  homepage_label: z.string().nullable().optional(),
-  homepage_icon: z.string().nullable().optional(),
-  position: z.number().default(0),
-});
 
 export const OfferSchema = z.object({
   slug: z.string(),

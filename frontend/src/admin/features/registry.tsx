@@ -31,6 +31,7 @@ const treatments = makeConfig({
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Slug', dataIndex: 'slug' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: (_, record) => <a href={`/tratamente#${record.slug}`} target="_blank" rel="noopener noreferrer">View</a> },
   ],
   defaults: { active: true },
   form: ({ client }) => (
@@ -42,6 +43,9 @@ const treatments = makeConfig({
       </Item>
       <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
       <Item name="active" label="Activ" valuePropName="checked"><input type="checkbox" /></Item>
+      <Item name="homepage_featured" label="Promovat pe Home" valuePropName="checked"><input type="checkbox" /></Item>
+      <Item name="homepage_label" label="Label pt Home"><Input placeholder="Implant Dentar" /></Item>
+      <Item name="homepage_icon" label="Icon pt Home (lucide-react name)"><Input placeholder="Smile" /></Item>
     </>
   ),
 });
@@ -54,6 +58,7 @@ const offers = makeConfig({
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Slug', dataIndex: 'slug' },
     { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
+    { title: 'View', render: (_, record) => <a href={`/oferte#${record.slug}`} target="_blank" rel="noopener noreferrer">View</a> },
   ],
   defaults: { status: 'draft' },
   form: () => (
@@ -77,6 +82,7 @@ const partners = makeConfig({
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Tip', dataIndex: 'relationship_type' },
     { title: 'Badge', dataIndex: 'badge' },
+    { title: 'View', render: () => <a href={`/parteneri`} target="_blank" rel="noopener noreferrer">View</a> },
   ],
   form: () => (
     <>
@@ -95,6 +101,7 @@ const doctors = makeConfig({
   columns: [
     { title: 'Nume', dataIndex: 'name' },
     { title: 'Rol', dataIndex: 'role' },
+    { title: 'View', render: () => <a href={`/`} target="_blank" rel="noopener noreferrer">View</a> },
   ],
   defaults: { active: true },
   form: () => (
@@ -115,6 +122,7 @@ const legal = makeConfig({
     { title: 'Tip', dataIndex: 'doc_type' },
     { title: 'Versiune', dataIndex: 'version_label' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: (_, record) => <a href={`/${record.doc_type === 'privacy' ? 'confidentialitate' : record.doc_type}`} target="_blank" rel="noopener noreferrer">View</a> },
   ],
   form: ({ editing }) => (
     <>
@@ -127,22 +135,6 @@ const legal = makeConfig({
   ),
 });
 
-const navigation = makeConfig({
-  title: 'Meniuri',
-  singular: 'meniu',
-  endpoint: '/v1/admin/navigation-menus',
-  columns: [
-    { title: 'Cheie', dataIndex: 'key' },
-    { title: 'Etichetă', dataIndex: 'label' },
-  ],
-  form: () => (
-    <>
-      <Item name="key" label="Cheie" rules={[{ required: true }]}><Input placeholder="desktop" /></Item>
-      <Item name="label" label="Etichetă" rules={[{ required: true }]}><Input /></Item>
-    </>
-  ),
-});
-
 const quiz = makeConfig({
   title: 'Quiz',
   singular: 'quiz',
@@ -151,6 +143,7 @@ const quiz = makeConfig({
     { title: 'Titlu', dataIndex: 'title' },
     { title: 'Slug', dataIndex: 'slug' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: (_, record) => <a href={`/scor-igiena`} target="_blank" rel="noopener noreferrer">View</a> },
   ],
   defaults: { active: true },
   form: () => (
@@ -163,7 +156,7 @@ const quiz = makeConfig({
 });
 
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  treatments, offers, partners, doctors, legal, navigation, quiz,
+  treatments, offers, partners, doctors, legal, quiz,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {

@@ -3,7 +3,8 @@ import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
-import { services, quickServices, trustStats } from '../data/content';
+import { services, trustStats } from '../data/content';
+import { useSiteData } from '../public-site/SiteDataProvider';
 import { reviews } from '../data/reviews';
 import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
@@ -18,6 +19,7 @@ import './Home.css';
 export default function Home() {
   const revealRef = useRevealAll([]);
   const openPicker = useClinicPicker();
+  const siteData = useSiteData();
 
   return (
     <div ref={revealRef}>
@@ -83,13 +85,18 @@ export default function Home() {
       </section>
 
       <section className="quick-services" aria-label="Servicii rapide DentNow">
-        {quickServices.map((qs) => (
-          <Link to={qs.link} key={qs.label} className="quick-service-card">
-            <span>{qs.icon}</span>
-            <strong>{qs.label}</strong>
-            <small>de la {qs.price}</small>
-          </Link>
-        ))}
+        {siteData.homepage_treatments.map((t) => {
+          const minPrice = t.prices && t.prices.length > 0
+            ? new Intl.NumberFormat('ro-RO').format(t.prices[0].amount || 0) + ' ' + (t.prices[0].currency || 'lei')
+            : '';
+          return (
+            <Link to={`/tratamente#${t.slug}`} key={t.slug} className="quick-service-card">
+              <span>{t.homepage_icon || 'Tooth'}</span>
+              <strong>{t.homepage_label || t.name}</strong>
+              <small>{minPrice ? `de la ${minPrice}` : ''}</small>
+            </Link>
+          );
+        })}
       </section>
 
       <section className="services-section" id="servicii">
