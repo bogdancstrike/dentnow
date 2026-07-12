@@ -106,7 +106,7 @@ export function PartnerEditorScreen({ client }: { client: AdminClient }) {
   }
 
   return (
-    <div className="article-editor-grid" style={{ maxWidth: 1600, margin: '0 auto' }}>
+    <div className="article-editor-grid">
       <div className="article-editor-form-panel">
         <Space className="editor-sidebar-actions" style={{ marginBottom: 24 }}>
           <Button icon={<ArrowLeftOutlined />} onClick={leaveEditor}>

@@ -141,9 +141,10 @@
 
 .article-editor-grid {
   display: grid;
-  grid-template-columns: minmax(520px, 0.93fr) minmax(480px, 1.07fr);
+  grid-template-columns: minmax(420px, 0.8fr) minmax(600px, 1.2fr);
   align-items: start;
   gap: 16px;
+  width: 100%;
 }
 
 .article-editor-form-panel,
@@ -190,6 +191,10 @@
 .article-editor-preview-panel {
   position: sticky;
   top: 16px;
+  height: calc(100vh - 96px);
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid #d5d9e0;
   border-radius: 10px;

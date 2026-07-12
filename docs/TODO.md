@@ -12,6 +12,15 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 
 ## CODE REVIEW & REPAIR + FOLLOW-UPS (2026-07-12, session 2)
 
+Later follow-up requests (session 2, batch 2):
+- [x] **Editor full-width + bigger preview** — removed the `maxWidth:1600` cap on all editors, widened the preview column (1.2fr) and made the preview panel a tall sticky pane; trimmed admin content padding.
+- [ ] **Location page booking** — `/locatii/:slug` „Programează-te” should imply the current clinic, not open the all-locations picker.
+- [ ] **Draft preview** — preview unsaved form values without going live (postMessage draft injection), discarded on exit.
+- [ ] **Per-doctor page** — `/echipa/:slug` public page; admin view/preview point there.
+- [ ] **Clinic gallery CRUD** `/admin/clinica`.
+- [ ] **/decontat-cas CRUD** `/admin/decontat-cas`.
+
+
 Review of the Gemini-authored commits (`4d94d3b..HEAD`) plus new product fixes. Committed task-by-task.
 
 - [x] **Offers 400 `features` extra_forbidden** — `OfferCreate/OfferUpdate` now accept `features` (list or comma-string, coerced); `OfferService` syncs the `offer_features` child table and round-trips it in the serializer. Verified against live DB.

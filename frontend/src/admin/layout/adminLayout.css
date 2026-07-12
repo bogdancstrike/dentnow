@@ -168,7 +168,7 @@
   min-width: 0;
   overflow: auto;
   background: #f7f8fa;
-  padding: 24px;
+  padding: 16px;
 }
 
 @media (max-width: 900px) {
