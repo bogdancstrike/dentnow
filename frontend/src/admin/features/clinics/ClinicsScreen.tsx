@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
 import { AdminRequestError } from '../../components/AdminRequestError';
+import { useResourceReorder } from '../../hooks/useResourceReorder';
 
 export interface ClinicRow extends ResourceRow {
   id: string;
@@ -20,6 +21,7 @@ export interface ClinicRow extends ResourceRow {
   area: string | null;
   address_full: string | null;
   status: string;
+  position: number;
 }
 
 interface ClinicList {
@@ -37,10 +39,13 @@ export function ClinicsScreen({ client }: { client: AdminClient }) {
   const listQuery = useQuery({
     queryKey: ['admin', 'clinics', page, pageSize],
     queryFn: async () =>
-      (await client.get<ClinicList>(`/v1/admin/clinics?page=${page}&page_size=${pageSize}`)).data,
+      (await client.get<ClinicList>(`/v1/admin/clinics?page=${page}&page_size=${pageSize}&sort=position&order=asc`)).data,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'clinics'] });
+  const reorder = useResourceReorder<ClinicRow>({
+    client, endpoint: '/v1/admin/clinics', queryKey: ['admin', 'clinics'], page, pageSize,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (row: ClinicRow) => client.del(`/v1/admin/clinics/${row.id}`, `"${row.version}"`),
@@ -70,6 +75,8 @@ export function ClinicsScreen({ client }: { client: AdminClient }) {
       loading={listQuery.isLoading}
       error={listQuery.isError ? 'Nu s-au putut încărca clinicile' : null}
       onCreate={openCreate}
+      onReorder={reorder.reorder}
+      reordering={reorder.reordering}
       onPageChange={(p, s) => {
         setPage(p);
         setPageSize(s);

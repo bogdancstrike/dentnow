@@ -4,16 +4,19 @@
  * public /decontat-cas page on the right.
  */
 import { useState } from 'react';
-import { App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Space, Table, Typography } from 'antd';
+import { App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Space, Typography } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminClient } from '../../api/adminClient';
 import { LivePreview } from '../../components/LivePreview';
 import '../editorial/articles.css';
+import { SortableResourceTable } from '../../components/SortableResourceTable';
+import { useResourceReorder } from '../../hooks/useResourceReorder';
 
 interface Row {
   id: string;
   version: number;
+  position?: number;
   [key: string]: unknown;
 }
 
@@ -42,8 +45,9 @@ function SubCrud({
 
   const query = useQuery({
     queryKey: key,
-    queryFn: async () => (await client.get<{ items: Row[] }>(`${endpoint}?page=1&page_size=100`)).data,
+    queryFn: async () => (await client.get<{ items: Row[] }>(`${endpoint}?page=1&page_size=100&sort=position&order=asc`)).data,
   });
+  const reorder = useResourceReorder<Row>({ client, endpoint, queryKey: key, onChanged });
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: key });
@@ -79,9 +83,10 @@ function SubCrud({
           Adaugă
         </Button>
       </div>
-      <Table
-        dataSource={query.data?.items ?? []}
-        rowKey="id"
+      <SortableResourceTable
+        data={query.data?.items ?? []}
+        onReorder={reorder.reorder}
+        reordering={reorder.reordering}
         size="small"
         pagination={false}
         loading={query.isLoading}
@@ -106,7 +111,7 @@ function SubCrud({
         title={editing?.id ? `Editează ${singular}` : `${singular} nou`}
         open={editing !== undefined}
         onClose={() => setEditing(undefined)}
-        width={480}
+        size={480}
         destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>

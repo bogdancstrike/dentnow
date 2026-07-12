@@ -348,6 +348,27 @@
   grid-template-columns: 1fr;
 }
 
+.clinic-draft-sortable {
+  position: relative;
+  padding-top: 8px;
+}
+
+.clinic-draft-drag {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  right: 10px;
+  color: #73808c;
+  cursor: grab;
+  touch-action: none;
+}
+
+.clinic-draft-drag:hover,
+.clinic-draft-drag:focus-visible {
+  color: #0f7f8d;
+  background: #e9f7f8;
+}
+
 @media (max-width: 760px) {
   .clinic-draft-row,
   .clinic-draft-row--hours {

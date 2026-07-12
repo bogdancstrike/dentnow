@@ -15,6 +15,8 @@ import {
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AdminClient } from '../../api/adminClient';
+import { SortableResourceTable } from '../../components/SortableResourceTable';
+import { useResourceReorder } from '../../hooks/useResourceReorder';
 
 interface ChildRow {
   id: string;
@@ -210,7 +212,13 @@ export function ClinicFaqs({ clinicId, client, onChanged }: ChildProps) {
 
   const query = useQuery({
     queryKey: ['admin', 'clinic-faqs', clinicId],
-    queryFn: async () => (await client.get<{ items: ChildRow[] }>(`/v1/admin/clinic-faqs?page=1&page_size=100&clinic_id=${clinicId}`)).data,
+    queryFn: async () => (await client.get<{ items: ChildRow[] }>(`/v1/admin/clinic-faqs?page=1&page_size=100&clinic_id=${clinicId}&sort=position&order=asc`)).data,
+  });
+  const reorder = useResourceReorder<ChildRow>({
+    client,
+    endpoint: '/v1/admin/clinic-faqs',
+    queryKey: ['admin', 'clinic-faqs', clinicId],
+    onChanged,
   });
 
   const save = useMutation({
@@ -243,9 +251,10 @@ export function ClinicFaqs({ clinicId, client, onChanged }: ChildProps) {
         <Typography.Title level={5} style={{ margin: 0 }}>Întrebări Frecvente</Typography.Title>
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
-      <Table
-        dataSource={scopedItems(query.data, clinicId)}
-        rowKey="id"
+      <SortableResourceTable
+        data={scopedItems(query.data, clinicId)}
+        onReorder={reorder.reorder}
+        reordering={reorder.reordering}
         pagination={false}
         size="small"
         columns={[

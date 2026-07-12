@@ -1,8 +1,9 @@
 /** Reusable server-paginated table. Owns query state (page/size) and selection; the
  *  domain feature supplies columns and row actions. Stable `rowKey="id"`.
  */
-import { Table, Button, Space, Alert } from 'antd';
+import { Button, Space, Alert } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { SortableResourceTable } from './SortableResourceTable';
 
 export interface ResourceRow {
   id: string;
@@ -20,6 +21,8 @@ interface Props<T extends ResourceRow> {
   title: string;
   onCreate?: () => void;
   onPageChange: (page: number, pageSize: number) => void;
+  onReorder?: (rows: T[]) => void | Promise<void>;
+  reordering?: boolean;
 }
 
 export function ResourceTable<T extends ResourceRow>({
@@ -33,6 +36,8 @@ export function ResourceTable<T extends ResourceRow>({
   title,
   onCreate,
   onPageChange,
+  onReorder,
+  reordering,
 }: Props<T>) {
   return (
     <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
@@ -45,10 +50,11 @@ export function ResourceTable<T extends ResourceRow>({
         )}
       </Space>
       {error && <Alert type="error" title={error} showIcon />}
-      <Table<T>
-        rowKey="id"
+      <SortableResourceTable<T>
         columns={columns}
-        dataSource={data}
+        data={data}
+        onReorder={onReorder}
+        reordering={reordering}
         loading={loading}
         pagination={{
           current: page,

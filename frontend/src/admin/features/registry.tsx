@@ -11,7 +11,6 @@ import { ImageUploadField } from '../components/ImageUploadField';
 import { type ResourceConfig } from '../components/ResourceScreen';
 import type { ResourceRow } from '../components/ResourceTable';
 import type { Me } from '../auth/permissions';
-import { QuizSubResources } from './quiz/QuizSubResources';
 import { previewMarkdown } from '../../api/previewDraft';
 
 const { Item } = Form;
@@ -88,16 +87,13 @@ const quiz = makeConfig({
       <Item name="intro" label="Intro"><Input.TextArea rows={2} /></Item>
     </>
   ),
-  editExtra: ({ row, client, onChanged }) => (
-    <QuizSubResources quizId={row.id} client={client} onChanged={onChanged} />
-  ),
-  editExtraHint: 'Salvează mai întâi quiz-ul pentru a adăuga întrebări, răspunsuri și rezultate.',
 });
 
 const news = makeConfig({
   title: 'Noutăți',
   singular: 'noutate',
   endpoint: '/v1/admin/news',
+  reorderable: true,
   columns: [
     { title: 'Titlu', dataIndex: 'title' },
     { title: 'Adresă', dataIndex: 'slug' },
@@ -145,6 +141,7 @@ const homepageServices = makeConfig({
   title: 'Servicii pe prima pagină',
   singular: 'serviciu',
   endpoint: '/v1/admin/homepage-services',
+  reorderable: true,
   columns: [
     { title: 'Badge', dataIndex: 'icon' },
     { title: 'Titlu', dataIndex: 'title' },
@@ -185,6 +182,7 @@ const gallery = makeConfig({
   title: 'Galerie clinică',
   singular: 'imagine',
   endpoint: '/v1/admin/gallery-images',
+  reorderable: true,
   columns: [
     { title: 'Titlu', dataIndex: 'title' },
     { title: 'Descriere', dataIndex: 'caption' },

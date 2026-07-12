@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../api/adminClient';
 import { ResourceTable, type ResourceRow } from './ResourceTable';
 import { AdminRequestError } from './AdminRequestError';
+import { useResourceReorder } from '../hooks/useResourceReorder';
 
 export interface ResourceConfig<T extends ResourceRow> {
   title: string;
@@ -40,6 +41,8 @@ export interface ResourceConfig<T extends ResourceRow> {
   }) => ReactNode;
   /** Prompt shown on create when nested resources require a saved parent ID. */
   editExtraHint?: ReactNode;
+  /** Enables drag-to-reorder and persists the entity's `position` field. */
+  reorderable?: boolean;
 }
 
 interface ListResult<T> {
@@ -66,8 +69,9 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
   const listQuery = useQuery({
     queryKey: [...key, page, pageSize],
     queryFn: async () =>
-      (await client.get<ListResult<T>>(`${config.endpoint}?page=${page}&page_size=${pageSize}`)).data,
+      (await client.get<ListResult<T>>(`${config.endpoint}?page=${page}&page_size=${pageSize}${config.reorderable ? '&sort=position&order=asc' : ''}`)).data,
   });
+  const reorder = useResourceReorder<T>({ client, endpoint: config.endpoint, queryKey: key, page, pageSize });
 
   const remove = useMutation({
     mutationFn: (row: T) => client.del(`${config.endpoint}/${row.id}`, `"${row.version}"`),
@@ -111,6 +115,8 @@ export function ResourceScreen<T extends ResourceRow & { version: number }>({
       loading={listQuery.isLoading}
       error={listQuery.isError ? `Nu s-au putut încărca: ${config.title}` : null}
       onCreate={canWrite ? () => navigate(`${basePath}/nou`) : undefined}
+      onReorder={canWrite && config.reorderable ? reorder.reorder : undefined}
+      reordering={reorder.reordering}
       onPageChange={(p, s) => {
         setPage(p);
         setPageSize(s);

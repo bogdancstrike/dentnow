@@ -22,6 +22,8 @@ import type { AdminClient } from '../../api/adminClient';
 import type { ResourceRow } from '../../components/ResourceTable';
 import './articles.css';
 import { AdminRequestError } from '../../components/AdminRequestError';
+import { SortableResourceTable } from '../../components/SortableResourceTable';
+import { useResourceReorder } from '../../hooks/useResourceReorder';
 
 export interface ArticleRow extends ResourceRow {
   id: string;
@@ -74,9 +76,12 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
     queryFn: async () =>
       (
         await client.get<ArticleList>(
-          `/v1/admin/articles?page=${page}&page_size=${pageSize}&sort=updated_at&order=desc`,
+          `/v1/admin/articles?page=${page}&page_size=${pageSize}&sort=position&order=asc`,
         )
       ).data,
+  });
+  const reorder = useResourceReorder<ArticleRow>({
+    client, endpoint: '/v1/admin/articles', queryKey: ['admin', 'articles'], page, pageSize,
   });
 
   const remove = useMutation({
@@ -221,10 +226,11 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
           </div>
           <Typography.Text type="secondary">Drafturile nu apar pe site până la publicare.</Typography.Text>
         </div>
-        <Table<ArticleRow>
-          rowKey="id"
+        <SortableResourceTable<ArticleRow>
           columns={columns}
-          dataSource={listQuery.data?.items ?? []}
+          data={listQuery.data?.items ?? []}
+          onReorder={reorder.reorder}
+          reordering={reorder.reordering}
           loading={listQuery.isLoading}
           locale={{ emptyText: listQuery.isError ? 'Articolele nu au putut fi încărcate.' : 'Nu există articole încă.' }}
           pagination={{

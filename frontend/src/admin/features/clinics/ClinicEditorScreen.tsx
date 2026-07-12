@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   App,
   Button,
@@ -16,6 +16,7 @@ import {
   EditOutlined,
   PlusOutlined,
   DeleteOutlined,
+  HolderOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -31,6 +32,22 @@ import {
 import { LivePreview } from '../../components/LivePreview';
 import './clinics.css';
 import { AdminRequestError } from '../../components/AdminRequestError';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS as DndCSS } from '@dnd-kit/utilities';
 
 interface ClinicContactDraft {
   kind: string;
@@ -71,7 +88,36 @@ interface ClinicFormValues extends ClinicRow {
 
 const WEEKDAYS = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
 
+function SortableDraftFaq({ id, label, children }: { id: string; label: string; children: ReactNode }) {
+  const sortable = useSortable({ id });
+  const style: CSSProperties = {
+    transform: DndCSS.Transform.toString(sortable.transform),
+    transition: sortable.transition,
+    opacity: sortable.isDragging ? 0.7 : 1,
+    position: 'relative',
+    zIndex: sortable.isDragging ? 2 : undefined,
+  };
+  return (
+    <div ref={sortable.setNodeRef} style={style} className="clinic-draft-sortable">
+      <Button
+        type="text"
+        className="clinic-draft-drag"
+        icon={<HolderOutlined />}
+        aria-label={`Reordonează ${label}`}
+        ref={sortable.setActivatorNodeRef}
+        {...sortable.attributes}
+        {...sortable.listeners}
+      />
+      {children}
+    </div>
+  );
+}
+
 function DraftClinicDetails() {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   return (
     <div className="article-form-section" style={{ marginTop: 24, marginBottom: 40 }}>
       <Typography.Title level={4}>Contact, program și acces</Typography.Title>
@@ -142,15 +188,30 @@ function DraftClinicDetails() {
 
       <Typography.Title level={5} style={{ marginTop: 32 }}>Întrebări frecvente</Typography.Title>
       <Form.List name="faqs">
-        {(fields, { add, remove }) => (
+        {(fields, { add, remove, move }) => (
           <Space orientation="vertical" style={{ width: '100%' }}>
-            {fields.map(({ key, name }) => (
-              <div className="clinic-draft-row clinic-draft-row--faq" key={key}>
-                <Form.Item name={[name, 'question']} label="Întrebare" rules={[{ required: true }]}><Input /></Form.Item>
-                <Form.Item name={[name, 'answer']} label="Răspuns" rules={[{ required: true }]}><Input.TextArea rows={3} /></Form.Item>
-                <Button danger icon={<DeleteOutlined />} onClick={() => remove(name)}>Elimină</Button>
-              </div>
-            ))}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={({ active, over }: DragEndEvent) => {
+                if (!over || active.id === over.id) return;
+                const from = fields.findIndex((field) => String(field.key) === String(active.id));
+                const to = fields.findIndex((field) => String(field.key) === String(over.id));
+                if (from >= 0 && to >= 0) move(from, to);
+              }}
+            >
+              <SortableContext items={fields.map((field) => String(field.key))} strategy={verticalListSortingStrategy}>
+                {fields.map(({ key, name }, index) => (
+                  <SortableDraftFaq id={String(key)} label={`întrebarea ${index + 1}`} key={key}>
+                    <div className="clinic-draft-row clinic-draft-row--faq">
+                      <Form.Item name={[name, 'question']} label="Întrebare" rules={[{ required: true }]}><Input /></Form.Item>
+                      <Form.Item name={[name, 'answer']} label="Răspuns" rules={[{ required: true }]}><Input.TextArea rows={3} /></Form.Item>
+                      <Button danger icon={<DeleteOutlined />} onClick={() => remove(name)}>Elimină</Button>
+                    </div>
+                  </SortableDraftFaq>
+                ))}
+              </SortableContext>
+            </DndContext>
             <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ position: fields.length })}>Adaugă o întrebare</Button>
           </Space>
         )}
@@ -211,7 +272,7 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
         ...contacts.map((row) => ['/v1/admin/clinic-contacts', row] as const),
         ...hours.map((row) => ['/v1/admin/clinic-hours', row] as const),
         ...transit.map((row) => ['/v1/admin/clinic-transit', row] as const),
-        ...faqs.map((row) => ['/v1/admin/clinic-faqs', row] as const),
+        ...faqs.map((row, position) => ['/v1/admin/clinic-faqs', { ...row, position }] as const),
       ];
       const results = await Promise.allSettled(
         writes.map(([endpoint, row]) => client.post(endpoint, { ...row, clinic_id: clinic.id })),

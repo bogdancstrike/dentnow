@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
 import { AdminRequestError } from '../../components/AdminRequestError';
+import { useResourceReorder } from '../../hooks/useResourceReorder';
 
 export interface DoctorRow extends ResourceRow {
   id: string;
@@ -20,6 +21,13 @@ export interface DoctorRow extends ResourceRow {
   active: boolean;
   role?: string;
   focus?: string;
+  description?: string;
+  approach?: string;
+  credentials?: string;
+  portrait_media_id?: string | null;
+  workspace_media_id?: string | null;
+  secondary_media_id?: string | null;
+  position: number;
 }
 
 interface DoctorList {
@@ -37,10 +45,13 @@ export function DoctorsScreen({ client }: { client: AdminClient }) {
   const listQuery = useQuery({
     queryKey: ['admin', 'doctors', page, pageSize],
     queryFn: async () =>
-      (await client.get<DoctorList>(`/v1/admin/doctors?page=${page}&page_size=${pageSize}`)).data,
+      (await client.get<DoctorList>(`/v1/admin/doctors?page=${page}&page_size=${pageSize}&sort=position&order=asc`)).data,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'doctors'] });
+  const reorder = useResourceReorder<DoctorRow>({
+    client, endpoint: '/v1/admin/doctors', queryKey: ['admin', 'doctors'], page, pageSize,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (row: DoctorRow) => client.del(`/v1/admin/doctors/${row.id}`, `"${row.version}"`),
@@ -70,6 +81,8 @@ export function DoctorsScreen({ client }: { client: AdminClient }) {
       loading={listQuery.isLoading}
       error={listQuery.isError ? 'Nu s-au putut încărca doctorii' : null}
       onCreate={openCreate}
+      onReorder={reorder.reorder}
+      reordering={reorder.reordering}
       onPageChange={(p, s) => {
         setPage(p);
         setPageSize(s);

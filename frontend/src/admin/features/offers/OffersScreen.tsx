@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
 import { AdminRequestError } from '../../components/AdminRequestError';
+import { useResourceReorder } from '../../hooks/useResourceReorder';
 
 export interface OfferRow extends ResourceRow {
   id: string;
@@ -25,6 +26,7 @@ export interface OfferRow extends ResourceRow {
   old_amount?: number;
   featured?: boolean;
   currency?: string;
+  position: number;
   features?: string[] | string;
 }
 
@@ -43,10 +45,13 @@ export function OffersScreen({ client }: { client: AdminClient }) {
   const listQuery = useQuery({
     queryKey: ['admin', 'offers', page, pageSize],
     queryFn: async () =>
-      (await client.get<OfferList>(`/v1/admin/offers?page=${page}&page_size=${pageSize}`)).data,
+      (await client.get<OfferList>(`/v1/admin/offers?page=${page}&page_size=${pageSize}&sort=position&order=asc`)).data,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'offers'] });
+  const reorder = useResourceReorder<OfferRow>({
+    client, endpoint: '/v1/admin/offers', queryKey: ['admin', 'offers'], page, pageSize,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (row: OfferRow) => client.del(`/v1/admin/offers/${row.id}`, `"${row.version}"`),
@@ -76,6 +81,8 @@ export function OffersScreen({ client }: { client: AdminClient }) {
       loading={listQuery.isLoading}
       error={listQuery.isError ? 'Nu s-au putut încărca ofertele' : null}
       onCreate={openCreate}
+      onReorder={reorder.reorder}
+      reordering={reorder.reordering}
       onPageChange={(p, s) => {
         setPage(p);
         setPageSize(s);

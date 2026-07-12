@@ -1,0 +1,27 @@
+.sortable-table-handle {
+  color: #7b8794;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sortable-table-handle:hover,
+.sortable-table-handle:focus-visible {
+  color: #0f7f8d;
+  background: #e9f7f8;
+}
+
+.sortable-table-handle:active {
+  cursor: grabbing;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

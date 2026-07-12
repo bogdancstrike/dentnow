@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { ResourceTable, type ResourceRow } from '../../components/ResourceTable';
 import { AdminRequestError } from '../../components/AdminRequestError';
+import { useResourceReorder } from '../../hooks/useResourceReorder';
 
 export interface PartnerRow extends ResourceRow {
   id: string;
@@ -19,6 +20,7 @@ export interface PartnerRow extends ResourceRow {
   relationship_type?: string;
   badge?: string;
   link_url?: string;
+  position: number;
 }
 
 interface PartnerList {
@@ -36,10 +38,13 @@ export function PartnersScreen({ client }: { client: AdminClient }) {
   const listQuery = useQuery({
     queryKey: ['admin', 'partners', page, pageSize],
     queryFn: async () =>
-      (await client.get<PartnerList>(`/v1/admin/partners?page=${page}&page_size=${pageSize}`)).data,
+      (await client.get<PartnerList>(`/v1/admin/partners?page=${page}&page_size=${pageSize}&sort=position&order=asc`)).data,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'partners'] });
+  const reorder = useResourceReorder<PartnerRow>({
+    client, endpoint: '/v1/admin/partners', queryKey: ['admin', 'partners'], page, pageSize,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (row: PartnerRow) => client.del(`/v1/admin/partners/${row.id}`, `"${row.version}"`),
@@ -69,6 +74,8 @@ export function PartnersScreen({ client }: { client: AdminClient }) {
       loading={listQuery.isLoading}
       error={listQuery.isError ? 'Nu s-au putut încărca partenerii' : null}
       onCreate={openCreate}
+      onReorder={reorder.reorder}
+      reordering={reorder.reordering}
       onPageChange={(p, s) => {
         setPage(p);
         setPageSize(s);

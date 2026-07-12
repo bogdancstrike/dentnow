@@ -86,7 +86,7 @@ export function ImageUploadField({
             </Typography.Text>
           )}
         </div>
-        <Space direction="vertical" size="small">
+        <Space orientation="vertical" size="small">
           <Button icon={<UploadOutlined />} onClick={pickFile} loading={uploading}>
             {value ? 'Schimbă imaginea' : 'Încarcă imagine'}
           </Button>
