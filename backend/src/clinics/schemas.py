@@ -149,8 +149,12 @@ class DoctorCreate(_Strict):
     name: str
     role: Optional[str] = None
     focus: Optional[str] = None
+    description: Optional[str] = None
+    approach: Optional[str] = None
     credentials: Optional[str] = None
     portrait_media_id: Optional[str] = None
+    workspace_media_id: Optional[str] = None
+    secondary_media_id: Optional[str] = None
     active: bool = True
     position: int = 0
 
@@ -167,7 +171,11 @@ class DoctorUpdate(_Strict):
     name: Optional[str] = None
     role: Optional[str] = None
     focus: Optional[str] = None
+    description: Optional[str] = None
+    approach: Optional[str] = None
     credentials: Optional[str] = None
     portrait_media_id: Optional[str] = None
+    workspace_media_id: Optional[str] = None
+    secondary_media_id: Optional[str] = None
     active: Optional[bool] = None
     position: Optional[int] = None

@@ -49,6 +49,7 @@ class ClinicPublic(_Model):
     longitude: float | None = None
     map_embed_url: str | None = None
     map_link_url: str | None = None
+    position: int = 0
     contacts: list[dict[str, Any]] = []
     hours: list[dict[str, Any]] = []
     transit: list[dict[str, Any]] = []
@@ -115,6 +116,7 @@ class ArticlePublic(_Model):
     body_html: str | None = None
     cover_media_id: str | None = None
     published_at: str | None = None
+    position: int = 0
 
 
 class NewsPublic(_Model):

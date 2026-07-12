@@ -96,6 +96,53 @@ def test_public_bootstrap_includes_active_quiz_children(client, admin):
             ).status_code in (200, 204)
 
 
+def test_public_content_uses_admin_positions_and_exposes_rich_doctor_profile(client, admin):
+    doctor_id = None
+    try:
+        created = client.post(
+            "/api/v1/admin/doctors",
+            json={
+                "slug": f"medic-{uuid.uuid4().hex[:8]}",
+                "name": "Dr. Test Ordine",
+                "role": "Medic dentist",
+                "focus": "Prezentare scurtă",
+                "description": "Biografie profesională completă.",
+                "approach": "Explic fiecare etapă înainte de tratament.",
+                "credentials": "Acreditare test",
+                "workspace_media_id": None,
+                "secondary_media_id": None,
+                "position": -100,
+                "active": True,
+            },
+            headers=admin,
+        )
+        assert created.status_code == 201, created.get_data(as_text=True)
+        doctor_id = created.get_json()["id"]
+
+        bootstrap_body = client.get("/api/v1/public/bootstrap").get_json()
+        doctor = next(item for item in bootstrap_body["doctors"] if item["name"] == "Dr. Test Ordine")
+        assert doctor["description"] == "Biografie profesională completă."
+        assert doctor["approach"] == "Explic fiecare etapă înainte de tratament."
+        assert bootstrap_body["doctors"][0]["name"] == "Dr. Test Ordine"
+        assert [item["position"] for item in bootstrap_body["clinics"]] == sorted(
+            item["position"] for item in bootstrap_body["clinics"]
+        )
+        assert [item["position"] for item in bootstrap_body["partners"]] == sorted(
+            item["position"] for item in bootstrap_body["partners"]
+        )
+
+        articles = client.get("/api/v1/public/articles").get_json()["items"]
+        assert [item["position"] for item in articles] == sorted(item["position"] for item in articles)
+        offers = client.get("/api/v1/public/offers").get_json()["items"]
+        assert [item["position"] for item in offers] == sorted(item["position"] for item in offers)
+    finally:
+        if doctor_id:
+            assert client.delete(
+                f"/api/v1/admin/doctors/{doctor_id}",
+                headers={**admin, "If-Match": '"1"'},
+            ).status_code in (200, 204)
+
+
 def test_preview_one_use_exchange(client, admin):
     r = client.post("/api/v1/admin/previews", headers=admin)
     assert r.status_code == 201

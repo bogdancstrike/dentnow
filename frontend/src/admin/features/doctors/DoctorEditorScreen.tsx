@@ -145,7 +145,9 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
                   slug: 'dr-andrei-ionescu',
                   role: 'Medic specialist implantologie',
                   focus: 'Implanturi dentare, chirurgie orală și reabilitări complexe, cu explicații clare la fiecare pas.',
-                  credentials: 'Doctor în medicină dentară, membru al Societății Române de Implantologie',
+                  description: 'Dr. Andrei Ionescu construiește planuri de tratament etapizate, adaptate istoricului medical și obiectivelor fiecărui pacient. Consultația începe cu o evaluare completă și cu explicarea alternativelor, a duratei și a costurilor înainte de orice intervenție.',
+                  approach: 'Cred că un tratament bun începe atunci când pacientul înțelege exact ce urmează și de ce.',
+                  credentials: 'Doctor în medicină dentară\nCompetență în implantologie orală\nMembru al Societății Române de Implantologie',
                   active: true,
                 });
                 setDirty(true);
@@ -174,17 +176,49 @@ export function DoctorEditorScreen({ client }: { client: AdminClient }) {
             <Form.Item name="role" label="Rol / Specializare">
               <Input placeholder="Ex: Medic Specialist Ortodonție" />
             </Form.Item>
-            <Form.Item name="focus" label="Focus (Scurtă descriere)">
+            <Form.Item name="focus" label="Prezentare scurtă">
               <Input.TextArea rows={3} placeholder="Scurtă prezentare a competențelor și experienței..." />
             </Form.Item>
-            <Form.Item name="credentials" label="Titluri / Acreditări">
-              <Input placeholder="Ex: Doctor în medicină dentară, membru SRIO" />
+            <Form.Item name="description" label="Descriere completă">
+              <Input.TextArea rows={7} placeholder="Biografie profesională, experiență și modul în care decurge consultația..." />
             </Form.Item>
+            <Form.Item name="approach" label="Abordare medicală">
+              <Input.TextArea rows={4} placeholder="O idee reprezentativă despre relația cu pacientul și filosofia de tratament..." />
+            </Form.Item>
+            <Form.Item name="credentials" label="Titluri / Acreditări">
+              <Input.TextArea rows={4} placeholder={'Câte un titlu sau o acreditare pe rând\nEx: Membru SRIO'} />
+            </Form.Item>
+          </div>
+          <div className="article-form-section">
+            <Typography.Title level={4}>Fotografii profil</Typography.Title>
+            <Typography.Paragraph type="secondary">
+              Portretul este imaginea principală. Celelalte două fotografii apar în povestea profesională doar dacă sunt încărcate.
+            </Typography.Paragraph>
             <Form.Item name="portrait_media_id" label="Portret">
               <ImageUploadField
                 client={client}
                 altText={`Portret ${form.getFieldValue('name') || 'medic DentNow'}`}
                 placeholderText="Echipa DentNow medic stomatolog"
+              />
+            </Form.Item>
+            <Form.Item name="workspace_media_id" label="Fotografie în cabinet">
+              <ImageUploadField
+                client={client}
+                altText={`${form.getFieldValue('name') || 'Medic DentNow'} în cabinet`}
+                variant="hero"
+                width={220}
+                height={150}
+                placeholderText="Fotografie în cabinet"
+              />
+            </Form.Item>
+            <Form.Item name="secondary_media_id" label="Fotografie secundară">
+              <ImageUploadField
+                client={client}
+                altText={`${form.getFieldValue('name') || 'Medic DentNow'} — fotografie profesională`}
+                variant="hero"
+                width={220}
+                height={150}
+                placeholderText="Fotografie profesională"
               />
             </Form.Item>
             <Form.Item name="active" label="Activ pe site?" valuePropName="checked">

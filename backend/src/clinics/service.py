@@ -184,9 +184,10 @@ class DoctorService(CrudService):
     @staticmethod
     def _coerce_portrait(data: dict) -> dict:
         data = dict(data)
-        if "portrait_media_id" in data:
-            value = data["portrait_media_id"]
-            data["portrait_media_id"] = uuid.UUID(str(value)) if value else None
+        for field in ("portrait_media_id", "workspace_media_id", "secondary_media_id"):
+            if field in data:
+                value = data[field]
+                data[field] = uuid.UUID(str(value)) if value else None
         return data
 
     def to_create_kwargs(self, data: dict) -> dict:

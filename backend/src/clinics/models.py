@@ -124,8 +124,12 @@ class Doctor(WorkspaceRoot, Base):
     name: Mapped[str] = mapped_column(Text, nullable=False)
     role: Mapped[str | None] = mapped_column(Text, nullable=True)
     focus: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    approach: Mapped[str | None] = mapped_column(Text, nullable=True)
     credentials: Mapped[str | None] = mapped_column(Text, nullable=True)
     portrait_media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_doctors_portrait_media_id"), nullable=True)
+    workspace_media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_doctors_workspace_media_id"), nullable=True)
+    secondary_media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_doctors_secondary_media_id"), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 

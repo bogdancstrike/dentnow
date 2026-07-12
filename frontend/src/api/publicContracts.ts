@@ -32,6 +32,7 @@ export const ClinicSchema = z.object({
   longitude: z.number().nullable().optional(),
   map_embed_url: z.string().nullable().optional(),
   map_link_url: z.string().nullable().optional(),
+  position: z.number().default(0),
   contacts: z.array(ContactSchema).default([]),
   hours: z.array(HoursSchema).default([]),
   transit: z.array(z.object({
@@ -69,8 +70,22 @@ export const DoctorSchema = z.object({
   name: z.string(),
   role: z.string().nullable().optional(),
   focus: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  approach: z.string().nullable().optional(),
   credentials: z.string().nullable().optional(),
   portrait_media_id: z.string().nullable().optional(),
+  workspace_media_id: z.string().nullable().optional(),
+  secondary_media_id: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
+export const PartnerSchema = z.object({
+  name: z.string(),
+  relationship_type: z.string().nullable().optional(),
+  badge: z.string().nullable().optional(),
+  logo_media_id: z.string().nullable().optional(),
+  rights_note: z.string().nullable().optional(),
+  link_url: z.string().nullable().optional(),
   position: z.number().default(0),
 });
 
@@ -157,6 +172,7 @@ export const BootstrapSchema = z.object({
   navigation: z.record(z.string(), z.array(NavItemSchema)).default({}),
   clinics: z.array(ClinicSchema).default([]),
   doctors: z.array(DoctorSchema).default([]),
+  partners: z.array(PartnerSchema).default([]),
   homepage_services: z.array(HomepageServiceSchema).default([]),
   gallery: z.array(GalleryImageSchema).default([]),
   decontat_cas: z
@@ -199,6 +215,7 @@ export const ArticleSummarySchema = z.object({
   excerpt: z.string().nullable().optional(),
   cover_media_id: z.string().nullable().optional(),
   published_at: z.string().nullable().optional(),
+  position: z.number().default(0),
 });
   
 export const ReviewSchema = z.object({
@@ -228,6 +245,7 @@ export const OfferSchema = z.object({
 export type Bootstrap = z.infer<typeof BootstrapSchema>;
 export type Clinic = z.infer<typeof ClinicSchema>;
 export type Doctor = z.infer<typeof DoctorSchema>;
+export type Partner = z.infer<typeof PartnerSchema>;
 export type Page = z.infer<typeof PageSchema>;
 export type ArticleSummary = z.infer<typeof ArticleSummarySchema>;
 export type Treatment = z.infer<typeof TreatmentSchema>;

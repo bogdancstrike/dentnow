@@ -8,7 +8,7 @@ from flask import request as flask_request
 from sqlalchemy import select
 
 from src.api._helpers import public_endpoint
-from src.catalog.models import Offer, OfferFeature, Treatment, TreatmentCategory, TreatmentPrice
+from src.catalog.models import Offer, OfferFeature, Partner, Treatment, TreatmentCategory, TreatmentPrice
 from src.clinics.models import (
     Clinic,
     ClinicContact,
@@ -88,9 +88,10 @@ def _query_clinics(session):
             "latitude": float(c.latitude) if c.latitude is not None else None,
             "longitude": float(c.longitude) if c.longitude is not None else None,
             "map_embed_url": c.map_embed_url, "map_link_url": c.map_link_url,
+            "position": c.position,
             "contacts": contacts, "hours": hours, "transit": transit, "faqs": faqs,
         })
-    clinics.sort(key=lambda x: x["slug"])
+    clinics.sort(key=lambda x: (x["position"], x["name"]))
     return clinics
 
 
@@ -137,12 +138,31 @@ def _query_doctors(session):
     for d in session.scalars(_live(Doctor).where(Doctor.active.is_(True))).all():
         doctors.append({
             "slug": d.slug, "name": d.name, "role": d.role, "focus": d.focus,
-            "credentials": d.credentials,
+            "description": d.description, "approach": d.approach, "credentials": d.credentials,
             "portrait_media_id": str(d.portrait_media_id) if d.portrait_media_id else None,
+            "workspace_media_id": str(d.workspace_media_id) if d.workspace_media_id else None,
+            "secondary_media_id": str(d.secondary_media_id) if d.secondary_media_id else None,
             "position": d.position,
         })
     doctors.sort(key=lambda x: (x["position"], x["name"]))
     return doctors
+
+
+def _query_partners(session):
+    partners = [
+        {
+            "name": p.name,
+            "relationship_type": p.relationship_type,
+            "badge": p.badge,
+            "logo_media_id": str(p.logo_media_id) if p.logo_media_id else None,
+            "rights_note": p.rights_note,
+            "link_url": p.link_url,
+            "position": p.position,
+        }
+        for p in session.scalars(_live(Partner).where(Partner.active.is_(True))).all()
+    ]
+    partners.sort(key=lambda x: (x["position"], x["name"]))
+    return partners
 
 
 def _query_quiz(session):
@@ -245,7 +265,7 @@ def _query_offers(session):
             "currency": o.currency, "starts_at": o.starts_at, "ends_at": o.ends_at,
             "features": features, "featured": o.featured, "position": o.position,
         })
-    offers.sort(key=lambda x: x["slug"])
+    offers.sort(key=lambda x: (x["position"], x["name"]))
     return offers
 
 
@@ -257,8 +277,9 @@ def _query_articles(session):
             "body_html": render_markdown(a.body_markdown) if a.body_markdown else None,
             "cover_media_id": str(a.cover_media_id) if a.cover_media_id else None,
             "published_at": a.published_at.isoformat() if a.published_at else None,
+            "position": a.position,
         })
-    articles.sort(key=lambda x: x["slug"])
+    articles.sort(key=lambda x: (x["position"], x["title"]))
     return articles
 
 
@@ -345,6 +366,7 @@ def bootstrap(app, operation, request, **kw):
         clinics_data = _query_clinics(session)
         treatments_data = _query_treatments(session)
         doctors_data = _query_doctors(session)
+        partners_data = _query_partners(session)
         homepage_services = _query_homepage_services(session)
         gallery = _query_gallery(session)
         decontat_cas = _query_decontat_cas(session)
@@ -358,6 +380,7 @@ def bootstrap(app, operation, request, **kw):
         "navigation": navigation,
         "clinics": clinics_data,
         "doctors": doctors_data,
+        "partners": partners_data,
         "homepage_services": homepage_services,
         "gallery": gallery,
         "decontat_cas": decontat_cas,
@@ -401,7 +424,7 @@ def page_by_path(app, operation, request, **kw):
 def articles_list(app, operation, request, **kw):
     with session_scope() as session:
         articles = _query_articles(session)
-    summaries = [{k: a.get(k) for k in ("slug", "title", "excerpt", "cover_media_id", "published_at")} for a in articles]
+    summaries = [{k: a.get(k) for k in ("slug", "title", "excerpt", "cover_media_id", "published_at", "position")} for a in articles]
     return _json_response({"release_version": 1, "items": summaries, "total": len(summaries)})
 
 

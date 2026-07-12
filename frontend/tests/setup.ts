@@ -22,6 +22,14 @@ if (!('ResizeObserver' in globalThis)) {
     disconnect() {}
   };
 }
+if (!('IntersectionObserver' in globalThis)) {
+  (globalThis as unknown as { IntersectionObserver: unknown }).IntersectionObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return []; }
+  };
+}
 // ProseMirror measures the current selection when typing. jsdom does not implement
 // DOM range geometry, so provide stable zero-sized rectangles for editor tests.
 if (!Range.prototype.getClientRects) {

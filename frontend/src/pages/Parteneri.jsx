@@ -1,11 +1,13 @@
 import { useRevealAll } from '../hooks/useReveal';
 import config from '../config';
-import { partners } from '../data/content';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
+import { useSiteData } from '../public-site/SiteDataProvider';
+import { mediaUrl } from '../api/publicClient';
 import './Parteneri.css';
 
 export default function Parteneri() {
+  const { partners } = useSiteData();
   const ref = useRevealAll([]);
   return (
     <div ref={ref}>
@@ -14,10 +16,14 @@ export default function Parteneri() {
       <div className="partners-grid">
         {partners.map((p, i) => (
           <article key={p.name} className={`partner-card rv${i > 0 ? ` d${i % 4}` : ''}`}>
-            <span className="p-logo">{p.icon}</span>
+            <span className="p-logo">
+              {p.logo_media_id
+                ? <img src={mediaUrl(p.logo_media_id, 'thumbnail')} alt={`Logo ${p.name}`} />
+                : p.name.split(/\s+/).map((word) => word[0]).join('').slice(0, 4)}
+            </span>
             <div className="p-name">{p.name}</div>
-            <div className="p-type">{p.type}</div>
-            <span className="p-badge">{p.badge}</span>
+            <div className="p-type">{p.relationship_type}</div>
+            {p.badge && <span className="p-badge">{p.badge}</span>}
           </article>
         ))}
       </div>
