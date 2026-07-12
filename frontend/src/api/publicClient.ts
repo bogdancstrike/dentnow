@@ -50,6 +50,25 @@ export async function fetchNews() {
   return data.items;
 }
 
+export interface NewsDetail {
+  slug: string;
+  title: string;
+  category?: string | null;
+  summary?: string | null;
+  body_html?: string | null;
+  media_id?: string | null;
+  event_date?: string | null;
+  published_at?: string | null;
+  position?: number;
+}
+
+export async function fetchNewsItem(slug: string): Promise<NewsDetail> {
+  const data = await apiGetJson<{ news_item: NewsDetail }>(
+    `/v1/public/news/${encodeURIComponent(slug)}`,
+  );
+  return data.news_item;
+}
+
 export interface ArticleDetail extends ArticleSummary {
   body_html?: string | null;
 }
@@ -86,4 +105,5 @@ export const publicQueryKeys = {
   offers: ['public', 'offers'] as const,
   reviews: ['public', 'reviews'] as const,
   news: ['public', 'news'] as const,
+  newsItem: (slug: string) => ['public', 'news', slug] as const,
 };

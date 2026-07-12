@@ -67,6 +67,7 @@ export default function Noutati() {
               <div className="nc-cat">{n.category || 'Noutate'}</div>
               <div className="nc-title">{n.title}</div>
               <div className="nc-date">{n.published_at ? new Intl.DateTimeFormat('ro-RO', { month: 'long', year: 'numeric' }).format(new Date(n.published_at)) : ''}</div>
+              <span className="news-read-more">Citește mai mult</span>
             </Link>
           ))}
         </div>

@@ -98,15 +98,21 @@ const news = makeConfig({
     { title: 'Titlu', dataIndex: 'title' },
     { title: 'Adresă', dataIndex: 'slug' },
     { title: 'Status', dataIndex: 'status', render: STATUS_TAG },
-    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/noutati#${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/noutati/${record.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { status: 'draft' },
-  previewPath: () => '/noutati',
+  previewPath: (row, values) => {
+    const slug = String(values?.slug ?? (row as { slug?: string } | null)?.slug ?? '');
+    return slug ? `/noutati/${slug}` : '/noutati';
+  },
   previewKind: 'news',
   toPreviewDraft: (values, row) => ({
     ...row,
     ...values,
     __preview_slug: (row as unknown as Record<string, unknown> | null)?.slug,
+    body_html: previewMarkdown(String(
+      values.body_markdown ?? (row as unknown as Record<string, unknown> | null)?.body_markdown ?? '',
+    )),
   }),
   previewHint: 'Salvează noutatea cu status „Publicat” pentru a o vedea pe pagina /noutati.',
   sample: {
@@ -117,13 +123,16 @@ const news = makeConfig({
     body_markdown: '## Program sărbători\n\nÎn perioada 24 decembrie – 2 ianuarie programul este redus.\n\n- 24–26 decembrie: Închis\n- 27–31 decembrie: 09:00–15:00',
     status: 'published',
   },
-  form: () => (
+  form: ({ client }) => (
     <>
       <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
       <Item name="slug" label="Adresă URL" rules={[{ required: true }]}><Input placeholder="titlu-noutate" /></Item>
       <Item name="category" label="Categorie"><Input placeholder="Eveniment, Lansare etc." /></Item>
       <Item name="summary" label="Sumar"><Input.TextArea rows={2} /></Item>
       <Item name="body_markdown" label="Conținut (Markdown)"><Input.TextArea rows={6} /></Item>
+      <Item name="media_id" label="Imagine principală">
+        <ImageUploadField client={client} altText="Imagine noutate DentNow" variant="hero" width={220} height={140} />
+      </Item>
       <Item name="published_at" label="Data publicării (YYYY-MM-DD)"><Input placeholder="2026-07-15" /></Item>
       <Item name="status" label="Status" rules={[{ required: true }]}>
         <Select options={[

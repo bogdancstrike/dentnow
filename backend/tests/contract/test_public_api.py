@@ -60,6 +60,40 @@ def test_public_endpoints_do_not_require_auth(client):
     assert client.get("/api/v1/public/articles").status_code in (200, 404)
 
 
+def test_published_news_has_a_public_detail_page(client, admin):
+    news_id = None
+    slug = f"noutate-{uuid.uuid4().hex[:8]}"
+    try:
+        created = client.post(
+            "/api/v1/admin/news",
+            json={
+                "slug": slug,
+                "category": "Program",
+                "title": "Program special",
+                "summary": "Program actualizat.",
+                "body_markdown": "## Orarul clinicilor\n\nConsultați intervalele actualizate.",
+                "published_at": "2026-07-13",
+                "status": "published",
+                "position": 0,
+            },
+            headers=admin,
+        )
+        assert created.status_code == 201, created.get_data(as_text=True)
+        news_id = created.get_json()["id"]
+
+        detail = client.get(f"/api/v1/public/news/{slug}")
+        assert detail.status_code == 200
+        assert detail.get_json()["news_item"]["title"] == "Program special"
+        assert "Orarul clinicilor" in detail.get_json()["news_item"]["body_html"]
+        assert f"/noutati/{slug}" in client.get("/api/v1/public/sitemap.xml").get_data(as_text=True)
+    finally:
+        if news_id:
+            assert client.delete(
+                f"/api/v1/admin/news/{news_id}",
+                headers={**admin, "If-Match": '"1"'},
+            ).status_code in (200, 204)
+
+
 def test_public_bootstrap_includes_active_quiz_children(client, admin):
     quiz_id = None
     try:

@@ -25,6 +25,7 @@ import Recenzii from '../pages/Recenzii';
 import RecenzieRedirect from '../pages/RecenzieRedirect';
 import BeforeAfter from '../pages/BeforeAfter';
 import Noutati from '../pages/Noutati';
+import NewsDetailPage from '../pages/NewsDetailPage';
 import ScorIgiena from '../pages/ScorIgiena';
 import Parteneri from '../pages/Parteneri';
 import Ebook from '../pages/Ebook';
@@ -54,6 +55,7 @@ export default function PublicApp() {
               <Route path="recenzie" element={<RecenzieRedirect />} />
               <Route path="before-after" element={<BeforeAfter />} />
               <Route path="noutati" element={<Noutati />} />
+              <Route path="noutati/:slug" element={<NewsDetailPage />} />
               <Route path="scor-igiena" element={<ScorIgiena />} />
               <Route path="parteneri" element={<Parteneri />} />
               <Route path="ebook" element={<Ebook />} />

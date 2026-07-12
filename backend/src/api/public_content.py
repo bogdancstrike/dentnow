@@ -483,8 +483,11 @@ def sitemap(app, operation, request, **kw):
         ).all()
         paths = [p.path for p in pages]
         articles = _query_articles(session)
+        news_items = _query_news(session)
     for a in articles:
         paths.append(f"/articole/{a['slug']}")
+    for news_item in news_items:
+        paths.append(f"/noutati/{news_item['slug']}")
     urls = "".join(f"<url><loc>{p}</loc></url>" for p in sorted(set(paths)))
     xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
     resp = Response(xml, mimetype="application/xml")
@@ -496,4 +499,14 @@ def sitemap(app, operation, request, **kw):
 def news_list(app, operation, request, **kw):
     with session_scope() as session:
         data = _query_news(session)
-    return _json_response({"items": data})
+    return _json_response({"release_version": 1, "items": data})
+
+
+@public_endpoint
+def news_detail(app, operation, request, slug=None, **kw):
+    with session_scope() as session:
+        news_items = _query_news(session)
+    match = next((item for item in news_items if item.get("slug") == slug), None)
+    if match is None:
+        raise NotFoundError("news item not found")
+    return _json_response({"release_version": 1, "news_item": match})
