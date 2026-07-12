@@ -7,11 +7,11 @@ import ContactCTA from '../components/sections/ContactCTA';
 import './Oferte.css';
 
 export default function Oferte() {
-  const ref = useRevealAll([]);
   const { data: offers = [], isLoading } = useQuery({
     queryKey: publicQueryKeys.offers,
     queryFn: fetchOffers,
   });
+  const ref = useRevealAll([offers]);
 
   return (
     <div ref={ref}>
