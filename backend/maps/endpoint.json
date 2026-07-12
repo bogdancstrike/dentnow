@@ -2247,6 +2247,19 @@
     },
     {
       "namespace": "api",
+      "operation_name": "public_case_studies",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/public/case-studies",
+      "exec_method": {
+        "module_name": "src.api.public_content",
+        "method_name": "case_studies"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "public_clinics",
       "model_name": "Empty",
       "request_method": [

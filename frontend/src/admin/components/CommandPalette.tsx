@@ -81,6 +81,7 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
             { id: 'new-partner', label: 'Partener nou', keywords: 'creare adaugă', icon: <SolutionOutlined />, path: '/admin/parteneri/nou' },
             { id: 'new-article', label: 'Articol nou', keywords: 'creare adaugă blog', icon: <FileAddOutlined />, path: '/admin/articole/nou' },
             { id: 'new-news', label: 'Noutate nouă', keywords: 'creare adaugă știre', icon: <FileTextOutlined />, path: '/admin/noutati' },
+            { id: 'new-case', label: 'Caz Before & After', keywords: 'creare adaugă înainte după rezultat', icon: <PictureOutlined />, path: '/admin/before-after/nou' },
             { id: 'new-service', label: 'Serviciu prima pagină', keywords: 'creare adaugă homepage card', icon: <MedicineBoxOutlined />, path: '/admin/servicii-dentnow' },
             { id: 'new-gallery', label: 'Imagine galerie clinică', keywords: 'creare adaugă foto poză', icon: <PictureOutlined />, path: '/admin/clinica' },
           ],

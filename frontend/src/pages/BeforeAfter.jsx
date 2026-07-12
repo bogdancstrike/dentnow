@@ -1,30 +1,58 @@
 import { useRevealAll } from '../hooks/useReveal';
 import { beforeAfterCases } from '../data/content';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCaseStudies, mediaUrl, publicQueryKeys } from '../api/publicClient';
+import { usePreviewDraft } from '../api/previewDraft';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import { DarkCTA } from '../components/ui/SharedSections';
 import './BeforeAfter.css';
+import { StatusPage } from '../shared/StatusPage';
 
 export default function BeforeAfter() {
-  const ref = useRevealAll([]);
+  const { data: savedCases = [], isError } = useQuery({
+    queryKey: publicQueryKeys.caseStudies,
+    queryFn: fetchCaseStudies,
+  });
+  const draft = usePreviewDraft('case-study');
+  const casesWithDraft = draft
+    ? (() => {
+        const { __preview_position: originalPosition, ...publicDraft } = draft;
+        const index = savedCases.findIndex((item) =>
+          (publicDraft.id && item.id === publicDraft.id)
+          || (typeof originalPosition === 'number' && item.position === originalPosition),
+        );
+        if (index < 0) return [publicDraft, ...savedCases];
+        return savedCases.map((item, itemIndex) => itemIndex === index ? { ...item, ...publicDraft } : item);
+      })()
+    : savedCases;
+  const cases = casesWithDraft.length > 0 ? casesWithDraft : beforeAfterCases;
+  const ref = useRevealAll([cases]);
+  if (isError) return <StatusPage code={503} />;
   return (
     <div ref={ref}>
       <Seo title="Before & After DentNow" description="Exemple vizuale DentNow pregatite pentru fotografii reale cu acordul pacientilor." path="/before-after" />
       <PageHero dark tag="Exemple vizuale DentNow" title='Before & <em class="ac">After.</em>' subtitle="Exemple vizuale ilustrative — fotografiile de caz reale se publica doar cu acordul scris al pacientilor." />
       <div className="case-grid">
-        {beforeAfterCases.map((c, i) => (
-          <article key={c.title} className={`case-card rv${i % 2 ? ' d1' : ''}`}>
+        {cases.map((c, i) => {
+          const fallback = beforeAfterCases[i % beforeAfterCases.length];
+          const beforeImage = c.before_media_id ? mediaUrl(c.before_media_id, 'hero') : c.beforeImage || fallback.beforeImage;
+          const afterImage = c.after_media_id ? mediaUrl(c.after_media_id, 'hero') : c.afterImage || fallback.afterImage;
+          return (
+          <article key={c.id || c.title} className={`case-card rv${i % 2 ? ' d1' : ''}`}>
             <div className="case-pair">
-              <div className="case-shot"><img src={c.beforeImage} alt={`${c.title} inainte - placeholder`} /><div className="case-label">INAINTE</div></div>
-              <div className="case-shot"><img src={c.afterImage} alt={`${c.title} dupa - placeholder`} /><div className="case-label">DUPA</div></div>
+              <div className="case-shot"><img src={beforeImage} alt={`${c.title} înainte`} /><div className="case-label">ÎNAINTE</div></div>
+              <div className="case-shot"><img src={afterImage} alt={`${c.title} după`} /><div className="case-label">DUPĂ</div></div>
             </div>
             <div className="case-body">
-              <small>{c.treatment}</small>
+              <small>{c.treatment || 'Caz DentNow'}</small>
               <h3>{c.title}</h3>
-              <p>{c.desc}</p>
+              <p>{c.description || c.desc}</p>
+              {c.disclaimer && c.disclaimer !== (c.description || c.desc) ? <p className="case-disclaimer">{c.disclaimer}</p> : null}
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
       <DarkCTA title="Vrei o evaluare pentru cazul tau?" subtitle="Trimite-ne detalii sau suna clinica pentru o programare." />
     </div>

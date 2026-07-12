@@ -105,16 +105,16 @@ class CaseService(CrudService):
 
     def to_create_kwargs(self, data):
         data = dict(data)
-        for fk in ("treatment_id", "clinic_id"):
-            if data.get(fk):
-                data[fk] = uuid.UUID(str(data[fk]))
+        for fk in ("treatment_id", "clinic_id", "before_media_id", "after_media_id"):
+            if fk in data:
+                data[fk] = uuid.UUID(str(data[fk])) if data[fk] else None
         return data
 
     def to_update_values(self, data, obj):
         data = dict(data)
-        for fk in ("treatment_id", "clinic_id"):
-            if data.get(fk):
-                data[fk] = uuid.UUID(str(data[fk]))
+        for fk in ("treatment_id", "clinic_id", "before_media_id", "after_media_id"):
+            if fk in data:
+                data[fk] = uuid.UUID(str(data[fk])) if data[fk] else None
         return data
 
 

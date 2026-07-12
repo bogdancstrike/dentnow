@@ -94,6 +94,43 @@ def test_published_news_has_a_public_detail_page(client, admin):
             ).status_code in (200, 204)
 
 
+def test_case_study_is_public_only_after_consent_approval(client, admin):
+    case_id = None
+    try:
+        created = client.post(
+            "/api/v1/admin/case-studies",
+            json={
+                "title": "Caz Before After API",
+                "description": "Descriere controlată din admin.",
+                "disclaimer": "Rezultatele pot varia.",
+                "position": -10,
+            },
+            headers=admin,
+        )
+        assert created.status_code == 201, created.get_data(as_text=True)
+        case_id = created.get_json()["id"]
+        assert all(
+            item["id"] != case_id
+            for item in client.get("/api/v1/public/case-studies").get_json()["items"]
+        )
+
+        approved = client.post(
+            f"/api/v1/admin/case-studies/{case_id}/consent",
+            json={"consent_state": "approved"},
+            headers=admin,
+        )
+        assert approved.status_code == 200, approved.get_data(as_text=True)
+        public_items = client.get("/api/v1/public/case-studies").get_json()["items"]
+        assert public_items[0]["id"] == case_id
+        assert public_items[0]["title"] == "Caz Before After API"
+    finally:
+        if case_id:
+            assert client.delete(
+                f"/api/v1/admin/case-studies/{case_id}",
+                headers={**admin, "If-Match": '"2"'},
+            ).status_code in (200, 204)
+
+
 def test_public_bootstrap_includes_active_quiz_children(client, admin):
     quiz_id = None
     try:

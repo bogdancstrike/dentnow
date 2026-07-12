@@ -22,6 +22,7 @@ from src.core.db import session_scope
 from src.core.errors import NotFoundError
 from src.editorial.models import (
     Article,
+    CaseStudy,
     NewsItem,
     Quiz,
     QuizOption,
@@ -307,6 +308,29 @@ def _query_news(session):
     return news
 
 
+def _query_case_studies(session):
+    case_studies = []
+    rows = session.scalars(
+        _live(CaseStudy).where(CaseStudy.consent_state == "approved")
+    ).all()
+    for case_study in rows:
+        treatment = session.get(Treatment, case_study.treatment_id) if case_study.treatment_id else None
+        case_studies.append({
+            "id": str(case_study.id),
+            "title": case_study.title,
+            "description": case_study.description,
+            "treatment": treatment.name if treatment else None,
+            "treatment_id": str(case_study.treatment_id) if case_study.treatment_id else None,
+            "clinic_id": str(case_study.clinic_id) if case_study.clinic_id else None,
+            "before_media_id": str(case_study.before_media_id) if case_study.before_media_id else None,
+            "after_media_id": str(case_study.after_media_id) if case_study.after_media_id else None,
+            "disclaimer": case_study.disclaimer,
+            "position": case_study.position,
+        })
+    case_studies.sort(key=lambda item: (item["position"], item["title"]))
+    return case_studies
+
+
 def _query_reviews(session):
     reviews = []
     for r in session.scalars(_live(Review).where(Review.status == "published")).all():
@@ -510,3 +534,10 @@ def news_detail(app, operation, request, slug=None, **kw):
     if match is None:
         raise NotFoundError("news item not found")
     return _json_response({"release_version": 1, "news_item": match})
+
+
+@public_endpoint
+def case_studies(app, operation, request, **kw):
+    with session_scope() as session:
+        data = _query_case_studies(session)
+    return _json_response({"release_version": 1, "items": data})

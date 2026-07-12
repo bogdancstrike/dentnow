@@ -13,6 +13,7 @@ import type { ResourceRow } from '../components/ResourceTable';
 import type { Me } from '../auth/permissions';
 import { previewMarkdown } from '../../api/previewDraft';
 import { QuizSubResources } from './quiz/QuizSubResources';
+import { CaseConsentControl } from './beforeAfter/CaseConsentControl';
 
 const { Item } = Form;
 
@@ -234,8 +235,61 @@ const gallery = makeConfig({
   ),
 });
 
+const beforeAfter = makeConfig({
+  title: 'Before & After',
+  singular: 'caz',
+  endpoint: '/v1/admin/case-studies',
+  reorderable: true,
+  columns: [
+    { title: 'Titlu', dataIndex: 'title' },
+    { title: 'Acord', dataIndex: 'consent_state', render: (value) => <Tag color={value === 'approved' ? 'green' : 'gold'}>{value === 'approved' ? 'Confirmat' : 'Nepublicat'}</Tag> },
+    { title: 'Ordine', dataIndex: 'position' },
+    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/before-after" target="_blank" rel="noopener noreferrer">Vezi</Button> },
+  ],
+  defaults: { position: 0 },
+  previewPath: () => '/before-after',
+  previewKind: 'case-study',
+  previewAlwaysDraft: true,
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
+  }),
+  previewHint: 'Preview-ul arată cazul fără a-l publica. Pentru afișare publică este necesar acordul confirmat.',
+  sample: {
+    title: 'Transformare estetică',
+    description: 'Evoluția cazului, explicată pe scurt și fără promisiuni de rezultat identic.',
+    disclaimer: 'Rezultatele diferă de la pacient la pacient.',
+    position: 0,
+  },
+  form: ({ client }) => (
+    <>
+      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
+      <Item name="description" label="Descriere"><Input.TextArea rows={3} /></Item>
+      <Item name="before_media_id" label="Fotografie înainte">
+        <ImageUploadField client={client} altText="Caz DentNow înainte" variant="hero" width={220} height={140} />
+      </Item>
+      <Item name="after_media_id" label="Fotografie după">
+        <ImageUploadField client={client} altText="Caz DentNow după" variant="hero" width={220} height={140} />
+      </Item>
+      <Item name="treatment_id" label="Tratament">
+        <RemoteSelect client={client} endpoint="/v1/admin/treatments" labelKey="name" allowClear placeholder="Selectează tratamentul" />
+      </Item>
+      <Item name="clinic_id" label="Clinică">
+        <RemoteSelect client={client} endpoint="/v1/admin/clinics" labelKey="name" allowClear placeholder="Selectează clinica" />
+      </Item>
+      <Item name="disclaimer" label="Notă / limitarea rezultatelor"><Input.TextArea rows={2} /></Item>
+      <Item name="position" label="Ordine"><Input type="number" min={0} /></Item>
+    </>
+  ),
+  editExtra: ({ row, client, onChanged }) => (
+    <CaseConsentControl row={row} client={client} onChanged={onChanged} />
+  ),
+  editExtraHint: 'Salvează cazul, apoi confirmă acordul pacientului înainte de publicare.',
+});
+
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  legal, quiz, news, 'homepage-services': homepageServices, gallery,
+  legal, quiz, news, 'homepage-services': homepageServices, gallery, 'before-after': beforeAfter,
 };
 
 /** Generic list+editor config for a nav key, or null for bespoke/other screens. */

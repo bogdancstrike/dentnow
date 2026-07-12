@@ -29,6 +29,8 @@ export interface ResourceConfig<T extends ResourceRow> {
   previewKind?: string;
   /** Optional mapping from admin form values to the public renderer's shape. */
   toPreviewDraft?: (values: Record<string, unknown>, row: T | null) => unknown;
+  /** Keep the browser-only draft in preview even when the saved entity is not public. */
+  previewAlwaysDraft?: boolean;
   /** Message shown in the preview before the entity is saved. */
   previewHint?: string;
   /** Optional mock values for the "Precompletează" button on the create page. */

@@ -19,7 +19,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] `/admin/articole` uses the full available admin workspace width.
 - [x] `/noutati/:slug` public detail pages render admin-authored content, every `/noutati` card has a visible „Citește mai mult” action, and news media/detail preview are admin-configurable.
 - [x] Restored grouped quiz question/answer CRUD with per-question „Adaugă răspuns”, answer editing/removal under its parent, result bands, and persisted drag ordering for whole question groups.
-- [ ] Build `/admin/before-after` CRUD with live preview and persisted drag ordering.
+- [x] Built `/admin/before-after` CRUD with separate before/after uploads, clinic/treatment links, consent approval/revocation, browser-only live draft preview, and persisted drag ordering.
 - [ ] Audit and rebuild Footer links with dynamic clinics/contact destinations.
 - [ ] Connect `/confidentialitate`, `/gdpr`, and `/termeni` to legal-document CRUD and update seed data.
 

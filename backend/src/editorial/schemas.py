@@ -112,6 +112,8 @@ class CaseCreate(_Strict):
     title: str
     treatment_id: Optional[str] = None
     clinic_id: Optional[str] = None
+    before_media_id: Optional[str] = None
+    after_media_id: Optional[str] = None
     description: Optional[str] = None
     disclaimer: Optional[str] = None
     position: int = 0
@@ -121,6 +123,8 @@ class CaseUpdate(_Strict):
     title: Optional[str] = None
     treatment_id: Optional[str] = None
     clinic_id: Optional[str] = None
+    before_media_id: Optional[str] = None
+    after_media_id: Optional[str] = None
     description: Optional[str] = None
     disclaimer: Optional[str] = None
     position: Optional[int] = None

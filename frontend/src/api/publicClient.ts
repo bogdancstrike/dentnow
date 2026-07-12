@@ -69,6 +69,24 @@ export async function fetchNewsItem(slug: string): Promise<NewsDetail> {
   return data.news_item;
 }
 
+export interface CaseStudyPublic {
+  id?: string;
+  title: string;
+  description?: string | null;
+  treatment?: string | null;
+  treatment_id?: string | null;
+  clinic_id?: string | null;
+  before_media_id?: string | null;
+  after_media_id?: string | null;
+  disclaimer?: string | null;
+  position?: number;
+}
+
+export async function fetchCaseStudies(): Promise<CaseStudyPublic[]> {
+  const data = await apiGetJson<{ items: CaseStudyPublic[] }>('/v1/public/case-studies');
+  return data.items;
+}
+
 export interface ArticleDetail extends ArticleSummary {
   body_html?: string | null;
 }
@@ -106,4 +124,5 @@ export const publicQueryKeys = {
   reviews: ['public', 'reviews'] as const,
   news: ['public', 'news'] as const,
   newsItem: (slug: string) => ['public', 'news', slug] as const,
+  caseStudies: ['public', 'case-studies'] as const,
 };
