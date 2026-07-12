@@ -11,6 +11,7 @@ import {
 import {
   ArrowLeftOutlined,
   SaveOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -120,6 +121,22 @@ export function PartnerEditorScreen({ client }: { client: AdminClient }) {
           >
             Salvează
           </Button>
+          {!editing && (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                form.setFieldsValue({
+                  name: 'Banca Transilvania',
+                  relationship_type: 'Finanțare în rate',
+                  badge: 'Rate fără dobândă',
+                  link_url: 'https://www.bancatransilvania.ro',
+                });
+                setDirty(true);
+              }}
+            >
+              Precompletează
+            </Button>
+          )}
         </Space>
 
         <Form

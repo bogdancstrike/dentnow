@@ -13,6 +13,7 @@ import {
 import {
   ArrowLeftOutlined,
   DesktopOutlined,
+  EditOutlined,
   EyeOutlined,
   MobileOutlined,
   SaveOutlined,
@@ -199,6 +200,25 @@ export function ArticleEditorScreen({ client }: { client: AdminClient }) {
               onClick={() => window.open(`/articole/${articleQuery.data?.slug}`, '_blank', 'noopener')}
             >
               Versiunea publicată
+            </Button>
+          )}
+          {!editing && (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                form.setFieldsValue({
+                  title: 'Cum alegi tratamentul potrivit pentru tine',
+                  slug: 'cum-alegi-tratamentul-potrivit',
+                  category: 'Ghiduri',
+                  excerpt: 'Un ghid scurt care te ajută să înțelegi opțiunile de tratament și cum să iei cea mai bună decizie pentru sănătatea ta orală.',
+                  body_markdown: '## Introducere\n\nAlegerea tratamentului dentar potrivit poate părea copleșitoare.\n\n### Pași importanți\n- Consultația inițială\n- Planul de tratament personalizat\n- Întrebările pe care să le pui medicului\n\n> Sănătatea orală începe cu o decizie informată.',
+                  author: 'Echipa DentNow',
+                  status: 'draft',
+                });
+                setDirty(true);
+              }}
+            >
+              Precompletează
             </Button>
           )}
           <Button

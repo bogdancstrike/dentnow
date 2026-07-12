@@ -20,7 +20,7 @@ Review of the Gemini-authored commits (`4d94d3b..HEAD`) plus new product fixes. 
 - [~] **Clinic editor missing fields** — contacts (telefon/WhatsApp/email via dropdown), orar, „cum ajungi” (transport, dropdown mode), FAQ already exist as sub-editors; now discoverable via a clear prompt on `/nou` (child rows need a saved parent) and the real-page preview shows them. Gallery still pending (#9).
 - [x] **Doctors editor** — doctors are now API-backed: new `_query_doctors` in bootstrap, `DoctorTeam.jsx` reads `useSiteData().doctors` (with portrait via media proxy + fallback). Editor gains portrait upload (reusable `ImageUploadField`), credentials field, `Precompletează`, and a live preview of the real `/#echipa` section. Also fixed `portrait_media_id` missing from doctor schemas (would 400) and the public media proxy (dropped the obsolete publication gate so newly uploaded images serve).
 - [x] **Noutăți** — `/admin/noutati` CRUD was unreachable (no nav item, though the backend endpoints + registry config existed); added the nav entry so the news list/create/edit/delete works. `Noutati.jsx` was already API-driven (`fetchNews`) — fixed its broken image URL (`/media/<id>` → media proxy) and added a `published_at` field to the admin form.
-- [ ] **Precompletează** prefill button on every `/nou` editor.
+- [x] **Precompletează** prefill button on every `/nou` editor — now on clinici, oferte, tratamente, echipa-medicala, articole, parteneri (fills realistic mock data for quick editing).
 - [ ] **Home „Tratamente uzuale”** — match master styling + `/admin/servicii-dentnow` CRUD.
 - [ ] **Clinic gallery CRUD** at `/admin/clinica`.
 - [ ] **`/decontat-cas` CRUD** at `/admin/decontat-cas` with live preview.
