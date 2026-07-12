@@ -20,6 +20,21 @@ def serialize_site_state(s: Any) -> dict:
     }
 
 
+def serialize_homepage_service(s: Any) -> dict:
+    return {
+        "id": str(s.id),
+        "version": s.version,
+        "title": s.title,
+        "description": s.description,
+        "icon": s.icon,
+        "link": s.link,
+        "position": s.position,
+        "active": s.active,
+        "created_at": _iso(s.created_at),
+        "updated_at": _iso(s.updated_at),
+    }
+
+
 def serialize_link(link: Any) -> dict:
     return {
         "id": str(link.id),

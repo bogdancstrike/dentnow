@@ -8,6 +8,8 @@ from src.core.db import session_scope
 from src.iam.capabilities import CAP_CONTENT_READ, CAP_CONTENT_WRITE
 from src.iam.decorators import require_capability
 from src.site.schemas import (
+    HomepageServiceCreate,
+    HomepageServiceUpdate,
     LinkCreate,
     LinkUpdate,
     MenuCreate,
@@ -23,6 +25,7 @@ from src.site.schemas import (
     SiteSettingsUpdate,
 )
 from src.site.service import (
+    HomepageServiceService,
     LinkService,
     MenuService,
     NavItemService,
@@ -45,6 +48,32 @@ def site_update(app, operation, request, principal=None, **kw):
     payload = _validate(SiteSettingsUpdate, flask_request.get_json(silent=True))
     with session_scope() as session:
         return _json(SiteSettingsService(session, principal).update(payload), 200)
+
+
+# ── homepage services (Tratamente uzuale cards) ──────────────────────────────
+@require_capability(CAP_CONTENT_READ)
+def homepage_services_list(app, operation, request, principal=None, **kw):
+    return do_list(HomepageServiceService, principal)
+
+
+@require_capability(CAP_CONTENT_READ)
+def homepage_services_get(app, operation, request, principal=None, service_id=None, **kw):
+    return do_get(HomepageServiceService, principal, service_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def homepage_services_create(app, operation, request, principal=None, **kw):
+    return do_create(HomepageServiceService, HomepageServiceCreate, principal)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def homepage_services_update(app, operation, request, principal=None, service_id=None, **kw):
+    return do_update(HomepageServiceService, HomepageServiceUpdate, principal, service_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def homepage_services_delete(app, operation, request, principal=None, service_id=None, **kw):
+    return do_delete(HomepageServiceService, principal, service_id)
 
 
 # ── links ────────────────────────────────────────────────────────────────────

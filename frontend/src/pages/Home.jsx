@@ -174,7 +174,10 @@ export default function Home() {
           <p className="lead rv d2">Am redus promisiunile vagi si am pastrat lucrurile care ajuta pacientul sa decida: serviciu, pret de pornire, pas urmator.</p>
         </div>
         <div className="services-grid">
-          {services.map((s, i) => (
+          {(siteData.homepage_services && siteData.homepage_services.length > 0
+            ? siteData.homepage_services.map((s) => ({ icon: s.icon, title: s.title, desc: s.description, link: s.link || '/tratamente' }))
+            : services
+          ).map((s, i) => (
             <Link to={s.link} key={s.title} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
               <span className="svc-icon">{s.icon}</span>
               <div className="svc-arrow">↗</div>

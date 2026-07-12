@@ -102,8 +102,32 @@ const news = makeConfig({
   ),
 });
 
+const homepageServices = makeConfig({
+  title: 'Servicii pe prima pagină',
+  singular: 'serviciu',
+  endpoint: '/v1/admin/homepage-services',
+  columns: [
+    { title: 'Badge', dataIndex: 'icon' },
+    { title: 'Titlu', dataIndex: 'title' },
+    { title: 'Ordine', dataIndex: 'position' },
+    { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/#servicii" target="_blank" rel="noopener noreferrer">Vezi</Button> },
+  ],
+  defaults: { active: true, position: 0 },
+  form: () => (
+    <>
+      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input placeholder="Ex: Implanturi Dentare" /></Item>
+      <Item name="description" label="Descriere"><Input.TextArea rows={3} placeholder="Scurtă descriere a serviciului..." /></Item>
+      <Item name="icon" label="Badge (ex. 01)"><Input placeholder="01" /></Item>
+      <Item name="link" label="Link"><Input placeholder="/tratamente#implanturi" /></Item>
+      <Item name="position" label="Ordine"><Input type="number" min={0} /></Item>
+      <Item name="active" label="Activ" valuePropName="checked"><input type="checkbox" /></Item>
+    </>
+  ),
+});
+
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  legal, quiz, news,
+  legal, quiz, news, 'homepage-services': homepageServices,
 };
 
 export function screenForKey(key: string, client: AdminClient, _me: Me): ReactNode | null {

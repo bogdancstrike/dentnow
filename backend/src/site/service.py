@@ -13,6 +13,7 @@ from src.core.errors import ConflictError, NotFoundError, ValidationError
 from src.audit.service import write_audit
 from src.integrations.outbox import enqueue_event
 from src.site.models import (
+    HomepageService,
     NavigationItem,
     NavigationMenu,
     Page,
@@ -22,6 +23,7 @@ from src.site.models import (
     SiteState,
 )
 from src.site.serializers import (
+    serialize_homepage_service,
     serialize_link,
     serialize_menu,
     serialize_nav_item,
@@ -69,6 +71,17 @@ class SiteSettingsService:
         )
         bump_workspace_version(self.session)
         return after
+
+
+class HomepageServiceService(CrudService):
+    model = HomepageService
+    entity_type = "homepage_service"
+    event_prefix = "homepage_service"
+    sortable = ("position", "title", "created_at")
+    search_columns = ("title", "description")
+
+    def serialize(self, obj: Any) -> dict:
+        return serialize_homepage_service(obj)
 
 
 class LinkService(CrudService):

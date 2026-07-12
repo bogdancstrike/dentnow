@@ -22,6 +22,7 @@ from src.core.errors import NotFoundError
 from src.editorial.models import Article, NewsItem, Review
 from src.editorial.rich_text import render_markdown
 from src.site.models import (
+    HomepageService,
     NavigationItem,
     NavigationMenu,
     Page,
@@ -80,6 +81,17 @@ def _query_clinics(session):
         })
     clinics.sort(key=lambda x: x["slug"])
     return clinics
+
+
+def _query_homepage_services(session):
+    services = []
+    for s in session.scalars(_live(HomepageService).where(HomepageService.active.is_(True))).all():
+        services.append({
+            "title": s.title, "description": s.description, "icon": s.icon,
+            "link": s.link, "position": s.position,
+        })
+    services.sort(key=lambda x: x["position"])
+    return services
 
 
 def _query_doctors(session):
@@ -242,6 +254,7 @@ def bootstrap(app, operation, request, **kw):
         clinics_data = _query_clinics(session)
         treatments_data = _query_treatments(session)
         doctors_data = _query_doctors(session)
+        homepage_services = _query_homepage_services(session)
 
     homepage_treatments = [t for t in treatments_data if t.get("homepage_featured")]
     return _json_response({
@@ -251,6 +264,7 @@ def bootstrap(app, operation, request, **kw):
         "navigation": navigation,
         "clinics": clinics_data,
         "doctors": doctors_data,
+        "homepage_services": homepage_services,
         "homepage_treatments": homepage_treatments,
     })
 

@@ -48,6 +48,24 @@ class LinkUpdate(_Strict):
     enabled: Optional[bool] = None
 
 
+class HomepageServiceCreate(_Strict):
+    title: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    link: Optional[str] = None
+    position: int = 0
+    active: bool = True
+
+
+class HomepageServiceUpdate(_Strict):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    link: Optional[str] = None
+    position: Optional[int] = None
+    active: Optional[bool] = None
+
+
 class MenuCreate(_Strict):
     key: str
     label: str

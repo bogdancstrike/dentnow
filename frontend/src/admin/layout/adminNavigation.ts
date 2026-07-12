@@ -19,6 +19,7 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
     group: 'Catalog',
     items: [
       { slug: 'tratamente', key: 'treatments', label: 'Tratamente & prețuri', capability: CAP.contentRead },
+      { slug: 'servicii-dentnow', key: 'homepage-services', label: 'Servicii (prima pagină)', capability: CAP.contentRead },
       { slug: 'oferte', key: 'offers', label: 'Oferte', capability: CAP.contentRead },
       { slug: 'parteneri', key: 'partners', label: 'Parteneri', capability: CAP.contentRead },
     ],

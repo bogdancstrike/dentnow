@@ -47,6 +47,14 @@ export const ClinicSchema = z.object({
   })).default([]),
 });
 
+export const HomepageServiceSchema = z.object({
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  icon: z.string().nullable().optional(),
+  link: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
 export const DoctorSchema = z.object({
   slug: z.string(),
   name: z.string(),
@@ -117,6 +125,7 @@ export const BootstrapSchema = z.object({
   navigation: z.record(z.string(), z.array(NavItemSchema)).default({}),
   clinics: z.array(ClinicSchema).default([]),
   doctors: z.array(DoctorSchema).default([]),
+  homepage_services: z.array(HomepageServiceSchema).default([]),
   homepage_treatments: z.array(TreatmentSchema).default([]),
 });
 

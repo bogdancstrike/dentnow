@@ -202,6 +202,19 @@ class SitePublication(Base):
     )
 
 
+class HomepageService(WorkspaceRoot, Base):
+    """A card in the homepage "Tratamente uzuale" services section."""
+    __tablename__ = "homepage_services"
+    __table_args__ = (Index("ix_homepage_services_position", "position"),)
+
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    icon: Mapped[str | None] = mapped_column(Text, nullable=True)  # short badge, e.g. "01"
+    link: Mapped[str | None] = mapped_column(Text, nullable=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
 class PreviewSession(Base, TimestampMixin):
     __tablename__ = "preview_sessions"
     __table_args__ = (

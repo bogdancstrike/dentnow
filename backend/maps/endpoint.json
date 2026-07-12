@@ -2387,6 +2387,71 @@
         "module_name": "src.api.access_admin",
         "method_name": "principal_scopes_remove"
       }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "homepage_services_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/homepage-services",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "homepage_services_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "homepage_services_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/homepage-services",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "homepage_services_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "homepage_services_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/homepage-services/<service_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "homepage_services_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "homepage_services_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/homepage-services/<service_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "homepage_services_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "homepage_services_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/homepage-services/<service_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "homepage_services_delete"
+      }
     }
   ]
 }
