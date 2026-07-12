@@ -3,7 +3,7 @@ import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
-import { services, trustStats } from '../data/content';
+import { trustStats } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReviews, publicQueryKeys } from '../api/publicClient';
@@ -61,25 +61,39 @@ export default function Home() {
           <h2 className="h2d rv d1">Cele 3 clinici DentNow din Bucuresti.</h2>
         </div>
         <div className="locations-grid">
-          {config.locations.map((loc, i) => (
-            <div className={`location-card rv${i > 0 ? ` d${i}` : ''}`} key={loc.name}>
-              <div className="location-map">
-                <iframe src={loc.embedUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={`${loc.name} pe Google Maps`} />
-              </div>
-              <div className="location-info">
-                <span className="location-area">{loc.area}</span>
-                <h3 className="location-name">{loc.name}</h3>
-                <p className="location-line"><IconMapPin size={16} /><span>{loc.address}</span></p>
-                <p className="location-line"><IconPhone size={16} /><a href={`tel:${loc.phone}`}>{loc.phoneDisplay}</a></p>
-                <p className="location-line"><IconWhatsApp size={16} /><a href={whatsappUrlFor(loc.phone, `Buna ziua, doresc o programare la ${loc.name}.`)} target="_blank" rel="noopener noreferrer">WhatsApp {loc.phoneDisplay}</a></p>
-                <div className="location-line location-hours">
-                  <IconClock size={16} />
-                  <span>{loc.schedule.map((h) => <span key={h.day} className="loc-hour">{h.day}: {h.hours}{h.open ? '' : ' (Inchis)'}</span>)}</span>
+          {siteData.clinics.map((loc, i) => {
+            const phoneContact = loc.contacts.find((c) => c.kind === 'phone');
+            const phoneDisplay = phoneContact?.display_value || '';
+            const phoneTel = phoneContact?.url?.replace('tel:', '') || '';
+            const embedUrl = loc.map_embed_url;
+            const mapsLink = loc.map_link_url;
+            return (
+              <div className={`location-card rv${i > 0 ? ` d${i}` : ''}`} key={loc.name}>
+                <div className="location-map">
+                  {embedUrl && <iframe src={embedUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={`${loc.name} pe Google Maps`} />}
                 </div>
-                <a href={loc.mapsLink} target="_blank" rel="noopener noreferrer" className="location-link">Deschide in Google Maps</a>
+                <div className="location-info">
+                  <span className="location-area">{loc.area}</span>
+                  <h3 className="location-name">{loc.name}</h3>
+                  <p className="location-line"><IconMapPin size={16} /><span>{loc.address_full}</span></p>
+                  <p className="location-line"><IconPhone size={16} /><a href={`tel:${phoneTel}`}>{phoneDisplay}</a></p>
+                  <p className="location-line"><IconWhatsApp size={16} /><a href={whatsappUrlFor(phoneTel, `Buna ziua, doresc o programare la ${loc.name}.`)} target="_blank" rel="noopener noreferrer">WhatsApp {phoneDisplay}</a></p>
+                  <div className="location-line location-hours">
+                    <IconClock size={16} />
+                    <span>
+                      {loc.hours.map((h) => {
+                        const dayNames = ['Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata', 'Duminica'];
+                        const dayName = dayNames[h.weekday - 1] || 'Zi';
+                        const hoursStr = h.closed ? '(Inchis)' : `${h.opens_at?.substring(0, 5) || ''} - ${h.closes_at?.substring(0, 5) || ''}`;
+                        return <span key={h.weekday} className="loc-hour">{dayName}: {hoursStr}</span>;
+                      })}
+                    </span>
+                  </div>
+                  {mapsLink && <a href={mapsLink} target="_blank" rel="noopener noreferrer" className="location-link">Deschide in Google Maps</a>}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div className="contact-social rv">
           <a href={`mailto:${config.email}`} className="social-btn"><IconMail size={16} /> {config.email}</a>
@@ -111,12 +125,12 @@ export default function Home() {
           <p className="lead rv d2">Am redus promisiunile vagi si am pastrat lucrurile care ajuta pacientul sa decida: serviciu, pret de pornire, pas urmator.</p>
         </div>
         <div className="services-grid">
-          {services.map((s, i) => (
-            <Link to={s.link} key={s.title} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
-              <span className="svc-icon">{s.icon}</span>
+          {siteData.homepage_treatments.map((s, i) => (
+            <Link to={`/tratamente#${s.slug}`} key={s.slug} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
+              <span className="svc-icon">{s.homepage_icon || '01'}</span>
               <div className="svc-arrow">↗</div>
-              <h3 className="svc-title">{s.title}</h3>
-              <p className="svc-desc">{s.desc}</p>
+              <h3 className="svc-title">{s.name}</h3>
+              <p className="svc-desc">{s.summary}</p>
             </Link>
           ))}
         </div>

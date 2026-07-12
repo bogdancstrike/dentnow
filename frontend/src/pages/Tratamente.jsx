@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchTreatments, publicQueryKeys } from '../api/publicClient';
 import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
-import { treatmentCategories, jumpNavItems } from '../data/content';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import ContactCTA from '../components/sections/ContactCTA';
@@ -11,6 +12,11 @@ export default function Tratamente() {
   const revealRef = useRevealAll([]);
   const openPicker = useClinicPicker();
   const [activeId, setActiveId] = useState('');
+
+  const { data: treatments = [], isLoading } = useQuery({
+    queryKey: publicQueryKeys.treatments,
+    queryFn: fetchTreatments,
+  });
 
   useEffect(() => {
     const sections = document.querySelectorAll('.tarife-cat');
@@ -22,7 +28,30 @@ export default function Tratamente() {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [treatments]);
+
+  const categories = [];
+  const catMap = new Map();
+
+  treatments.forEach((t) => {
+    const catName = t.category_label || 'Altele';
+    const catSlug = t.category_slug || 'altele';
+    if (!catMap.has(catName)) {
+      catMap.set(catName, { id: catSlug, title: catName, rows: [] });
+      categories.push(catMap.get(catName));
+    }
+    const cat = catMap.get(catName);
+    t.prices.forEach((p) => {
+      cat.rows.push({
+        name: t.name,
+        price: p.amount ? `${p.amount} ${p.currency}` : 'La cerere',
+        oldPrice: p.old_amount ? `${p.old_amount} ${p.currency}` : null,
+        promo: !!p.old_amount,
+      });
+    });
+  });
+
+  const jumpNavItems = categories.map((cat) => ({ id: cat.id, label: cat.title }));
 
   return (
     <div ref={revealRef}>
@@ -42,15 +71,16 @@ export default function Tratamente() {
           </div>
         </div>
 
-        {treatmentCategories.map((cat) => (
+        {isLoading && <div style={{ padding: '2rem', textAlign: 'center' }}>Se incarca tratamentele...</div>}
+        {categories.map((cat) => (
           <section className="tarife-cat rv" id={cat.id} key={cat.id}>
             <div className="cat-head">
               <h2 className="cat-title">{cat.title}</h2>
               <a href="#programare-tratamente" className="btn btn-outline btn-sm">Cere programare</a>
             </div>
             <div className="tarife-table">
-              {cat.rows.map((row) => (
-                <div key={row.name} className={`t-row${row.promo ? ' promo' : ''}`}>
+              {cat.rows.map((row, idx) => (
+                <div key={`${row.name}-${idx}`} className={`t-row${row.promo ? ' promo' : ''}`}>
                   <span className="tr-name">{row.name}{row.promo && <span className="promo-tag">PROMO</span>}</span>
                   {row.oldPrice && <span className="tr-old">{row.oldPrice}</span>}
                   <span className={`tr-price${row.promo ? ' promo-p' : ''}`}>{row.price}</span>
@@ -58,7 +88,6 @@ export default function Tratamente() {
               ))}
             </div>
             {cat.note && <p className="cat-note">{cat.note}</p>}
-            {cat.casNote && <div className="cas-note"><strong>{cat.casNote}</strong></div>}
           </section>
         ))}
 

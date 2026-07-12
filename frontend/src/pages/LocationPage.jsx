@@ -1,88 +1,17 @@
 import { useParams, useLocation, Navigate } from 'react-router-dom';
+import { IconMapPin, IconPhone, IconClock, IconWhatsApp, IconAlert } from '../components/ui/Icons';
 import config from '../config';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
-import { IconMapPin, IconPhone, IconClock, IconWhatsApp, IconAlert } from '../components/ui/Icons';
 import { useClinicPicker } from '../hooks/useClinicPicker';
+import { useSiteData } from '../public-site/SiteDataProvider';
 import './LocationPage.css';
-
-const locationDetails = {
-  dristor: {
-    slug: 'dristor',
-    title: 'Clinică Stomatologică Dristor — DentNow Râmnicu Vâlcea 29',
-    description: 'DentNow Dristor — Cabinet stomatologic modern pe Str. Râmnicu Vâlcea nr. 29. Implanturi, aparate dentare, profilaxie și urgențe stomatologice în Sector 3.',
-    name: 'DentNow Dristor',
-    subTitle: 'Clinică stomatologică în zona Dristor / Râmnicu Vâlcea (Sector 3)',
-    address: 'Strada Râmnicu Vâlcea nr. 29, Bl. 20D, Parter, Ap. 1, Interfon 01',
-    postalCode: '031806',
-    phoneDisplay: '0720 509 802',
-    phoneTel: '+40720509802',
-    whatsapp: 'https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow%20Dristor',
-    mapsLink: 'https://maps.app.goo.gl/XnpRHcXp5RjKuMoc9',
-    embedUrl: 'https://maps.google.com/maps?q=DentNow+Strada+Ramnicu+Valcea+29+Bucuresti&z=16&hl=ro&output=embed',
-    transit: [
-      { mode: 'Metrou', detail: 'Stația Metrou Dristor 1 / Dristor 2 (5-7 minute de mers pe jos).' },
-      { mode: 'Autobuz / Tramvai', detail: 'Linia 330, 135, Tramvai 19, 23 (stația Râmnicu Sărat / Dristorului).' },
-      { mode: 'Parcare', detail: 'Locuri de parcare disponibile pe Strada Râmnicu Vâlcea și în proximitate.' }
-    ],
-    faqs: [
-      { q: 'Unde se află exact clinica DentNow Dristor?', a: 'Clinica este situată pe Str. Râmnicu Vâlcea nr. 29, bloc 20D, la parter, ap. 1 (Interfon 01), în apropierea pieței Râmnicu Sărat și a metroului Dristor.' },
-      { q: 'Cum pot face o programare la sediul Dristor?', a: 'Puteți suna direct la 0720 509 802 sau ne puteți scrie pe WhatsApp pentru o programare rapidă în aceeași zi.' },
-      { q: 'Ce tratamente sunt disponibile la sediul Dristor?', a: 'Servicii complete: implantologie dentară, ortodonție, protetică zirconiu, igienizare GBT, albire laser și stomatologie pediatrică.' }
-    ]
-  },
-  'baba-novac': {
-    slug: 'baba-novac',
-    title: 'Clinică Stomatologică Baba Novac — DentNow Dristorului 96',
-    description: 'DentNow Baba Novac — Cabinet dentar pe Str. Dristorului 96, Sector 3. Servicii stomatologice complete, aparate dentare, implanturi & igienizare.',
-    name: 'DentNow Baba Novac',
-    subTitle: 'Clinică stomatologică în zona Baba Novac / Dristor (Sector 3)',
-    address: 'Strada Dristorului nr. 96, Bl. 12B, Scara B, Parter, Ap. 47',
-    postalCode: '031538',
-    phoneDisplay: '0720 509 802',
-    phoneTel: '+40720509802',
-    whatsapp: 'https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow%20Baba%20Novac',
-    mapsLink: 'https://maps.app.goo.gl/1VCnsrxEKDYoUykm6',
-    embedUrl: 'https://maps.google.com/maps?q=DentNow+Baba+Novac+Strada+Dristorului+96+Bucuresti&z=16&hl=ro&output=embed',
-    transit: [
-      { mode: 'Metrou', detail: 'Stația Metrou Dristor / Piața Muncii (8 minute de mers pe jos).' },
-      { mode: 'Autobuz / Troleibuz', detail: 'Liniile 70, 79, 311 (stația Baba Novac / Dristorului).' },
-      { mode: 'Parcare', detail: 'Parcare rezidențială și stradală accesibilă pe Strada Dristorului.' }
-    ],
-    faqs: [
-      { q: 'Unde se află sediul DentNow Baba Novac?', a: 'Adresa exactă este Str. Dristorului nr. 96, bloc 12B, scara B, parter, ap. 47, la intersecția zonelor Baba Novac și Dristor.' },
-      { q: 'Aveți servicii de ortodonție și implanturi la Baba Novac?', a: 'Da, oferim consultații de specialitate, aparate dentare fixe/transparente și implantologie cu echipamente moderne.' }
-    ]
-  },
-  'prelungirea-ghencea': {
-    slug: 'prelungirea-ghencea',
-    title: 'Clinică Stomatologică Prelungirea Ghencea — DentNow Ghencea 91F',
-    description: 'DentNow Prelungirea Ghencea 91F — Cabinet stomatologic în Sector 6. Implantologie, stomatologie copii, protetică și igienă dentară.',
-    name: 'DentNow Prelungirea Ghencea',
-    subTitle: 'Clinică stomatologică modernă în Prelungirea Ghencea (Sector 6)',
-    address: 'Prelungirea Ghencea nr. 91F, Bl. 2, Demisol, Ap. 5',
-    postalCode: '061715',
-    phoneDisplay: '0723 232 263',
-    phoneTel: '+40723232263',
-    whatsapp: 'https://wa.me/40723232263?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20DentNow%20Prelungirea%20Ghencea',
-    mapsLink: 'https://maps.app.goo.gl/W9gX6aXMKgV2WbZM8',
-    embedUrl: 'https://maps.google.com/maps?q=DentNow+Prelungirea+Ghencea+91F+Bucuresti&z=16&hl=ro&output=embed',
-    transit: [
-      { mode: 'Autobuz', detail: 'Liniile 122, 222, 385, 422 (stația Valea Oltului / Prelungirea Ghencea).' },
-      { mode: 'Tramvai', detail: 'Linia 41 (Ghencea / Drumul Taberei).' },
-      { mode: 'Parcare', detail: 'Spații de parcare ușor accesibile în zona ansamblului rezidențial Ghencea 91F.' }
-    ],
-    faqs: [
-      { q: 'Care este numărul de telefon al clinicii din Prelungirea Ghencea?', a: 'Ne puteți contacta direct la 0723 232 263 sau prin mesaj instant pe WhatsApp.' },
-      { q: 'Clinica oferă servicii de urgență stomatologică?', a: 'Da, asigurăm tratamente rapide pentru dureri dentare acute, abcese și traume în limita programului de lucru.' }
-    ]
-  }
-};
 
 export default function LocationPage() {
   const { citySlug } = useParams();
   const location = useLocation();
   const openPicker = useClinicPicker();
+  const { clinics } = useSiteData();
 
   let targetSlug = citySlug;
   if (!targetSlug) {
@@ -91,11 +20,32 @@ export default function LocationPage() {
     else if (location.pathname.includes('stomatologie-prelungirea-ghencea')) targetSlug = 'prelungirea-ghencea';
   }
 
-  const loc = locationDetails[targetSlug];
+  const backendClinic = clinics.find((c) => c.slug === targetSlug);
 
-  if (!loc) {
+  if (!backendClinic) {
     return <Navigate to="/" replace />;
   }
+
+  const phoneContact = backendClinic.contacts.find((c) => c.kind === 'phone');
+  const whatsappContact = backendClinic.contacts.find((c) => c.kind === 'whatsapp');
+
+  const loc = {
+    slug: backendClinic.slug,
+    title: `Clinică Stomatologică ${backendClinic.area} — ${backendClinic.name}`,
+    description: `DentNow ${backendClinic.area} — Cabinet stomatologic modern pe ${backendClinic.address_full}.`,
+    name: backendClinic.name,
+    subTitle: `Clinică stomatologică în zona ${backendClinic.area}`,
+    address: backendClinic.address_full,
+    postalCode: backendClinic.postal_code || '',
+    phoneDisplay: phoneContact?.display_value || '0720 509 802',
+    phoneTel: phoneContact?.url?.replace('tel:', '') || '+40720509802',
+    whatsapp: whatsappContact?.url || `https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20${backendClinic.name}`,
+    mapsLink: backendClinic.map_link_url || '',
+    embedUrl: backendClinic.map_embed_url || '',
+    transit: backendClinic.transit || [],
+    faqs: backendClinic.faqs || [],
+    hours: backendClinic.hours || [],
+  };
 
   const jsonLd = [{
     '@type': 'Dentist',
@@ -132,8 +82,8 @@ export default function LocationPage() {
     '@type': 'FAQPage',
     mainEntity: loc.faqs.map((f) => ({
       '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a }
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer }
     }))
   }];
 
@@ -221,12 +171,12 @@ export default function LocationPage() {
         {/* Location FAQ Section */}
         <div className="location-faq-sec">
           <h2>Întrebări Frecvente — {loc.name}</h2>
-          <div className="location-faq-list">
-            {loc.faqs.map((faq) => (
-              <div key={faq.q} className="faq-item">
-                <h4>{faq.q}</h4>
-                <p>{faq.a}</p>
-              </div>
+          <div className="faqs-grid loc-faqs">
+            {loc.faqs.map((f) => (
+              <details key={f.question} className="faq-item">
+                <summary>{f.question}</summary>
+                <p>{f.answer}</p>
+              </details>
             ))}
           </div>
         </div>

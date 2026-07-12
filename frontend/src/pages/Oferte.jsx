@@ -1,5 +1,6 @@
 import { useRevealAll } from '../hooks/useReveal';
-import { offers } from '../data/content';
+import { useQuery } from '@tanstack/react-query';
+import { fetchOffers, publicQueryKeys } from '../api/publicClient';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import ContactCTA from '../components/sections/ContactCTA';
@@ -7,23 +8,37 @@ import './Oferte.css';
 
 export default function Oferte() {
   const ref = useRevealAll([]);
+  const { data: offers = [], isLoading } = useQuery({
+    queryKey: publicQueryKeys.offers,
+    queryFn: fetchOffers,
+  });
+
   return (
     <div ref={ref}>
       <Seo title="Oferte stomatologice DentNow" description="Oferte DentNow pentru consultatii, igienizare, implanturi si albire. Preturile se confirma inainte de tratament." path="/oferte" />
       <PageHero dark tag="Oferte DentNow" title='Pachete clare,<br><em class="ac">fara presiune falsa.</em>' subtitle="Ofertele sunt afisate cu pret de pornire si trebuie confirmate de clinica inainte de lansare." />
       <div className="offers-grid">
-        {offers.map((o, i) => (
-          <article key={o.name} className={`offer-card rv${i > 0 ? ` d${i % 3}` : ''}${o.featured ? ' featured' : ''}`}>
-            <div className="offer-badge">{o.badge}</div>
-            <span className="offer-icon">{o.icon}</span>
-            <h3 className="offer-name">{o.name}</h3>
-            <p className="offer-desc">{o.desc}</p>
-            <div className="price-row"><span className="price-new">{o.price}</span><span className="price-old">{o.oldPrice}</span></div>
-            <span className="price-save">Economisesti {o.save}</span>
-            <div className="offer-features">{o.features.map((f) => <div key={f} className="of">{f}</div>)}</div>
-            <a href="#oferta-programare" className="btn btn-dark offer-action">Cere programare</a>
-          </article>
-        ))}
+        {isLoading && <div style={{ color: 'white', padding: '2rem' }}>Se incarcă ofertele...</div>}
+        {offers.map((o, i) => {
+          const saveAmount = (o.old_amount && o.price_amount) ? o.old_amount - o.price_amount : null;
+          return (
+            <article key={o.slug} className={`offer-card rv${i > 0 ? ` d${i % 3}` : ''}${o.featured ? ' featured' : ''}`}>
+              <div className="offer-badge">{o.badge || 'Promo'}</div>
+              <span className="offer-icon">⭐</span>
+              <h3 className="offer-name">{o.name}</h3>
+              <p className="offer-desc">{o.summary}</p>
+              <div className="price-row">
+                <span className="price-new">{o.price_amount ? `${o.price_amount} ${o.currency}` : 'La cerere'}</span>
+                {o.old_amount && <span className="price-old">{o.old_amount} {o.currency}</span>}
+              </div>
+              {saveAmount && <span className="price-save">Economisesti {saveAmount} {o.currency}</span>}
+              <div className="offer-features">
+                {o.features && o.features.map((f) => <div key={f} className="of">{f}</div>)}
+              </div>
+              <a href="#oferta-programare" className="btn btn-dark offer-action">Cere programare</a>
+            </article>
+          );
+        })}
       </div>
       <section id="oferta-programare" className="offer-appointment">
         <ContactCTA title="Cere detalii despre ofertă" subtitle="Sună-ne sau scrie-ne pe WhatsApp și îți spunem exact ce include oferta și cum te poți programa. Nu folosim formular online." source="oferte" />

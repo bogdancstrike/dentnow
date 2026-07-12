@@ -52,22 +52,8 @@ const routes = [
   { url: '/termeni', priority: '0.3', changefreq: 'yearly' }
 ];
 
-// 2. Read articles directly from articles.js
-try {
-  const articlesFile = fs.readFileSync(path.resolve('./src/data/articles.js'), 'utf-8');
-  const titleMatches = [...articlesFile.matchAll(/title:\s*'([^']+)'/g)];
-  titleMatches.forEach((match) => {
-    const title = match[1];
-    const slug = slugify(title);
-    routes.push({
-      url: `/articole/${slug}`,
-      priority: '0.7',
-      changefreq: 'monthly'
-    });
-  });
-} catch (e) {
-  console.warn('Could not read articles for sitemap:', e.message);
-}
+// 2. Read articles from API (skipped for now in static build)
+// TODO: Fetch from /api/v1/public/articles during build
 
 // Build XML string
 const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>

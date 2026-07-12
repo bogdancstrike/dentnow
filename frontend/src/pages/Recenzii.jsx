@@ -6,7 +6,6 @@ import ReviewCard from '../components/ui/ReviewCard';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import { DarkCTA } from '../components/ui/SharedSections';
-import './Recenzii.css';
 
 export default function Recenzii() {
   const ref = useRevealAll([]);

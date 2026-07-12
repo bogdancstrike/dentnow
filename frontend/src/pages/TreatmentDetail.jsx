@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+import { fetchTreatments, publicQueryKeys } from '../api/publicClient';
 import { useLocation, Link, Navigate } from 'react-router-dom';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
@@ -137,16 +139,40 @@ const treatmentData = {
 };
 
 export default function TreatmentDetail() {
-  // Routes are static paths (e.g. /implant-dentar-bucuresti), so the slug
-  // comes from the pathname, not from a route param.
   const { pathname } = useLocation();
   const treatSlug = pathname.replace(/\/+$/, '').split('/').pop();
   const openPicker = useClinicPicker();
-  const item = treatmentData[treatSlug];
 
-  if (!item) {
+  const { data: treatments = [], isLoading } = useQuery({
+    queryKey: publicQueryKeys.treatments,
+    queryFn: fetchTreatments,
+  });
+
+  const backendItem = treatments.find(t => t.slug === treatSlug);
+
+  if (isLoading) {
+    return <div style={{ padding: '8rem 2rem', textAlign: 'center', color: 'white' }}>Se încarcă tratamentul...</div>;
+  }
+
+  if (!backendItem) {
     return <Navigate to="/tratamente" replace />;
   }
+
+  const primaryPrice = backendItem.prices?.[0];
+
+  const item = {
+    title: backendItem.name,
+    description: backendItem.summary || backendItem.name,
+    tag: backendItem.category_label || 'Tratament',
+    heroTitle: backendItem.name,
+    heroSubtitle: backendItem.summary || 'Detalii tratament și opțiuni',
+    aiOverview: backendItem.summary || '',
+    price: primaryPrice?.amount ? `${primaryPrice.amount} ${primaryPrice.currency}` : 'La cerere',
+    oldPrice: primaryPrice?.old_amount ? `${primaryPrice.old_amount} ${primaryPrice.currency}` : null,
+    detailsHtml: backendItem.detail_html || '',
+    benefits: [],
+    faqs: []
+  };
 
   const jsonLd = [
     {
@@ -192,23 +218,29 @@ export default function TreatmentDetail() {
           <div className="treatment-main-content">
             <div dangerouslySetInnerHTML={{ __html: item.detailsHtml }} />
 
-            <h3>Beneficii Cheie la DentNow:</h3>
-            <ul className="benefits-list">
-              {item.benefits.map((b) => (
-                <li key={b}>✓ {b}</li>
-              ))}
-            </ul>
+            {item.benefits && item.benefits.length > 0 && (
+              <>
+                <h3>Beneficii Cheie la DentNow:</h3>
+                <ul className="benefits-list">
+                  {item.benefits.map((b) => (
+                    <li key={b}>✓ {b}</li>
+                  ))}
+                </ul>
+              </>
+            )}
 
             {/* FAQs */}
-            <div className="treatment-faqs">
-              <h3>Întrebări Frecvente</h3>
-              {item.faqs.map((f) => (
-                <div key={f.q} className="faq-card">
-                  <h4>{f.q}</h4>
-                  <p>{f.a}</p>
-                </div>
-              ))}
-            </div>
+            {item.faqs && item.faqs.length > 0 && (
+              <div className="treatment-faqs">
+                <h3>Întrebări Frecvente</h3>
+                {item.faqs.map((f) => (
+                  <div key={f.q} className="faq-card">
+                    <h4>{f.q}</h4>
+                    <p>{f.a}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Pricing & Booking Card */}
