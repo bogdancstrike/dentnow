@@ -368,7 +368,6 @@ def collect_event(
         connection_asn=identity.connection_asn,
         connection_isp=identity.connection_isp,
         geo_accuracy_m=location.accuracy_m,
-        location_source=location.source,
         engaged_seconds=payload.engaged_seconds,
     )
     session.add(event)
@@ -590,6 +589,13 @@ def _geography(
             decimals,
         ).label("longitude")
 
+        if source == LOCATION_SOURCE_BROWSER:
+            source_filter = AnalyticsEvent.geo_accuracy_m.is_not(None)
+        elif source == LOCATION_SOURCE_IP:
+            source_filter = AnalyticsEvent.geo_accuracy_m.is_(None)
+        else:
+            source_filter = AnalyticsEvent.latitude.is_(None)
+
         return session.execute(
             select(
                 country_key,
@@ -603,7 +609,7 @@ def _geography(
             .where(
                 *_range_filter(start, end),
                 page_filter,
-                AnalyticsEvent.location_source == source,
+                source_filter,
                 AnalyticsEvent.latitude.is_not(None),
                 AnalyticsEvent.longitude.is_not(None),
             )
@@ -712,13 +718,13 @@ def analytics_overview(
             .filter(AnalyticsEvent.consent_granted.is_(None))
             .label("unknown_consent_events"),
             func.count(AnalyticsEvent.id)
-            .filter(AnalyticsEvent.location_source == LOCATION_SOURCE_BROWSER)
+            .filter(AnalyticsEvent.geo_accuracy_m.is_not(None))
             .label("browser_location_events"),
             func.count(AnalyticsEvent.id)
-            .filter(AnalyticsEvent.location_source == LOCATION_SOURCE_IP)
+            .filter(AnalyticsEvent.latitude.is_not(None), AnalyticsEvent.geo_accuracy_m.is_(None))
             .label("ip_location_events"),
             func.count(AnalyticsEvent.id)
-            .filter(AnalyticsEvent.location_source == LOCATION_SOURCE_NONE)
+            .filter(AnalyticsEvent.latitude.is_(None))
             .label("no_location_events"),
         ).where(*_range_filter(start, end))
     ).one()
