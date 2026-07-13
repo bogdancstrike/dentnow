@@ -39,17 +39,15 @@ describe('runtime configuration loader', () => {
     expect(cfg.analyticsRequireConsent).toBe(false);
   });
 
-  it('accepts explicit preview and keycloak coordinates', async () => {
+  it('accepts explicit keycloak coordinates', async () => {
     const cfg = await loadRuntimeConfig(
       fetchJson({
         apiBase: '/api',
-        previewAppUrl: 'https://preview.dentnow.example/',
         keycloakUrl: 'https://keycloak.doncik.ro/',
         keycloakRealm: 'doncik',
         keycloakClientId: 'dentnow-admin-spa',
       }),
     );
-    expect(cfg.previewAppUrl).toBe('https://preview.dentnow.example');
     expect(cfg.keycloakUrl).toBe('https://keycloak.doncik.ro');
     expect(requireAdminConfig(cfg).keycloakRealm).toBe('doncik');
   });
@@ -102,7 +100,6 @@ describe('runtime configuration loader', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(MissingAdminConfigError);
       const missing = (err as MissingAdminConfigError).missing;
-      expect(missing).toContain('previewAppUrl');
       expect(missing).toContain('keycloakUrl');
       expect(missing).toContain('keycloakRealm');
       expect(missing).toContain('keycloakClientId');

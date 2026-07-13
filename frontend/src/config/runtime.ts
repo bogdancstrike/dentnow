@@ -15,7 +15,6 @@ import { z } from 'zod';
 const RuntimeConfigSchema = z
   .object({
     apiBase: z.string().min(1, 'apiBase is required'),
-    previewAppUrl: z.string().url().optional(),
     keycloakUrl: z.string().url().optional(),
     keycloakRealm: z.literal('doncik').optional(),
     keycloakClientId: z.literal('dentnow-admin-spa').optional(),
@@ -31,7 +30,7 @@ export type AdminRuntimeConfig = DentNowRuntimeConfig &
   Required<
     Pick<
       DentNowRuntimeConfig,
-      'previewAppUrl' | 'keycloakUrl' | 'keycloakRealm' | 'keycloakClientId'
+      'keycloakUrl' | 'keycloakRealm' | 'keycloakClientId'
     >
   >;
 
@@ -57,9 +56,6 @@ function normalize(config: DentNowRuntimeConfig): DentNowRuntimeConfig {
   return {
     ...config,
     apiBase: stripTrailingSlash(config.apiBase),
-    previewAppUrl: config.previewAppUrl
-      ? stripTrailingSlash(config.previewAppUrl)
-      : undefined,
     keycloakUrl: config.keycloakUrl
       ? stripTrailingSlash(config.keycloakUrl)
       : undefined,
@@ -116,7 +112,7 @@ export function getRuntimeConfig(): DentNowRuntimeConfig {
 }
 
 /**
- * Assert the admin/preview coordinates exist. Called only when the admin bundle is
+ * Assert the admin authentication coordinates exist. Called only when the admin bundle is
  * requested (bare `/admin` or `/admin/*`). Throws {@link MissingAdminConfigError}
  * listing every missing field so the shell can render an explicit error instead of a
  * broken login attempt.
@@ -125,7 +121,6 @@ export function requireAdminConfig(
   config: DentNowRuntimeConfig = getRuntimeConfig(),
 ): AdminRuntimeConfig {
   const missing: string[] = [];
-  if (!config.previewAppUrl) missing.push('previewAppUrl');
   if (!config.keycloakUrl) missing.push('keycloakUrl');
   if (!config.keycloakRealm) missing.push('keycloakRealm');
   if (!config.keycloakClientId) missing.push('keycloakClientId');

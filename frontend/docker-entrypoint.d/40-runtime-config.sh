@@ -9,7 +9,6 @@ TMP="${OUT}.tmp"
 
 jq -n \
   --arg apiBase "${APP_API_BASE:-/api}" \
-  --arg previewAppUrl "${APP_PREVIEW_URL:-}" \
   --arg keycloakUrl "${APP_KEYCLOAK_URL:-}" \
   --arg keycloakRealm "${APP_KEYCLOAK_REALM:-doncik}" \
   --arg keycloakClientId "${APP_KEYCLOAK_CLIENT_ID:-dentnow-admin-spa}" \
@@ -19,7 +18,6 @@ jq -n \
   '{ apiBase: $apiBase, buildRevision: $buildRevision,
      analyticsEnabled: ($analyticsEnabled == "true"),
      analyticsRequireConsent: ($analyticsRequireConsent != "false") }
-   + ( if $previewAppUrl != "" then { previewAppUrl: $previewAppUrl } else {} end )
    + ( if $keycloakUrl != "" then { keycloakUrl: $keycloakUrl, keycloakRealm: $keycloakRealm, keycloakClientId: $keycloakClientId } else {} end )' \
   > "$TMP"
 

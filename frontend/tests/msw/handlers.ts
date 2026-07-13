@@ -9,7 +9,6 @@ export const handlers = [
   http.get('/config.json', () =>
     HttpResponse.json({
       apiBase: '/api',
-      previewAppUrl: 'http://localhost:3001',
       keycloakUrl: 'http://localhost:8080',
       keycloakRealm: 'doncik',
       keycloakClientId: 'dentnow-admin-spa',
