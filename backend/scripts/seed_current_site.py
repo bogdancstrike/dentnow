@@ -21,9 +21,12 @@ from sqlalchemy import func, select  # noqa: E402
 
 import src.models_all  # noqa: E402,F401
 from src.catalog.models import (  # noqa: E402
-    Offer, OfferFeature, Partner, Technology, Treatment, TreatmentCategory, TreatmentPrice,
+    Offer, OfferFeature, Partner, Technology, Treatment, TreatmentCategory, TreatmentFaq,
+    TreatmentPrice,
 )
-from src.clinics.models import Clinic, ClinicContact, ClinicHours, Doctor  # noqa: E402
+from src.clinics.models import (  # noqa: E402
+    Clinic, ClinicContact, ClinicFaq, ClinicHours, ClinicTransitItem, Doctor,
+)
 from src.core.clock import utcnow, uuid7  # noqa: E402
 from src.core.db import session_scope  # noqa: E402
 from src.editorial.models import (  # noqa: E402
@@ -34,7 +37,8 @@ from src.iam.principal import Principal  # noqa: E402
 from src.media.models import PublicationMedia  # noqa: E402
 from src.media.service import MediaService  # noqa: E402
 from src.site.models import (  # noqa: E402
-    NavigationItem, NavigationMenu, Page, SiteLink, SiteState, SitePublication,
+    CasFaq, CasStep, GalleryImage, HomepageService, NavigationItem, NavigationMenu, Page,
+    PageSection, PageSeo, SiteLink, SiteState, SitePublication,
 )
 
 SEEDS = Path(__file__).resolve().parents[1] / "seeds"
@@ -162,7 +166,7 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
     # ── clinics (+ contacts, hours) ──────────────────────────────────────────
     clinic_ids = []
     for pos, c in enumerate(data["clinics"]):
-        clinic_slug = _slug(c["name"].removeprefix("DentNow "))
+        clinic_slug = c.get("slug") or _slug(c["name"].removeprefix("DentNow "))
         postal_match = re.search(r"\b\d{6}\b", c.get("address", ""))
         clinic = Clinic(
             slug=clinic_slug, name=c["name"], area=c.get("area"),
@@ -190,8 +194,25 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
                     clinic_id=clinic.id, weekday=weekday, opens_at=opens_at, closes_at=closes_at,
                     closed=not h.get("open", True),
                 ))
+        for transit_position, transit in enumerate(c.get("transit", [])):
+            session.add(ClinicTransitItem(
+                clinic_id=clinic.id,
+                mode=transit.get("mode"),
+                label=transit.get("label") or transit.get("mode") or "Transport",
+                detail=transit.get("detail"),
+                position=transit_position,
+            ))
+        for faq_position, faq in enumerate(c.get("faqs", [])):
+            session.add(ClinicFaq(
+                clinic_id=clinic.id,
+                question=faq["question"],
+                answer=faq["answer"],
+                position=faq_position,
+            ))
     counts["clinics"] = len(clinic_ids)
     counts["phone_lines"] = len({c["phone"] for c in data["clinics"]})
+    counts["clinic_transit_items"] = sum(len(c.get("transit", [])) for c in data["clinics"])
+    counts["clinic_faqs"] = sum(len(c.get("faqs", [])) for c in data["clinics"])
 
     # ── links ────────────────────────────────────────────────────────────────
     for i, ph in enumerate(data.get("phones", [])):
@@ -211,11 +232,28 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
     if data["contact"].get("reviewsUrl"):
         session.add(SiteLink(kind="review", label="Google", value=data["contact"]["reviewsUrl"]))
 
-    # ── services (6) as treatments ───────────────────────────────────────────
+    # ── homepage service cards + service treatments ──────────────────────────
+    for position, service_data in enumerate(data["services"]):
+        homepage_service = session.scalar(
+            select(HomepageService).where(
+                HomepageService.position == position,
+                HomepageService.deleted_at.is_(None),
+            )
+        )
+        if homepage_service is None:
+            homepage_service = HomepageService(position=position)
+            session.add(homepage_service)
+        homepage_service.title = service_data["title"]
+        homepage_service.description = service_data.get("desc")
+        homepage_service.icon = service_data.get("icon")
+        homepage_service.link = service_data.get("link")
+        homepage_service.active = True
+
     for i, s in enumerate(data["services"]):
         session.add(Treatment(slug=f"service-{i}-{_slug(s['title'])}", name=s["title"],
                              summary=s.get("desc"), active=True, position=i))
     counts["services"] = len(data["services"])
+    counts["homepage_services"] = len(data["services"])
 
     # ── categories (10) + prices (20) ────────────────────────────────────────
     price_rows = 0
@@ -224,14 +262,24 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
         for item in data.get("quickServices", [])
         if "#" in item.get("link", "")
     }
+    detail_by_category = {
+        detail["category_id"]: detail
+        for detail in data.get("treatmentDetails", {}).values()
+    }
+    treatment_faq_count = 0
+    detailed_treatment_count = 0
     for pos, cat in enumerate(data["treatmentCategories"]):
         category = TreatmentCategory(slug=_slug(cat["id"]), label=cat["title"], position=pos)
         session.add(category)
         session.flush()
         for j, row in enumerate(cat["rows"]):
             quick = quick_by_category.get(cat["id"]) if j == 0 else None
+            detail = detail_by_category.get(cat["id"]) if j == 0 else None
             t = Treatment(
-                slug=f"cat-{cat['id']}-{j}", name=row["name"], category_id=category.id,
+                slug=detail["slug"] if detail else f"cat-{cat['id']}-{j}",
+                name=row["name"], category_id=category.id,
+                summary=detail.get("seo", {}).get("description") if detail else None,
+                detail_markdown=detail.get("detail_markdown") if detail else None,
                 homepage_featured=quick is not None,
                 homepage_label=quick.get("label") if quick else None,
                 homepage_icon=quick.get("icon") if quick else None,
@@ -239,6 +287,16 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
             )
             session.add(t)
             session.flush()
+            if detail:
+                detailed_treatment_count += 1
+                for faq_position, faq in enumerate(detail.get("faqs", [])):
+                    session.add(TreatmentFaq(
+                        treatment_id=t.id,
+                        question=faq["question"],
+                        answer=faq["answer"],
+                        position=faq_position,
+                    ))
+                    treatment_faq_count += 1
             kind, amount, amount_max = _parse_price(row.get("price", ""))
             _old_kind, old_amount, _old_max = _parse_price(row.get("oldPrice", ""))
             session.add(TreatmentPrice(
@@ -248,6 +306,8 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
             price_rows += 1
     counts["treatment_categories"] = len(data["treatmentCategories"])
     counts["treatment_price_rows"] = price_rows
+    counts["detailed_treatments"] = detailed_treatment_count
+    counts["treatment_faqs"] = treatment_faq_count
 
     # ── offers (6) + features ────────────────────────────────────────────────
     for pos, o in enumerate(data["offers"]):
@@ -334,6 +394,49 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
     counts["quiz_questions"] = qcount
     counts["quiz_options"] = ocount
 
+    # ── gallery + decontat CAS structured content ────────────────────────────
+    for position, gallery_data in enumerate(data.get("gallery", [])):
+        gallery_image = session.scalar(
+            select(GalleryImage).where(
+                GalleryImage.position == position,
+                GalleryImage.deleted_at.is_(None),
+            )
+        )
+        if gallery_image is None:
+            gallery_image = GalleryImage(position=position)
+            session.add(gallery_image)
+        gallery_image.media_id = None
+        gallery_image.image_url = gallery_data.get("src")
+        gallery_image.title = gallery_data["title"]
+        gallery_image.caption = gallery_data.get("caption")
+        gallery_image.alt_text = gallery_data.get("alt")
+        gallery_image.active = True
+    counts["gallery_images"] = len(data.get("gallery", []))
+
+    for position, step_data in enumerate(data.get("cas", {}).get("steps", [])):
+        step = session.scalar(
+            select(CasStep).where(CasStep.position == position, CasStep.deleted_at.is_(None))
+        )
+        if step is None:
+            step = CasStep(position=position)
+            session.add(step)
+        step.title = step_data["title"]
+        step.text = step_data.get("text")
+        step.active = True
+    counts["cas_steps"] = len(data.get("cas", {}).get("steps", []))
+
+    for position, faq_data in enumerate(data.get("cas", {}).get("faqs", [])):
+        faq = session.scalar(
+            select(CasFaq).where(CasFaq.position == position, CasFaq.deleted_at.is_(None))
+        )
+        if faq is None:
+            faq = CasFaq(position=position)
+            session.add(faq)
+        faq.question = faq_data["q"]
+        faq.answer = faq_data["a"]
+        faq.active = True
+    counts["cas_faqs"] = len(data.get("cas", {}).get("faqs", []))
+
     # ── legal (migration baseline) ───────────────────────────────────────────
     legal_data = data.get("legal", {})
     for t in ("gdpr", "privacy", "terms"):
@@ -344,14 +447,77 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
                                effective_date=utcnow().date(), body_markdown=body,
                                approved_by="seed-import", approved_at=utcnow(), active=True))
 
-    # ── pages (route inventory) ──────────────────────────────────────────────
+    # ── pages (route inventory + page-local sections/SEO) ───────────────────
     pages_by_path = {}
+    clinic_data_by_slug = {clinic["slug"]: clinic for clinic in data["clinics"]}
+    treatment_details = data.get("treatmentDetails", {})
+    page_content = data.get("pageContent", {})
     for path_, key, template, title in ROUTES:
         page = Page(path=path_, route_key=key, template_key=template, title=title,
                     enabled=True, indexable=not path_.startswith(("/gdpr", "/confid", "/termeni")))
         session.add(page)
         session.flush()
         pages_by_path[path_] = page
+
+        authored = page_content.get(path_)
+        treatment_detail = treatment_details.get(path_)
+        clinic_data = None
+        if path_.startswith("/stomatologie-"):
+            clinic_data = clinic_data_by_slug.get(path_.removeprefix("/stomatologie-"))
+
+        seo_data = None
+        sections: list[dict] = []
+        if authored:
+            seo_data = authored.get("seo")
+            sections.extend(authored.get("sections", []))
+            if path_ == "/":
+                sections.extend([
+                    {"block_type": "trust_stats", "payload": {"items": data.get("trustStats", [])}},
+                    {"block_type": "patient_journey", "payload": {"items": data.get("patientJourney", [])}},
+                    {"block_type": "footer_intro", "payload": {
+                        "description": data.get("footer", {}).get("description", ""),
+                    }},
+                ])
+        elif treatment_detail:
+            seo_data = treatment_detail.get("seo")
+            sections.extend([
+                {"block_type": "treatment_hero", "payload": treatment_detail.get("hero", {})},
+                {"block_type": "treatment_overview", "payload": {"text": treatment_detail.get("overview", "")}},
+                {"block_type": "treatment_benefits", "payload": {"items": treatment_detail.get("benefits", [])}},
+            ])
+        elif clinic_data:
+            seo_data = clinic_data.get("seo")
+            sections.append({
+                "block_type": "clinic_intro",
+                "payload": {"subtitle": clinic_data.get("subtitle", "")},
+            })
+
+        if seo_data:
+            session.add(PageSeo(
+                page_id=page.id,
+                title=seo_data.get("title"),
+                description=seo_data.get("description"),
+                canonical_path=path_,
+            ))
+        for section_position, section_data in enumerate(sections):
+            session.add(PageSection(
+                page_id=page.id,
+                block_type=section_data["block_type"],
+                payload=section_data.get("payload", {}),
+                position=section_position,
+            ))
+
+    counts["pages"] = len(pages_by_path)
+    counts["page_seo"] = sum(
+        1 for path_, *_rest in ROUTES
+        if path_ in page_content
+        or path_ in treatment_details
+        or path_.startswith("/stomatologie-")
+    )
+    counts["page_sections"] = sum(
+        len(content.get("sections", [])) + (3 if path_ == "/" else 0)
+        for path_, content in page_content.items()
+    ) + (3 * len(treatment_details)) + len(clinic_data_by_slug)
 
     # ── public navigation comes from the seed/database, including nested items ─
     navigation_count = 0

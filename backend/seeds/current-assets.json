@@ -111,8 +111,8 @@
     {
       "path": "team.svg",
       "source_ref": "/assets/dentnow/team.svg",
-      "bytes": 2194,
-      "sha256": "2b84ca1ad4fe8118c0b54e711e8459e32417f0d74741fe8b6e683709115d543f"
+      "bytes": 2172,
+      "sha256": "3f752e9ad5b974b5cc817cf64b2e2ad1a04acc7466ce3447fa9a049ac74d7fc1"
     },
     {
       "path": "treatment-room.svg",

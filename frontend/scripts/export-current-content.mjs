@@ -18,6 +18,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FE = path.resolve(HERE, '..');
 const SEEDS = path.resolve(FE, '..', 'backend', 'seeds');
 const ASSETS_OUT = path.join(SEEDS, 'assets');
+const SITE_FIXTURE = path.join(SEEDS, 'current-site.json');
 
 fs.mkdirSync(ASSETS_OUT, { recursive: true });
 
@@ -30,6 +31,16 @@ function parseEnv(file) {
     out[line.slice(0, i).trim()] = line.slice(i + 1).trim();
   }
   return out;
+}
+
+function clinicSlug(name) {
+  return name
+    .replace(/^DentNow\s+/i, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 async function loadConfig() {
@@ -47,13 +58,15 @@ async function loadConfig() {
 }
 
 const content = await import(path.join(FE, 'src', 'data', 'content.js'));
-const articles = await import(path.join(FE, 'src', 'data', 'articles.js'));
-const reviews = await import(path.join(FE, 'src', 'data', 'reviews.js'));
 const navigation = await import(path.join(FE, 'src', 'data', 'navigation.js'));
 const clinicProof = await import(path.join(FE, 'src', 'data', 'clinicProof.js'));
 const casData = await import(path.join(FE, 'src', 'data', 'cas.js'));
-const legalData = await import(path.join(FE, 'src', 'data', 'legal.js'));
+const pageLocalData = await import(path.join(FE, 'src', 'data', 'pageContent.js'));
 const config = await loadConfig();
+if (!fs.existsSync(SITE_FIXTURE)) {
+  throw new Error('backend/seeds/current-site.json is required to preserve already-migrated backend content');
+}
+const migratedBackendContent = JSON.parse(fs.readFileSync(SITE_FIXTURE, 'utf8'));
 
 // ── collect + copy referenced assets ────────────────────────────────────────
 const assetRefs = new Set();
@@ -66,7 +79,8 @@ function collectAssets(obj) {
   } else if (Array.isArray(obj)) obj.forEach(collectAssets);
   else if (typeof obj === 'object') Object.values(obj).forEach(collectAssets);
 }
-[content, articles, reviews, navigation, clinicProof].forEach((m) => collectAssets({ ...m }));
+[content, navigation, clinicProof, migratedBackendContent.articles, migratedBackendContent.reviews]
+  .forEach((m) => collectAssets(m));
 // Always include the packaged dentnow asset directory (og image, doctors, cases).
 for (const f of fs.readdirSync(path.join(publicAssets, 'assets', 'dentnow'))) {
   assetRefs.add(`/assets/dentnow/${f}`);
@@ -95,7 +109,10 @@ const site = {
   social: config.social,
   address: config.address,
   maps: config.maps,
-  clinics: config.locations,
+  clinics: config.locations.map((clinic) => {
+    const slug = clinicSlug(clinic.name);
+    return { ...clinic, slug, ...(pageLocalData.locationDetails[slug] || {}) };
+  }),
   schedule: content.scheduleHours,
   services: content.services,
   quickServices: content.quickServices,
@@ -106,19 +123,25 @@ const site = {
   ebooks: content.ebooks,
   newsItems: content.newsItems,
   quizQuestions: content.quizQuestions,
-  articles: articles.articles,
-  reviews: reviews.reviews,
+  articles: migratedBackendContent.articles,
+  reviews: migratedBackendContent.reviews,
   doctors: clinicProof.doctors,
   technologies: clinicProof.technologies,
+  gallery: clinicProof.clinicGallery,
+  patientJourney: clinicProof.patientJourney,
+  trustStats: content.trustStats,
+  footer: pageLocalData.footerContent,
+  treatmentDetails: pageLocalData.treatmentDetails,
+  pageContent: pageLocalData.pageContent,
   navigation: {
     desktop: navigation.navLinks, mobile: navigation.mobileNavLinks,
     footerServices: navigation.footerServices, footerClinic: navigation.footerClinic,
   },
   cas: casData.casData,
-  legal: legalData.legalContent,
+  legal: migratedBackendContent.legal,
 };
 
-fs.writeFileSync(path.join(SEEDS, 'current-site.json'), JSON.stringify(site, null, 2) + '\n');
+fs.writeFileSync(SITE_FIXTURE, JSON.stringify(site, null, 2) + '\n');
 fs.writeFileSync(path.join(SEEDS, 'current-assets.json'), JSON.stringify({ assets: assetManifest }, null, 2) + '\n');
 
 console.log(

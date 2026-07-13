@@ -12,6 +12,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 
 ## FOLLOW-UPS (2026-07-13)
 
+- [x] Expanded canonical seed parity with the three clinics' historical transit/FAQ/SEO copy, four treatment-detail routes + FAQs, home/CAS/emergency page sections, Footer copy, gallery/journey/trust content, exact CAS rows, and the current team placeholder asset; default and loaded seeds are idempotency-tested on fresh PostgreSQL 18 schemas with real MinIO.
 - [x] Persisted drag ordering for articles, offers, clinics, clinic gallery, doctors, homepage services, partners, news, CAS content, and clinic FAQs.
 - [x] Rich doctor profiles with extended biography, approach, credentials, and supporting photography in admin and `/echipa/:slug`.
 - [x] Homepage contact clinic cards and gallery thumbnails use clearly separated white surfaces; removed the obsolete quick-services strip.
@@ -241,12 +242,12 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [x] Step 6: committed; `content-source.env` deleted (values captured; config.js fallbacks identical)
 
 - [x] Added canonical `backend/seed.py`; it imports the audited current-site fixture and uploads a replaceable placeholder through the real MinIO media service.
-- [~] `backend/seeds/current-site.json` contains clinics, contacts, schedules, social links, navigation, services, prices, offers, doctors, partners, articles, reviews, news, ebooks, technology, cases and quiz data from the current frontend.
-- [ ] **Parity gap:** import every remaining page-local value, especially complete GDPR/confidentiality/terms copy, CAS/emergency/local SEO page content, clinic transit/FAQ data, treatment-detail copy, footer/home sections and any data still declared inside JSX/config files.
-- [ ] Make `seed.py` seed every parity item above into typed backend records/page sections; no placeholder legal body and no current public text left only in frontend code.
+- [~] `backend/seeds/current-site.json` contains clinics, contacts, schedules, transit/FAQs, social links, navigation, services, prices, treatment details/FAQs, offers, doctors, partners, articles, reviews, news, ebooks, technology, cases, quiz, gallery, home/CAS/emergency sections, Footer copy and complete legal documents from the current frontend.
+- [~] **Parity gap:** the high-value page-local clinic/treatment/CAS/emergency/home/Footer values are imported with provenance and tested; continue importing the remaining route-local presentation copy and quiz-result strings before deleting `src/data`/`config.js` fallbacks in Task 14.
+- [~] `seed.py` now materializes those parity records into typed clinic, catalog, CAS, gallery, legal and page section/SEO models without placeholder legal bodies; remaining runtime fallbacks still need conversion/removal in Task 14.
 - [x] Added deterministic `backend/seed_loaded.py` that layers a large synthetic prod-like dataset (clinics, doctors, treatments, prices, offers, articles) over the default seed.
 - [x] Added Make targets: `make seed default` and `make seed loaded` (loaded chooses `seed_loaded.py`).
-- [ ] Run clean-volume default and loaded seed rehearsals, parity verifier, idempotency, migrations 0001–0008 and Compose smoke before marking this task complete.
+- [~] Fresh isolated PostgreSQL rehearsals apply migrations 0001–0013, use real MinIO, pass the expanded parity verifier, default idempotency (9 tests) and loaded idempotency/inventory (2 tests). A fully disposable Compose-volume smoke remains before marking Task 13 complete.
 
 ## Task 14 — Refactor public site to render backend data only 🚧 FOUNDATION DONE (commit `226a917`)
 - [x] Step 1: `site-data-provider.test.tsx` (MSW loading/success/error, no leaked content)
