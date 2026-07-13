@@ -258,7 +258,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [ ] Step 6: verify all public routes anonymously (mock Playwright)
 - [x] Partial: `SiteDataProvider` (explicit loading/error, no compiled fallback) built + verified; typecheck/11 tests/lint/build pass
 - [~] Typed treatment/offer/expanded-clinic public contracts and client calls added; route components still need conversion before deleting `src/data`.
-- [ ] Navbar/footer must render the seeded backend navigation/links, not `src/data/navigation.js`.
+- [~] Navbar now renders the published `desktop`/`mobile` navigation directly from the bootstrap API, including nested and external links, with no `src/data/navigation.js` fallback; Footer already consumes dynamic clinics/services/contacts, while its remaining fixed resource/presentation links still need backend conversion.
 - [ ] Home must render services, quick treatments, clinics, doctors, technology, partners and review sections from API data.
 - [ ] Convert `/tratamente`, `/oferte`, `/articole`, local clinic routes, CAS/emergency/legal and all remaining routes; request only the route payload needed.
 - [ ] Step 7: Commit (final)

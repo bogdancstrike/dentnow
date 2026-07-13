@@ -1,13 +1,27 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { navLinks, mobileNavLinks } from '../../data/navigation';
-import { fetchTreatments, publicQueryKeys } from '../../api/publicClient';
 import { useTheme } from '../../hooks/useTheme';
 import { useClinicPicker } from '../../hooks/useClinicPicker';
 import { useSiteData } from '../../public-site/SiteDataProvider';
 import { IconSun, IconMoon, IconPhone } from '../ui/Icons';
 import './Navbar.css';
+
+function normalizeNavItem(item) {
+  return {
+    label: item.label,
+    to: item.target_path || item.external_url || '#',
+    external: !item.target_path && Boolean(item.external_url),
+    children: (item.children || []).map(normalizeNavItem),
+  };
+}
+
+function NavigationLink({ item, className, onClick }) {
+  if (item.external) {
+    return <a href={item.to} className={className} onClick={onClick}>{item.label}</a>;
+  }
+
+  return <Link to={item.to} className={className} onClick={onClick}>{item.label}</Link>;
+}
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -16,91 +30,9 @@ export default function Navbar() {
   const location = useLocation();
   const { dark, toggle } = useTheme();
   const openPicker = useClinicPicker();
-
-  const { data: treatments = [] } = useQuery({
-    queryKey: publicQueryKeys.treatments,
-    queryFn: fetchTreatments,
-  });
-
   const siteData = useSiteData();
-  const clinics = siteData?.clinics || [];
-
-  const dynamicNavLinks = useMemo(() => {
-    const categories = [];
-    const catMap = new Map();
-    treatments.forEach((t) => {
-      const catName = t.category_label || 'Altele';
-      const catSlug = t.category_slug || 'altele';
-      if (!catMap.has(catName)) {
-        catMap.set(catName, { label: catName, to: `/tratamente#${catSlug}` });
-        categories.push(catMap.get(catName));
-      }
-    });
-
-    const clinicLinks = clinics.map(c => ({
-      label: c.name,
-      to: `/locatii/${c.slug}`
-    }));
-
-    return navLinks.map(link => {
-      if (link.label === 'Tratamente') {
-        return {
-          ...link,
-          children: [
-            { label: 'Toate tratamentele', to: '/tratamente' },
-            ...categories,
-            { label: 'Urgențe Dentare', to: '/urgente-dentare-bucuresti' }
-          ]
-        };
-      }
-      if (link.label === 'Locații') {
-        return {
-          ...link,
-          to: clinicLinks.length > 0 ? clinicLinks[0].to : '#',
-          children: clinicLinks
-        };
-      }
-      return link;
-    });
-  }, [treatments, clinics]);
-
-  const dynamicMobileNavLinks = useMemo(() => {
-    const categories = [];
-    const catMap = new Map();
-    treatments.forEach((t) => {
-      const catName = t.category_label || 'Altele';
-      const catSlug = t.category_slug || 'altele';
-      if (!catMap.has(catName)) {
-        catMap.set(catName, { label: catName, to: `/tratamente#${catSlug}` });
-        categories.push(catMap.get(catName));
-      }
-    });
-
-    const clinicLinks = clinics.map(c => ({
-      label: c.name,
-      to: `/locatii/${c.slug}`
-    }));
-
-    // Keep 'Acasa', 'Decontare CAS', 'Tratamente si tarife' then insert treatments, then clinics, then the rest
-    const treatmentsIndex = mobileNavLinks.findIndex(l => l.label === 'Tratamente si tarife');
-    if (treatmentsIndex !== -1) {
-      // Find where 'Before & After' starts to remove hardcoded treatments and clinics
-      const beforeAfterIndex = mobileNavLinks.findIndex(l => l.label === 'Before & After');
-      
-      const before = mobileNavLinks.slice(0, treatmentsIndex + 1);
-      const dynamic = [
-        ...categories,
-        { label: 'Urgențe Dentare București', to: '/urgente-dentare-bucuresti' },
-        { label: 'Implant Dentar București', to: '/implant-dentar-bucuresti' },
-        { label: 'Oferte', to: '/oferte' },
-        ...clinicLinks
-      ];
-      const after = beforeAfterIndex !== -1 ? mobileNavLinks.slice(beforeAfterIndex) : [];
-      
-      return [...before, ...dynamic, ...after];
-    }
-    return mobileNavLinks;
-  }, [treatments, clinics]);
+  const desktopNavLinks = (siteData.navigation.desktop || []).map(normalizeNavItem);
+  const mobileNavLinks = (siteData.navigation.mobile || []).map(normalizeNavItem);
 
   const closeMenus = () => { setMobileOpen(false); setOpenMenu(''); };
 
@@ -139,19 +71,25 @@ export default function Navbar() {
       <nav className={`nav${isDark ? ' dark' : ''}`}>
         <Link to="/" className="nav-logo">Dent<span>Now</span></Link>
         <ul className="nav-links">
-          {dynamicNavLinks.map((l) => (
-            <li key={l.label} className="nav-item" onMouseLeave={() => setOpenMenu('')}>
-              {l.children ? (
+          {desktopNavLinks.map((item) => (
+            <li key={`${item.label}-${item.to}`} className="nav-item" onMouseLeave={() => setOpenMenu('')}>
+              {item.children.length > 0 ? (
                 <>
-                  <button className={`nav-link-btn${openMenu === l.label ? ' active' : ''}`} onClick={() => setOpenMenu(openMenu === l.label ? '' : l.label)} aria-expanded={openMenu === l.label} aria-haspopup="true">
-                    {l.label}
+                  <button className={`nav-link-btn${openMenu === item.label ? ' active' : ''}`} onClick={() => setOpenMenu(openMenu === item.label ? '' : item.label)} aria-expanded={openMenu === item.label} aria-haspopup="true">
+                    {item.label}
                   </button>
-                  <div className={`nav-dropdown${openMenu === l.label ? ' open' : ''}`}>
-                    {l.children.map((child) => <Link to={child.to} key={child.to} onClick={closeMenus}>{child.label}</Link>)}
+                  <div className={`nav-dropdown${openMenu === item.label ? ' open' : ''}`}>
+                    {item.children.map((child) => (
+                      <NavigationLink item={child} key={`${child.label}-${child.to}`} onClick={closeMenus} />
+                    ))}
                   </div>
                 </>
               ) : (
-                <Link to={l.to} onClick={closeMenus} className={location.pathname === l.to ? 'active' : ''}>{l.label}</Link>
+                <NavigationLink
+                  item={item}
+                  onClick={closeMenus}
+                  className={!item.external && location.pathname === item.to ? 'active' : ''}
+                />
               )}
             </li>
           ))}
@@ -170,7 +108,9 @@ export default function Navbar() {
       </nav>
       {mobileOpen && <button className="nav-backdrop" aria-label="Inchide meniul" onClick={() => setMobileOpen(false)} />}
       <nav id="mobile-navigation" className={`nav-mobile${mobileOpen ? ' open' : ''}`} aria-label="Navigatie mobila">
-        {dynamicMobileNavLinks.map((l) => <Link key={l.to} to={l.to} onClick={closeMenus}>{l.label}</Link>)}
+        {mobileNavLinks.map((item) => (
+          <NavigationLink item={item} key={`${item.label}-${item.to}`} onClick={closeMenus} />
+        ))}
         <button type="button" className="nav-cta-mobile" onClick={() => { closeMenus(); openPicker('both'); }}><IconPhone size={16} /> Programează-te</button>
       </nav>
     </>
