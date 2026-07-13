@@ -64,7 +64,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.component }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          # Publication builds intentionally start clean. This prevents a stale GHA
+          # BuildKit cache from reusing application or dependency layers and refreshes
+          # the pinned base image behind each FROM instruction.
+          no-cache: true
+          pull: true
           provenance: true
           sbom: true
