@@ -11,6 +11,7 @@ import type { AdminClient } from '../api/adminClient';
 import { mediaUrl } from '../../api/publicClient';
 
 export interface ImageUploadFieldProps {
+  id?: string;
   client: AdminClient;
   value?: string | null; // media asset id
   onChange?: (id: string | null) => void;
@@ -23,6 +24,7 @@ export interface ImageUploadFieldProps {
 }
 
 export function ImageUploadField({
+  id,
   client,
   value,
   onChange,
@@ -101,6 +103,7 @@ export function ImageUploadField({
         </Space>
       </Space>
       <input
+        id={id}
         ref={inputRef}
         type="file"
         accept="image/png,image/jpeg,image/webp"

@@ -23,6 +23,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Rebuilt Footer from live API data: dynamic treatment services, dynamic clinics, per-clinic phone/WhatsApp/map contacts, API social/email links, and a tested allow-list of valid internal resource/legal routes.
 - [x] Connected `/confidentialitate`, `/gdpr`, and `/termeni` to `/admin/legal` documents with unsaved draft preview, audited approval/publication, effective dates, public 404/503 handling, and explicitly approved seed documents; removed duplicate compiled legal copy.
 - [x] Completed offer relations: `/admin/oferte/:id` uses searchable multi-selects for existing treatments and participating clinics, persists both sets atomically, validates stale/unknown references, and renders relation links in the real public/draft preview.
+- [x] Completed `/admin/parteneri/:id`: uploadable MinIO logo, relationship/badge/link/rights metadata, active state and order, safe HTTP(S) links, publishable-media validation, and a real unsaved desktop/mobile `/parteneri` preview.
 
 ---
 
@@ -105,7 +106,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [ ] Standardize every authored entity on the same pattern: list page + `/nou` + `/:id` edit page with prefilled data, unsaved-change protection, sticky desktop/mobile live iframe, and explicit save.
 - [ ] Migrate in this order: clinics → treatments → offers → doctors → partners → media/carousels → quiz. Retire generic side drawers after each dedicated editor lands.
 - [ ] **Clinic editor:** name/slug/status/order, complete address/postal/GPS, Google Maps link+embed, multiple phone/WhatsApp/email/booking/social contacts, hours, transit, FAQs, page route, and full location-page preview.
-- [ ] **Partner editor:** optional logo upload/media selection from MinIO, relationship/badge/link/rights metadata, and desktop/mobile card/page preview.
+- [x] **Partner editor:** optional logo upload from MinIO, relationship/badge/link/rights metadata, visibility/order controls, and desktop/mobile card/page preview.
 - [x] **Homepage quick-treatment strip:** the Implant/Albire/GBT/Obturații cards are treatment-backed fields (`homepage_featured`, label, icon, price/link); finish admin controls and public API renderer so no card text is hardcoded.
 - [x] Public navbar places **Decontare CAS** immediately after Acasă; duplicate “Decontare CAS / Gratuit copii” was removed from the Tratamente dropdown and seed fixture.
 - [x] Keycloak bootstrap and local realm now register the exact public homepage post-logout redirect; infrastructure regression check added for the previous “Invalid redirect uri” failure.

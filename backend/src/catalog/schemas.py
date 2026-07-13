@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 import uuid
 from typing import Optional
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -156,6 +157,25 @@ def _coerce_resource_ids(v):
     return normalized
 
 
+def _coerce_optional_uuid(v):
+    if v in (None, ""):
+        return None
+    try:
+        return str(uuid.UUID(str(v)))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise ValueError("value must be a valid UUID") from exc
+
+
+def _validate_optional_http_url(v):
+    if v in (None, ""):
+        return None
+    value = str(v).strip()
+    parsed = urlparse(value)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise ValueError("value must be an absolute HTTP(S) URL")
+    return value
+
+
 class OfferCreate(_Strict):
     slug: str
     name: str
@@ -242,17 +262,23 @@ class PartnerCreate(_Strict):
     name: str
     relationship_type: Optional[str] = None
     badge: Optional[str] = None
+    logo_media_id: Optional[str] = None
     rights_note: Optional[str] = None
     link_url: Optional[str] = None
     active: bool = True
     position: int = 0
+    _logo = field_validator("logo_media_id", mode="before")(classmethod(lambda cls, v: _coerce_optional_uuid(v)))
+    _link = field_validator("link_url", mode="before")(classmethod(lambda cls, v: _validate_optional_http_url(v)))
 
 
 class PartnerUpdate(_Strict):
     name: Optional[str] = None
     relationship_type: Optional[str] = None
     badge: Optional[str] = None
+    logo_media_id: Optional[str] = None
     rights_note: Optional[str] = None
     link_url: Optional[str] = None
     active: Optional[bool] = None
     position: Optional[int] = None
+    _logo = field_validator("logo_media_id", mode="before")(classmethod(lambda cls, v: _coerce_optional_uuid(v)))
+    _link = field_validator("link_url", mode="before")(classmethod(lambda cls, v: _validate_optional_http_url(v)))

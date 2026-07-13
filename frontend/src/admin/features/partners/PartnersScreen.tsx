@@ -19,7 +19,10 @@ export interface PartnerRow extends ResourceRow {
   name: string;
   relationship_type?: string;
   badge?: string;
+  logo_media_id?: string | null;
+  rights_note?: string;
   link_url?: string;
+  active: boolean;
   position: number;
 }
 

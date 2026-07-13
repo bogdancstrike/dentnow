@@ -34,6 +34,7 @@ from src.catalog.serializers import (
 from src.core.clock import utcnow
 from src.core.crud import CrudService
 from src.core.errors import ConflictError, ValidationError
+from src.media.models import MediaAsset
 
 
 class _SlugUnique:
@@ -317,3 +318,33 @@ class PartnerService(CrudService):
     search_columns = ("name", "relationship_type")
 
     def serialize(self, obj): return serialize_partner(obj)
+
+    def before_write(self, obj, data, *, creating):
+        if not obj.logo_media_id:
+            return
+        asset = self.session.get(MediaAsset, obj.logo_media_id)
+        if asset is None or asset.deleted_at is not None:
+            raise ValidationError(
+                "partner logo does not exist",
+                details={"field": "logo_media_id"},
+            )
+        if asset.privacy_class != "public" or asset.readiness != "ready":
+            raise ValidationError(
+                "partner logo is not publishable",
+                details={"field": "logo_media_id"},
+            )
+
+    def to_create_kwargs(self, data):
+        return self._convert_logo(data)
+
+    def to_update_values(self, data, obj):
+        return self._convert_logo(data)
+
+    @staticmethod
+    def _convert_logo(data):
+        data = dict(data)
+        if "logo_media_id" in data:
+            data["logo_media_id"] = (
+                uuid.UUID(str(data["logo_media_id"])) if data["logo_media_id"] else None
+            )
+        return data

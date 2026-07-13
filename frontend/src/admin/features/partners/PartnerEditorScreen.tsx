@@ -4,7 +4,9 @@ import {
   Button,
   Form,
   Input,
+  InputNumber,
   Space,
+  Switch,
   Typography,
   Skeleton,
 } from 'antd';
@@ -18,6 +20,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
 import type { PartnerRow } from './PartnersScreen';
+import { ImageUploadField } from '../../components/ImageUploadField';
+import { LivePreview } from '../../components/LivePreview';
 import '../editorial/articles.css';
 import { AdminRequestError } from '../../components/AdminRequestError';
 
@@ -30,6 +34,7 @@ export function PartnerEditorScreen({ client }: { client: AdminClient }) {
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm<PartnerFormValues>();
+  const values = (Form.useWatch([], form) ?? {}) as Partial<PartnerFormValues>;
   const [dirty, setDirty] = useState(false);
 
   const query = useQuery({
@@ -132,6 +137,9 @@ export function PartnerEditorScreen({ client }: { client: AdminClient }) {
                   relationship_type: 'Finanțare în rate',
                   badge: 'Rate fără dobândă',
                   link_url: 'https://www.bancatransilvania.ro',
+                  rights_note: 'Logo și denumire utilizate conform acordului de parteneriat.',
+                  active: true,
+                  position: 0,
                 });
                 setDirty(true);
               }}
@@ -146,27 +154,79 @@ export function PartnerEditorScreen({ client }: { client: AdminClient }) {
           layout="vertical"
           onValuesChange={() => setDirty(true)}
           onFinish={(v) => save.mutate(v)}
+          initialValues={{ active: true, position: 0 }}
         >
           <div className="article-form-section">
-            <Typography.Title level={4}>Informații Partener</Typography.Title>
-            <Form.Item name="name" label="Nume Partener" rules={[{ required: true }]}>
+            <Typography.Title level={4}>Identitate și relație</Typography.Title>
+            <Form.Item name="name" label="Nume partener" rules={[{ required: true, message: 'Introdu numele partenerului.' }]}>
               <Input placeholder="Ex: Banca Transilvania" />
             </Form.Item>
             <Form.Item name="relationship_type" label="Tip relație">
-              <Input placeholder="Ex: Finanțare în rate" />
+              <Input placeholder="Ex: Finanțare, tehnologie, furnizor medical" />
             </Form.Item>
-            <Form.Item name="badge" label="Badge">
-              <Input placeholder="Ex: Rate fără dobândă" />
+            <Form.Item name="badge" label="Etichetă publică">
+              <Input placeholder="Ex: Rate fără dobândă" maxLength={80} showCount />
             </Form.Item>
-            <Form.Item name="link_url" label="Link Extern">
+
+            <Typography.Title level={4} style={{ marginTop: 32 }}>Identitate vizuală</Typography.Title>
+            <Form.Item
+              name="logo_media_id"
+              label="Logo partener"
+              extra="Încarcă logo-ul numai dacă DentNow are dreptul de a-l utiliza."
+            >
+              <ImageUploadField
+                client={client}
+                altText={`Logo ${values.name || 'partener DentNow'}`}
+                variant="thumbnail"
+                width={180}
+                height={108}
+                placeholderText="Logo partener"
+              />
+            </Form.Item>
+            <Form.Item
+              name="rights_note"
+              label="Drepturi de utilizare"
+              extra="Menționează acordul, licența sau sursa care permite afișarea logo-ului."
+            >
+              <Input.TextArea rows={3} placeholder="Ex: Logo utilizat cu acordul scris al partenerului." />
+            </Form.Item>
+            <Form.Item
+              name="link_url"
+              label="Website partener"
+              rules={[{ type: 'url', message: 'Introdu o adresă completă, de forma https://…' }]}
+            >
               <Input placeholder="https://..." />
             </Form.Item>
+
+            <Typography.Title level={4} style={{ marginTop: 32 }}>Publicare și ordine</Typography.Title>
+            <Space size="large" align="start" wrap>
+              <Form.Item name="active" label="Vizibil pe site" valuePropName="checked">
+                <Switch checkedChildren="Activ" unCheckedChildren="Ascuns" />
+              </Form.Item>
+              <Form.Item name="position" label="Ordine" extra="Numerele mai mici apar primele.">
+                <InputNumber min={0} precision={0} style={{ width: 140 }} />
+              </Form.Item>
+            </Space>
           </div>
         </Form>
       </div>
 
-      <div className="article-editor-preview-panel" style={{ display: 'grid', placeItems: 'center', color: '#8b93a1', padding: '40px' }}>
-        Preview live pentru parteneri (în curând)
+      <div className="article-editor-preview-panel">
+        <LivePreview
+          path="/parteneri"
+          ready={Boolean(query.data)}
+          reloadToken={query.data?.version}
+          urlLabel="dentnow.ro/parteneri"
+          draft={!editing || dirty ? {
+            kind: 'partner',
+            data: {
+              ...query.data,
+              ...values,
+              name: values.name || query.data?.name || 'Partener nou',
+              __preview_position: query.data?.position,
+            },
+          } : null}
+        />
       </div>
     </div>
   );

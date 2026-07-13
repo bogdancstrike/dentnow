@@ -8,10 +8,11 @@ from pydantic import ValidationError as PydValidationError
 from sqlalchemy.exc import IntegrityError
 
 from src.catalog.models import Offer, TreatmentPrice
-from src.catalog.schemas import OfferCreate, OfferUpdate, PriceCreate
+from src.catalog.schemas import OfferCreate, OfferUpdate, PartnerCreate, PartnerUpdate, PriceCreate
 from src.catalog.service import (
     CategoryService,
     OfferService,
+    PartnerService,
     PriceService,
     TreatmentService,
 )
@@ -19,6 +20,7 @@ from src.clinics.service import ClinicService
 from src.core.errors import ConflictError, PermissionDeniedError, ValidationError
 from src.iam.capabilities import ROLE_ADMIN, ROLE_CLINIC_MANAGER
 from src.iam.principal import Principal
+from src.media.models import MediaAsset
 
 ADMIN = Principal(subject="admin", roles=frozenset({ROLE_ADMIN}))
 MANAGER = Principal(subject="mgr", roles=frozenset({ROLE_CLINIC_MANAGER}), clinic_scopes=frozenset({uuid.uuid4()}))
@@ -135,6 +137,54 @@ def test_offer_rejects_unknown_related_resource(db_session):
             treatment_ids=[str(uuid.uuid4())],
         ).model_dump())
     assert exc_info.value.details["field"] == "treatment_ids"
+
+
+def test_partner_logo_and_rights_metadata_roundtrip(db_session):
+    logo = MediaAsset(
+        object_key="test/partner-logo.png",
+        media_kind="image",
+        mime_type="image/png",
+        original_filename="partner-logo.png",
+        byte_size=128,
+        sha256=uuid.uuid4().hex,
+        alt_text="Logo partener",
+        privacy_class="public",
+        readiness="ready",
+    )
+    db_session.add(logo)
+    db_session.flush()
+
+    svc = PartnerService(db_session, ADMIN)
+    created, etag = svc.create(PartnerCreate(
+        name="Partener test",
+        relationship_type="Tehnologie",
+        logo_media_id=str(logo.id),
+        rights_note="Logo utilizat cu acordul partenerului.",
+        link_url="https://example.com",
+        active=True,
+        position=4,
+    ).model_dump())
+    assert created["logo_media_id"] == str(logo.id)
+    assert created["rights_note"] == "Logo utilizat cu acordul partenerului."
+
+    updated, _ = svc.update(
+        uuid.UUID(created["id"]),
+        PartnerUpdate(logo_media_id=None, active=False).model_dump(exclude_unset=True),
+        etag,
+    )
+    assert updated["logo_media_id"] is None
+    assert updated["active"] is False
+
+
+def test_partner_rejects_unknown_logo_and_unsafe_link(db_session):
+    with pytest.raises(PydValidationError):
+        PartnerCreate(name="Partener", link_url="javascript:alert(1)")
+    with pytest.raises(ValidationError) as exc_info:
+        PartnerService(db_session, ADMIN).create(PartnerCreate(
+            name="Partener",
+            logo_media_id=str(uuid.uuid4()),
+        ).model_dump())
+    assert exc_info.value.details["field"] == "logo_media_id"
 
 
 def test_manager_cannot_write_global_catalog(db_session):
