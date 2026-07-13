@@ -50,7 +50,7 @@ export default function UrgenteDentare() {
         {/* Item 4: AI Overview Summary Box */}
         <div className="sge-ai-box">
           <div className="sge-ai-header">
-            <span className="sge-ai-badge">✨ Răspuns AI Overview — Protocol Urgențe Dentare</span>
+            <span className="sge-ai-badge">✨ Protocol Urgențe Dentare</span>
             <span className="sge-ai-tag">Ghid Medical Rapid</span>
           </div>
           <p className="sge-ai-text">

@@ -214,7 +214,7 @@ export default function TreatmentDetail() {
         {/* Item 4: AI Overview Summary Box for SGE / Snippets */}
         <div className="sge-ai-box">
           <div className="sge-ai-header">
-            <span className="sge-ai-badge">✨ Răspuns AI Overview & Medic Stomatolog</span>
+            <span className="sge-ai-badge">✨ Medic Stomatolog</span>
             <span className="sge-ai-tag">Rezumat Medical Instant</span>
           </div>
           <p className="sge-ai-text">{item.aiOverview}</p>

@@ -51,7 +51,7 @@ export default function DecontatCas() {
         {/* AI Overview Summary Box */}
         <div className="sge-ai-box">
           <div className="sge-ai-header">
-            <span className="sge-ai-badge">✨ Răspuns AI Overview — Decontare CAS DentNow</span>
+            <span className="sge-ai-badge">✨ Decontare CAS DentNow</span>
             <span className="sge-ai-tag">Ghid Asigurați CAS</span>
           </div>
           <p className="sge-ai-text">
