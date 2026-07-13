@@ -97,7 +97,14 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
           aria-label="Deschide secțiunea Clinici"
           onClick={() => navigate('/admin/clinici')}
         >
-          <span className="admin-brand-mark">DN</span>
+          <img
+            className="admin-brand-mark"
+            src="/favicon.svg"
+            width="34"
+            height="34"
+            alt=""
+            aria-hidden="true"
+          />
           {!collapsed && (
             <span className="admin-brand-copy">
               <strong>DentNow</strong>

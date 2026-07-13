@@ -66,16 +66,13 @@
 }
 
 .admin-brand-mark {
-  display: grid;
+  display: block;
   width: 34px;
   height: 34px;
   flex: 0 0 34px;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 8px;
-  background: #0f7f8d;
-  font: 700 11px/1 "Inter Variable", Inter, sans-serif;
-  letter-spacing: 0.06em;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 70, 179, 0.28);
 }
 
 .admin-brand-copy {
