@@ -6,6 +6,7 @@ import {
   Card,
   DatePicker,
   Empty,
+  Popconfirm,
   Segmented,
   Skeleton,
   Space,
@@ -14,7 +15,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
+import { DeleteOutlined, DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import {
@@ -34,8 +35,13 @@ function isoDate(date: Date): string {
 function dateRange(params: URLSearchParams): { from: string; to: string; preset: string } {
   const preset = params.get('range') ?? '30';
   const to = new Date();
-  if (preset === 'custom' && params.get('from') && params.get('to')) {
-    return { from: params.get('from')!, to: params.get('to')!, preset };
+  if (preset === 'custom') {
+    if (params.get('from') && params.get('to')) {
+      return { from: params.get('from')!, to: params.get('to')!, preset };
+    }
+    const from = new Date(to);
+    from.setDate(from.getDate() - 30 + 1);
+    return { from: isoDate(from), to: isoDate(to), preset: 'custom' };
   }
   const days = Math.max(1, Number(preset) || 30);
   const from = new Date(to);
@@ -124,6 +130,10 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
     anchor.click();
     URL.revokeObjectURL(url);
   };
+  const handleReset = async () => {
+    await client.post('/v1/admin/analytics/reset', {});
+    void query.refetch();
+  };
 
   return (
     <div className="analytics-screen">
@@ -142,6 +152,9 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
           )}
           <Button icon={<ReloadOutlined />} onClick={() => void query.refetch()} loading={query.isFetching}>Actualizează</Button>
           <Button type="primary" icon={<DownloadOutlined />} onClick={() => void exportCsv()} disabled={!query.data}>Export CSV</Button>
+          <Popconfirm title="Ești sigur că vrei să ștergi TOATE datele de analytics?" onConfirm={() => void handleReset()} okText="Da, șterge" cancelText="Anulează">
+            <Button danger icon={<DeleteOutlined />}>Resetează</Button>
+          </Popconfirm>
         </Space>
       </header>
 
@@ -189,6 +202,8 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
             <ContentTable title="Oferte populare" items={query.data.top_offers} />
             <ContentTable title="Surse de trafic" items={query.data.referrers} />
             <ContentTable title="Clickuri pe telefon, WhatsApp și e-mail" items={query.data.contact_ctas} />
+            <ContentTable title="Furnizori de internet" items={query.data.internet_providers} />
+            <ContentTable title="Fusuri orare" items={query.data.timezones} />
             <ContentTable title="Adrese IP active" items={query.data.ip_addresses} />
             <ContentTable title="User-Agent-uri" items={query.data.user_agents} />
           </section>

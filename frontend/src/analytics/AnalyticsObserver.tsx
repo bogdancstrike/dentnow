@@ -48,6 +48,12 @@ export function AnalyticsObserver() {
       if (!active) return;
       coordinates.current = value;
       setInitialLocationReady(true);
+      if (initialConsent.current !== 'granted' && value) {
+        void sendAnalyticsEvent(
+          { event_type: 'navigation_click', path: window.location.pathname, target_type: 'page', target_key: 'consent_granted' },
+          value
+        );
+      }
     });
     return () => { active = false; };
   }, [consent]);
@@ -103,7 +109,7 @@ export function AnalyticsObserver() {
       if (isContact) {
         const kind = href.startsWith('tel:') ? 'telefon' : href.startsWith('mailto:') ? 'email' : /whatsapp|wa\.me/i.test(href) ? 'whatsapp' : label;
         emit({ event_type: 'contact_cta', path, target_type: 'contact', target_key: kind });
-      } else if (element.closest('nav,header,footer') || element.dataset.analyticsNav) {
+      } else {
         emit({ event_type: 'navigation_click', path, target_type: 'page', target_key: href || label });
       }
     };

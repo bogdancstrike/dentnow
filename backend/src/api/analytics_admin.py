@@ -12,8 +12,10 @@ from src.analytics.service import analytics_overview, overview_csv
 from src.api._helpers import _json
 from src.core.db import session_scope
 from src.core.errors import ValidationError
-from src.iam.capabilities import CAP_ANALYTICS_READ
+from src.iam.capabilities import CAP_ANALYTICS_READ, CAP_ANALYTICS_MANAGE
 from src.iam.decorators import require_capability
+from sqlalchemy import delete
+from src.analytics.models import AnalyticsEvent, AnalyticsDailyMetric
 
 
 def _date_range() -> tuple[date, date]:
@@ -51,3 +53,11 @@ def analytics_export_get(app, operation, request, principal=None, **kwargs):
     )
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+@require_capability(CAP_ANALYTICS_MANAGE)
+def analytics_reset_post(app, operation, request, principal=None, **kwargs):
+    with session_scope() as session:
+        events_deleted = session.execute(delete(AnalyticsEvent)).rowcount or 0
+        metrics_deleted = session.execute(delete(AnalyticsDailyMetric)).rowcount or 0
+    return _json({"events_deleted": events_deleted, "metrics_deleted": metrics_deleted}, 200)

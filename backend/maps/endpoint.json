@@ -2724,6 +2724,17 @@
     },
     {
       "namespace": "api",
+      "operation_name": "analytics_reset_post",
+      "model_name": "Empty",
+      "request_method": ["POST"],
+      "api_url": "/v1/admin/analytics/reset",
+      "exec_method": {
+        "module_name": "src.api.analytics_admin",
+        "method_name": "analytics_reset_post"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "analytics_export_get",
       "model_name": "Empty",
       "request_method": ["GET"],
