@@ -14,18 +14,17 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { DownloadOutlined, EnvironmentOutlined, ReloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import {
   AnalyticsOverviewSchema,
   type AnalyticsDimension,
-  type AnalyticsOverview,
 } from './analyticsContracts';
+import { GeographyCharts, TrafficTrendChart } from './AnalyticsCharts';
 import './AnalyticsScreen.css';
 
 const { RangePicker } = DatePicker;
-const dateFormatter = new Intl.DateTimeFormat('ro-RO', { day: '2-digit', month: 'short' });
 const numberFormatter = new Intl.NumberFormat('ro-RO');
 
 function isoDate(date: Date): string {
@@ -53,50 +52,6 @@ function Delta({ value }: { value: number | null }) {
   );
 }
 
-function TrendChart({ data }: { data: AnalyticsOverview['trend'] }) {
-  const width = 820;
-  const height = 250;
-  const pad = 34;
-  const max = Math.max(1, ...data.flatMap((item) => [item.page_views, item.visitors]));
-  const x = (index: number) => pad + (data.length <= 1 ? 0 : index * (width - pad * 2) / (data.length - 1));
-  const y = (value: number) => height - pad - value * (height - pad * 2) / max;
-  const points = (key: 'page_views' | 'visitors') => data.map((item, index) => `${x(index)},${y(item[key])}`).join(' ');
-  const aria = `Evoluție în ${data.length} zile. Maximum ${max} evenimente pe zi.`;
-  return (
-    <div className="analytics-trend">
-      <div className="analytics-chart-legend" aria-hidden="true">
-        <span><i className="analytics-dot analytics-dot--views" />Vizualizări pagini</span>
-        <span><i className="analytics-dot analytics-dot--visitors" />Vizitatori</span>
-      </div>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={aria} className="analytics-trend-svg">
-        {[0, .25, .5, .75, 1].map((ratio) => (
-          <g key={ratio}>
-            <line x1={pad} y1={y(max * ratio)} x2={width - pad} y2={y(max * ratio)} className="analytics-grid-line" />
-            <text x={pad - 8} y={y(max * ratio) + 4} textAnchor="end" className="analytics-axis-text">{Math.round(max * ratio)}</text>
-          </g>
-        ))}
-        <polyline points={points('page_views')} className="analytics-line analytics-line--views" />
-        <polyline points={points('visitors')} className="analytics-line analytics-line--visitors" />
-        {data.map((item, index) => (
-          <g key={item.date}>
-            <circle cx={x(index)} cy={y(item.visitors)} r="3" className="analytics-point analytics-point--visitors"><title>{`${item.date}: ${item.visitors} vizitatori`}</title></circle>
-            {(index === 0 || index === data.length - 1 || (data.length <= 14 && index % 2 === 0)) && (
-              <text x={x(index)} y={height - 8} textAnchor={index === 0 ? 'start' : index === data.length - 1 ? 'end' : 'middle'} className="analytics-axis-text">
-                {dateFormatter.format(new Date(`${item.date}T12:00:00`))}
-              </text>
-            )}
-          </g>
-        ))}
-      </svg>
-      <table className="analytics-sr-only">
-        <caption>Datele graficului de trafic</caption>
-        <thead><tr><th>Data</th><th>Vizitatori</th><th>Vizualizări</th></tr></thead>
-        <tbody>{data.map((item) => <tr key={item.date}><td>{item.date}</td><td>{item.visitors}</td><td>{item.page_views}</td></tr>)}</tbody>
-      </table>
-    </div>
-  );
-}
-
 function Breakdown({ title, items }: { title: string; items: AnalyticsDimension[] }) {
   const max = Math.max(1, ...items.map((item) => item.visitors));
   return (
@@ -109,36 +64,6 @@ function Breakdown({ title, items }: { title: string; items: AnalyticsDimension[
               <div className="analytics-breakdown__track"><i style={{ width: `${item.visitors * 100 / max}%` }} /></div>
             </div>
           ))}
-        </div>
-      )}
-    </Card>
-  );
-}
-
-function GeoMap({ rows }: { rows: AnalyticsOverview['geography'] }) {
-  const points = rows.filter((row) => row.latitude !== null && row.longitude !== null);
-  return (
-    <Card className="analytics-panel analytics-geo" title={<span><EnvironmentOutlined /> Distribuție geografică</span>}>
-      {rows.length === 0 ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Locația nu este disponibilă pentru această perioadă" /> : (
-        <div className="analytics-geo-layout">
-          <svg viewBox="0 0 900 430" role="img" aria-label={`Hartă cu ${points.length} zone geolocalizate`} className="analytics-world-map">
-            <rect x="0" y="0" width="900" height="430" rx="20" className="analytics-map-water" />
-            <path d="M90 85l80-42 118 28 36 48-43 35-15 60-57 37-66-28-25-48-54-35zM260 254l58 16 31 60-28 79-43-28-19-69zM430 77l76-30 70 21 31 52 85 6 74 47-25 59-87-5-53 29-36-39-53 8-33-59-63-22zM594 278l61-20 72 34 16 58-48 35-77-27z" className="analytics-map-land" />
-            {points.map((row, index) => {
-              const cx = ((row.longitude! + 180) / 360) * 900;
-              const cy = ((90 - row.latitude!) / 180) * 430;
-              const radius = Math.min(18, 5 + Math.sqrt(row.visitors));
-              return <circle key={`${row.country}-${row.region}-${row.city}-${index}`} cx={cx} cy={cy} r={radius} className="analytics-map-point"><title>{`${row.city}, ${row.region}, ${row.country}: ${row.visitors} vizitatori`}</title></circle>;
-            })}
-          </svg>
-          <div className="analytics-geo-list">
-            {rows.slice(0, 8).map((row, index) => (
-              <div key={`${row.country}-${row.region}-${row.city}-${index}`}>
-                <span>{[row.city, row.region, row.country].filter((part) => part !== 'Necunoscut').join(', ') || 'Necunoscut'}</span>
-                <strong>{numberFormatter.format(row.visitors)}</strong>
-              </div>
-            ))}
-          </div>
         </div>
       )}
     </Card>
@@ -233,7 +158,7 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
           </section>
 
           <Card className="analytics-panel analytics-trend-card" title="Evoluția traficului">
-            <TrendChart data={query.data.trend} />
+            <TrafficTrendChart data={query.data.trend} />
           </Card>
 
           <section className="analytics-grid analytics-grid--three" aria-label="Profil tehnic al vizitatorilor">
@@ -242,7 +167,7 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
             <Breakdown title="Sisteme de operare" items={query.data.operating_systems} />
           </section>
 
-          <GeoMap rows={query.data.geography} />
+          <GeographyCharts rows={query.data.geography} />
 
           <section id="analytics-content" className="analytics-grid analytics-grid--two" aria-label="Conținut și achiziție">
             <ContentTable title="Cele mai accesate pagini" items={query.data.top_pages} />

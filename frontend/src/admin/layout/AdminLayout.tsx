@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import {
   App,
   Button,
@@ -37,7 +37,6 @@ import { DoctorEditorScreen } from '../features/doctors/DoctorEditorScreen';
 import { PartnersScreen } from '../features/partners/PartnersScreen';
 import { PartnerEditorScreen } from '../features/partners/PartnerEditorScreen';
 import { DecontatCasScreen } from '../features/decontat/DecontatCasScreen';
-import { AnalyticsScreen } from '../features/analytics/AnalyticsScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
 import { openCommandPalette } from './adminEvents';
 import { AccessDeniedPage } from '../pages/AccessDeniedPage';
@@ -45,6 +44,10 @@ import { StatusPage } from '../../shared/StatusPage';
 import './adminLayout.css';
 
 const { Header, Sider, Content } = Layout;
+const AnalyticsScreen = lazy(async () => {
+  const module = await import('../features/analytics/AnalyticsScreen');
+  return { default: module.AnalyticsScreen };
+});
 
 export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
   const navigate = useNavigate();
@@ -199,7 +202,11 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
             <Route
               path="analytics"
               element={can(me, CAP.analytics)
-                ? <AnalyticsScreen client={client} />
+                ? (
+                  <Suspense fallback={<div className="admin-route-loading">Se încarcă analytics…</div>}>
+                    <AnalyticsScreen client={client} />
+                  </Suspense>
+                )
                 : <AccessDeniedPage title="Acces restricționat" detail="Contul tău nu poate consulta datele analytics." />}
             />
 

@@ -2,8 +2,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
+import * as echarts from 'echarts/core';
 import { AnalyticsScreen } from '../../src/admin/features/analytics/AnalyticsScreen';
 import type { AdminClient } from '../../src/admin/api/adminClient';
+
+vi.mock('echarts-for-react/lib/core', () => ({
+  default: ({ style }: { style?: React.CSSProperties }) => (
+    <div data-testid="apache-echarts" style={style} />
+  ),
+}));
 
 const overview = {
   range: { from: '2026-07-07', to: '2026-07-13', timezone: 'Europe/Bucharest' },
@@ -46,8 +53,12 @@ describe('AnalyticsScreen', () => {
     const client = { get: vi.fn().mockResolvedValue({ data: overview }), download: vi.fn() };
     renderScreen(client);
     expect(await screen.findByText('120')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /Evoluție în 2 zile/i })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /Hartă cu 1 zone/i })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Evoluție trafic în 2 zile/i })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Hartă România cu 1 zone/i })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Hartă București cu distribuția pe șase sectoare/i })).toBeInTheDocument();
+    expect(screen.getAllByTestId('apache-echarts')).toHaveLength(3);
+    expect(echarts.getMap('dentnow-romania')).toBeDefined();
+    expect(echarts.getMap('dentnow-bucharest-sectors')).toBeDefined();
     expect(screen.getByText('203.0.113.1')).toBeInTheDocument();
     expect(screen.getByText('Mozilla/5.0 Chrome/126')).toBeInTheDocument();
     expect(client.get).toHaveBeenCalledWith(expect.stringContaining('from='));

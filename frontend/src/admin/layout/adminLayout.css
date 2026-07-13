@@ -168,6 +168,14 @@
   padding: 16px;
 }
 
+.admin-route-loading {
+  display: grid;
+  min-height: 45vh;
+  place-items: center;
+  color: #5a6472;
+  font-size: 13px;
+}
+
 @media (max-width: 900px) {
   .admin-header {
     padding: 0 12px;
