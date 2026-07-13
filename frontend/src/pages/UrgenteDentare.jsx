@@ -3,10 +3,13 @@ import PageHero from '../components/ui/PageHero';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { IconPhone, IconClock, IconAlert, IconWhatsApp } from '../components/ui/Icons';
 import config from '../config';
+import { useSiteData } from '../public-site/SiteDataProvider';
+import { clinicPhone } from '../lib/clinicContact';
 import './UrgenteDentare.css';
 
 export default function UrgenteDentare() {
   const openPicker = useClinicPicker();
+  const { clinics } = useSiteData();
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'EmergencyService',
@@ -60,21 +63,19 @@ export default function UrgenteDentare() {
 
         {/* Quick Call Action Bar */}
         <div className="emergency-call-bar">
-          <div className="call-card">
-            <h3>Sediul Dristor & Baba Novac</h3>
-            <p>Strada Râmnicu Vâlcea nr. 29 & Str. Dristorului 96</p>
-            <a href={`tel:${config.phones[0].tel}`} className="btn btn-dark btn-lg">
-              <IconPhone size={20} /> Sună Acum: {config.phones[0].display}
-            </a>
-          </div>
-
-          <div className="call-card">
-            <h3>Sediul Prelungirea Ghencea</h3>
-            <p>Prelungirea Ghencea nr. 91F, Sector 6</p>
-            <a href={`tel:${config.phones[1].tel}`} className="btn btn-dark btn-lg">
-              <IconPhone size={20} /> Sună Acum: {config.phones[1].display}
-            </a>
-          </div>
+          {clinics.map((clinic) => {
+            const line = clinicPhone(clinic);
+            if (!line) return null;
+            return (
+              <div className="call-card" key={clinic.slug}>
+                <h3>{clinic.name}</h3>
+                <p>{clinic.address_full || clinic.area}</p>
+                <a href={`tel:${line.tel}`} className="btn btn-dark btn-lg">
+                  <IconPhone size={20} /> Sună Acum: {line.display}
+                </a>
+              </div>
+            );
+          })}
         </div>
 
         {/* Emergency Triage Checklist */}

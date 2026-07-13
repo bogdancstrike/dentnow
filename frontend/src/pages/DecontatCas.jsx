@@ -4,21 +4,10 @@ import config from '../config';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { IconPhone, IconClock, IconAlert, IconWhatsApp, IconMapPin } from '../components/ui/Icons';
 import { useSiteData } from '../public-site/SiteDataProvider';
+import { clinicPhone } from '../lib/clinicContact';
 import './DecontatCas.css';
 
 import { faqs as staticFaqs, steps as staticSteps } from '../data/cas';
-
-function clinicPhoneLine(clinic) {
-  const contacts = clinic.contacts || [];
-  const phone = contacts.find((c) => c.kind === 'phone' && c.is_primary)
-    || contacts.find((c) => c.kind === 'phone');
-  if (!phone) return null;
-  const tel = phone.url?.startsWith('tel:')
-    ? phone.url.slice(4)
-    : phone.normalized_value;
-  if (!tel) return null;
-  return { tel, display: phone.display_value || phone.normalized_value || tel };
-}
 
 export default function DecontatCas() {
   const openPicker = useClinicPicker();
@@ -178,7 +167,7 @@ export default function DecontatCas() {
 
               <div className="cas-phone-lines">
                 {clinics.map((clinic) => {
-                  const line = clinicPhoneLine(clinic);
+                  const line = clinicPhone(clinic);
                   if (!line) return null;
                   return (
                     <a key={clinic.slug} href={`tel:${line.tel}`} className="cas-phone-line">

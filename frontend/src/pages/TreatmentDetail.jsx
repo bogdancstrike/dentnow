@@ -4,8 +4,9 @@ import { useLocation, Link } from 'react-router-dom';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import { useClinicPicker } from '../hooks/useClinicPicker';
+import { useSiteData } from '../public-site/SiteDataProvider';
+import { clinicWhatsappHref } from '../lib/clinicContact';
 import { IconPhone, IconClock, IconAlert } from '../components/ui/Icons';
-import config from '../config';
 import './TreatmentDetail.css';
 import { isPreviewMode, usePreviewDraft } from '../api/previewDraft';
 import NotFound from './NotFound';
@@ -145,6 +146,7 @@ export default function TreatmentDetail() {
   const { pathname } = useLocation();
   const treatSlug = pathname.replace(/\/+$/, '').split('/').pop();
   const openPicker = useClinicPicker();
+  const { clinics } = useSiteData();
   const treatmentDraft = usePreviewDraft('treatment');
 
   const { data: treatments = [], isLoading, isError } = useQuery({
@@ -203,6 +205,8 @@ export default function TreatmentDetail() {
       }))
     }
   ];
+
+  const treatmentWhatsappHref = clinicWhatsappHref(clinics[0], `Buna ziua, doresc detalii despre ${item.title}`);
 
   return (
     <div>
@@ -265,9 +269,11 @@ export default function TreatmentDetail() {
               <button type="button" className="btn btn-dark full-width" onClick={() => openPicker('both')}>
                 <IconPhone size={18} /> Programează o Consultație
               </button>
-              <a href={`https://wa.me/${config.phones[0].tel.replace('+', '')}?text=${encodeURIComponent(`Buna ziua, doresc detalii despre ${item.title}`)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline full-width">
-                Întreabă un Medic pe WhatsApp
-              </a>
+              {treatmentWhatsappHref && (
+                <a href={treatmentWhatsappHref} target="_blank" rel="noopener noreferrer" className="btn btn-outline full-width">
+                  Întreabă un Medic pe WhatsApp
+                </a>
+              )}
             </div>
 
             <div className="sidebar-info-list">
