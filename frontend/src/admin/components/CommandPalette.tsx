@@ -204,6 +204,14 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
             placeholder="Caută pagini, articole, clinici, tratamente…"
           />
           <kbd className="dent-cmdk-esc">esc</kbd>
+          <button
+            type="button"
+            className="dent-cmdk-close"
+            aria-label="Închide"
+            onClick={() => setOpen(false)}
+          >
+            ✕
+          </button>
         </div>
         <Command.List>
           {nothing && <Command.Empty>Niciun rezultat.</Command.Empty>}
@@ -275,6 +283,7 @@ const PALETTE_CSS = `
 .dent-cmdk-content [cmdk-input]{height:52px;min-width:0;flex:1;border:0;outline:0;background:transparent;color:#191b21;font:14px/1.4 "Inter Variable",Inter,system-ui,sans-serif;}
 .dent-cmdk-content [cmdk-input]::placeholder{color:#8b93a1;}
 .dent-cmdk-esc{border:1px solid #e7e9ee;border-radius:5px;background:#f7f8fa;padding:3px 6px;color:#8b93a1;font:11px/1 "JetBrains Mono",ui-monospace,monospace;}
+.dent-cmdk-close{display:none;flex-shrink:0;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #e7e9ee;border-radius:8px;background:#f7f8fa;color:#5a6472;font-size:14px;line-height:1;cursor:pointer;}
 .dent-cmdk-content [cmdk-list]{min-height:0;max-height:calc(70vh - 53px);flex:1 1 auto;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:6px;scroll-padding-block:6px;}
 .dent-cmdk-content [cmdk-list]::-webkit-scrollbar{width:10px}.dent-cmdk-content [cmdk-list]::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:rgba(148,163,184,.5);background-clip:content-box;}
 .dent-cmdk-content [cmdk-group-heading]{padding:10px 10px 4px;color:#8b93a1;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
@@ -287,10 +296,11 @@ const PALETTE_CSS = `
 .dent-cmdk-meta{flex-shrink:0;color:#8b93a1;font:11.5px/1 "JetBrains Mono",ui-monospace,monospace;}
 .dent-cmdk-content [cmdk-empty],.dent-cmdk-searching{padding:28px 12px;color:#8b93a1;font-size:13.5px;text-align:center;}.dent-cmdk-searching{padding:10px 12px;}
 @media(max-width:600px){
-  .dent-cmdk-content{top:max(8px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));left:max(8px,env(safe-area-inset-left));width:auto;max-height:none;transform:none;border-radius:12px;animation:dent-cmdk-mobile-in .16s ease;}
-  .dent-cmdk-input-row{padding:0 12px;}
+  .dent-cmdk-content{top:max(8px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));bottom:auto;left:max(8px,env(safe-area-inset-left));width:auto;max-height:80vh;max-height:calc(100dvh - max(8px,env(safe-area-inset-top)) - max(8px,env(safe-area-inset-bottom)));transform:none;border-radius:12px;animation:dent-cmdk-mobile-in .16s ease;}
+  .dent-cmdk-input-row{padding:0 8px 0 12px;}
   .dent-cmdk-esc{display:none;}
-  .dent-cmdk-content [cmdk-list]{max-height:none;}
+  .dent-cmdk-close{display:inline-flex;}
+  .dent-cmdk-content [cmdk-list]{max-height:none;-webkit-overflow-scrolling:touch;}
   .dent-cmdk-content [cmdk-item]{min-height:44px;}
   .dent-cmdk-meta{max-width:28%;overflow:hidden;text-overflow:ellipsis;}
 }

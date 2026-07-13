@@ -189,8 +189,6 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
             <ContentTable title="Oferte populare" items={query.data.top_offers} />
             <ContentTable title="Surse de trafic" items={query.data.referrers} />
             <ContentTable title="Clickuri pe telefon, WhatsApp și e-mail" items={query.data.contact_ctas} />
-            <ContentTable title="Furnizori de internet" items={query.data.internet_providers} />
-            <ContentTable title="Fusuri orare estimate" items={query.data.timezones} />
             <ContentTable title="Adrese IP active" items={query.data.ip_addresses} />
             <ContentTable title="User-Agent-uri" items={query.data.user_agents} />
           </section>

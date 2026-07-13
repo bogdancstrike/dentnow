@@ -8,9 +8,21 @@ import './DecontatCas.css';
 
 import { faqs as staticFaqs, steps as staticSteps } from '../data/cas';
 
+function clinicPhoneLine(clinic) {
+  const contacts = clinic.contacts || [];
+  const phone = contacts.find((c) => c.kind === 'phone' && c.is_primary)
+    || contacts.find((c) => c.kind === 'phone');
+  if (!phone) return null;
+  const tel = phone.url?.startsWith('tel:')
+    ? phone.url.slice(4)
+    : phone.normalized_value;
+  if (!tel) return null;
+  return { tel, display: phone.display_value || phone.normalized_value || tel };
+}
+
 export default function DecontatCas() {
   const openPicker = useClinicPicker();
-  const { decontat_cas: cas } = useSiteData();
+  const { decontat_cas: cas, clinics } = useSiteData();
   const steps = cas?.steps?.length ? cas.steps.map((s) => ({ title: s.title, text: s.text || '' })) : staticSteps;
   const faqs = cas?.faqs?.length ? cas.faqs : staticFaqs;
 
@@ -165,15 +177,19 @@ export default function DecontatCas() {
               </a>
 
               <div className="cas-phone-lines">
-                {config.phones.map((line) => (
-                  <a key={line.tel} href={`tel:${line.tel}`} className="cas-phone-line">
-                    <IconMapPin size={16} color="var(--accent)" />
-                    <span>
-                      <small>{line.label}</small>
-                      <strong>{line.display}</strong>
-                    </span>
-                  </a>
-                ))}
+                {clinics.map((clinic) => {
+                  const line = clinicPhoneLine(clinic);
+                  if (!line) return null;
+                  return (
+                    <a key={clinic.slug} href={`tel:${line.tel}`} className="cas-phone-line">
+                      <IconMapPin size={16} color="var(--accent)" />
+                      <span>
+                        <small>{clinic.name}</small>
+                        <strong>{line.display}</strong>
+                      </span>
+                    </a>
+                  );
+                })}
               </div>
 
               <div className="cas-contact-info">
