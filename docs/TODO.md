@@ -12,7 +12,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 
 ## FOLLOW-UPS (2026-07-13)
 
-- [x] Expanded canonical seed parity with the three clinics' historical transit/FAQ/SEO copy, four treatment-detail routes + FAQs, home/CAS/emergency page sections, Footer copy, gallery/journey/trust content, exact CAS rows, and the current team placeholder asset; default and loaded seeds are idempotency-tested on fresh PostgreSQL 18 schemas with real MinIO.
+- [x] Expanded canonical seed parity with the three clinics' historical transit/FAQ/SEO copy, four treatment-detail routes + FAQs, home/CAS/emergency page sections, Footer copy, gallery/journey/trust content, exact CAS rows, and the current team placeholder asset; default and loaded seeds are idempotency-tested in a clean isolated Compose stack with PostgreSQL 18 + real MinIO, including health/scope/HTTP smoke and restart persistence.
 - [x] Persisted drag ordering for articles, offers, clinics, clinic gallery, doctors, homepage services, partners, news, CAS content, and clinic FAQs.
 - [x] Rich doctor profiles with extended biography, approach, credentials, and supporting photography in admin and `/echipa/:slug`.
 - [x] Homepage contact clinic cards and gallery thumbnails use clearly separated white surfaces; removed the obsolete quick-services strip.
@@ -247,7 +247,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [~] `seed.py` now materializes those parity records into typed clinic, catalog, CAS, gallery, legal and page section/SEO models without placeholder legal bodies; remaining runtime fallbacks still need conversion/removal in Task 14.
 - [x] Added deterministic `backend/seed_loaded.py` that layers a large synthetic prod-like dataset (clinics, doctors, treatments, prices, offers, articles) over the default seed.
 - [x] Added Make targets: `make seed default` and `make seed loaded` (loaded chooses `seed_loaded.py`).
-- [~] Fresh isolated PostgreSQL rehearsals apply migrations 0001–0013, use real MinIO, pass the expanded parity verifier, default idempotency (9 tests) and loaded idempotency/inventory (2 tests). A fully disposable Compose-volume smoke remains before marking Task 13 complete.
+- [x] Clean-volume Compose rehearsal applies migrations 0001–0013, uses real MinIO, passes infrastructure/API/SPA/parity smoke, survives PostgreSQL/MinIO/Keycloak/API/frontend restart, and verifies default idempotency (9 tests) plus loaded idempotency/inventory (2 tests); the isolated project and volumes are removed afterward.
 
 ## Task 14 — Refactor public site to render backend data only 🚧 FOUNDATION DONE (commit `226a917`)
 - [x] Step 1: `site-data-provider.test.tsx` (MSW loading/success/error, no leaked content)
