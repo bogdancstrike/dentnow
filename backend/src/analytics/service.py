@@ -244,15 +244,15 @@ def analytics_overview(
             country_key,
             region_key,
             city_key,
-            func.avg(AnalyticsEvent.latitude).label("latitude"),
-            func.avg(AnalyticsEvent.longitude).label("longitude"),
+            AnalyticsEvent.latitude.label("latitude"),
+            AnalyticsEvent.longitude.label("longitude"),
             func.count(distinct(AnalyticsEvent.visitor_key)).label("visitors"),
             func.count(AnalyticsEvent.id).label("views"),
         )
         .where(*_range_filter(start, end))
-        .group_by(country_key, region_key, city_key)
+        .group_by(country_key, region_key, city_key, AnalyticsEvent.latitude, AnalyticsEvent.longitude)
         .order_by(func.count(distinct(AnalyticsEvent.visitor_key)).desc())
-        .limit(100)
+        .limit(1000)
     ).all()
     geography = [
         {
