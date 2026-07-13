@@ -57,6 +57,11 @@ x-backend-env: &backend-env
   KEYCLOAK_AUDIENCE: "dentnow-api"
   KEYCLOAK_AUTHORIZED_PARTY: "dentnow-admin-spa"
   ALLOWED_ORIGINS: "${PUBLIC_APP_URL:-http://localhost:3000}"
+  ANALYTICS_ENABLED: "${ANALYTICS_ENABLED:-false}"
+  ANALYTICS_REQUIRE_CONSENT: "${ANALYTICS_REQUIRE_CONSENT:-true}"
+  ANALYTICS_EVENT_RETENTION_DAYS: "${ANALYTICS_EVENT_RETENTION_DAYS:-90}"
+  ANALYTICS_AGGREGATE_RETENTION_DAYS: "${ANALYTICS_AGGREGATE_RETENTION_DAYS:-730}"
+  ANALYTICS_TRUSTED_PROXY_CIDRS: "${ANALYTICS_TRUSTED_PROXY_CIDRS:-127.0.0.1/32,::1/128,172.16.0.0/12}"
   LOG_LEVEL: "INFO"
 
 services:
@@ -250,6 +255,27 @@ services:
         exec python seed.py
     restart: "no"
 
+  # One-shot daily analytics rollup + retention enforcement. Schedule externally:
+  # docker compose --profile operations run --rm analytics-maintenance
+  analytics-maintenance:
+    profiles: ["operations"]
+    image: dentnow-backend
+    networks: [dentnow]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    environment:
+      <<: *backend-env
+      SERVICE_NAME: "dentnow-analytics-maintenance"
+    secrets: [postgres_password]
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        export POSTGRES_PASSWORD="$$(cat /run/secrets/postgres_password)"
+        export DATABASE_URL="postgresql+psycopg2://dentnow:$${POSTGRES_PASSWORD}@postgres:5432/dentnow"
+        exec python scripts/analytics_maintenance.py
+    restart: "no"
+
   api:
     build:
       context: ./backend
@@ -301,5 +327,7 @@ services:
       APP_KEYCLOAK_REALM: "doncik"
       APP_KEYCLOAK_CLIENT_ID: "dentnow-admin-spa"
       APP_PREVIEW_URL: "${PUBLIC_PREVIEW_URL:-http://localhost:3001}"
+      APP_ANALYTICS_ENABLED: "${ANALYTICS_ENABLED:-false}"
+      APP_ANALYTICS_REQUIRE_CONSENT: "${ANALYTICS_REQUIRE_CONSENT:-true}"
       BUILD_REVISION: "${BUILD_REVISION:-dev}"
     restart: unless-stopped

@@ -27,6 +27,16 @@ describe('runtime configuration loader', () => {
     const cfg = await loadRuntimeConfig(fetchJson({ apiBase: '/api/' }));
     expect(cfg.apiBase).toBe('/api');
     expect(getRuntimeConfig().apiBase).toBe('/api');
+    expect(cfg.analyticsEnabled).toBe(false);
+    expect(cfg.analyticsRequireConsent).toBe(true);
+  });
+
+  it('accepts explicit analytics runtime switches', async () => {
+    const cfg = await loadRuntimeConfig(fetchJson({
+      apiBase: '/api', analyticsEnabled: true, analyticsRequireConsent: false,
+    }));
+    expect(cfg.analyticsEnabled).toBe(true);
+    expect(cfg.analyticsRequireConsent).toBe(false);
   });
 
   it('accepts explicit preview and keycloak coordinates', async () => {

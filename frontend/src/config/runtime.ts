@@ -20,6 +20,8 @@ const RuntimeConfigSchema = z
     keycloakRealm: z.literal('doncik').optional(),
     keycloakClientId: z.literal('dentnow-admin-spa').optional(),
     buildRevision: z.string().optional(),
+    analyticsEnabled: z.boolean().default(false),
+    analyticsRequireConsent: z.boolean().default(true),
   })
   .strict();
 

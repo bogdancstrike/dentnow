@@ -37,6 +37,7 @@ import GDPR from '../pages/GDPR';
 import Confidentialitate from '../pages/Confidentialitate';
 import Termeni from '../pages/Termeni';
 import NotFound from '../pages/NotFound';
+import { AnalyticsObserver } from '../analytics/AnalyticsObserver';
 
 export default function PublicApp() {
   return (
@@ -44,6 +45,7 @@ export default function PublicApp() {
       <ThemeProvider>
         <ToastProvider>
           <ClinicPickerProvider>
+          <AnalyticsObserver />
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<Home />} />

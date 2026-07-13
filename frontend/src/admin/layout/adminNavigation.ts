@@ -9,6 +9,12 @@ export interface AdminNavItem {
 
 export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
   {
+    group: 'Performanță',
+    items: [
+      { slug: 'analytics', key: 'analytics', label: 'Analytics', capability: CAP.analytics },
+    ],
+  },
+  {
     group: 'Clinici & echipă',
     items: [
       { slug: 'clinici', key: 'clinics', label: 'Clinici', capability: CAP.contentRead },

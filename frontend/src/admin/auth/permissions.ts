@@ -26,6 +26,7 @@ export const CAP = {
   restore: 'workspace:restore',
   audit: 'audit:read',
   manageScopes: 'clinic_scopes:manage',
+  analytics: 'analytics:read',
 } as const;
 
 export function can(me: Me | null, capability: string): boolean {

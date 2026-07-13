@@ -37,6 +37,7 @@ import { DoctorEditorScreen } from '../features/doctors/DoctorEditorScreen';
 import { PartnersScreen } from '../features/partners/PartnersScreen';
 import { PartnerEditorScreen } from '../features/partners/PartnerEditorScreen';
 import { DecontatCasScreen } from '../features/decontat/DecontatCasScreen';
+import { AnalyticsScreen } from '../features/analytics/AnalyticsScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
 import { openCommandPalette } from './adminEvents';
 import { AccessDeniedPage } from '../pages/AccessDeniedPage';
@@ -195,10 +196,16 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
             <Route path="parteneri/:partnerId" element={contentRoute(<PartnerEditorScreen client={client} />)} />
 
             <Route path="decontat-cas" element={contentRoute(<DecontatCasScreen client={client} />)} />
+            <Route
+              path="analytics"
+              element={can(me, CAP.analytics)
+                ? <AnalyticsScreen client={client} />
+                : <AccessDeniedPage title="Acces restricționat" detail="Contul tău nu poate consulta datele analytics." />}
+            />
 
             {ADMIN_NAV_ITEMS.filter(
               (item) =>
-                !['articole', 'clinici', 'tratamente', 'oferte', 'echipa-medicala', 'parteneri', 'decontat-cas'].includes(item.slug),
+                !['analytics', 'articole', 'clinici', 'tratamente', 'oferte', 'echipa-medicala', 'parteneri', 'decontat-cas'].includes(item.slug),
             ).flatMap((item) => {
               const config = getResourceConfig(item.key);
               if (config) {

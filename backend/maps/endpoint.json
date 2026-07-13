@@ -2699,6 +2699,39 @@
         "module_name": "src.api.site_admin",
         "method_name": "cas_faqs_delete"
       }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "analytics_event_create",
+      "model_name": "Empty",
+      "request_method": ["POST"],
+      "api_url": "/v1/public/analytics/events",
+      "exec_method": {
+        "module_name": "src.api.analytics_public",
+        "method_name": "analytics_event_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "analytics_overview_get",
+      "model_name": "Empty",
+      "request_method": ["GET"],
+      "api_url": "/v1/admin/analytics/overview",
+      "exec_method": {
+        "module_name": "src.api.analytics_admin",
+        "method_name": "analytics_overview_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "analytics_export_get",
+      "model_name": "Empty",
+      "request_method": ["GET"],
+      "api_url": "/v1/admin/analytics/export.csv",
+      "exec_method": {
+        "module_name": "src.api.analytics_admin",
+        "method_name": "analytics_export_get"
+      }
     }
   ]
 }

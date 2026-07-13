@@ -13,6 +13,7 @@ import {
   SolutionOutlined,
   TeamOutlined,
   TagsOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
@@ -71,6 +72,7 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
   const normalizedQuery = query.trim();
 
   const canWrite = can(me, CAP.contentWrite);
+  const canReadAnalytics = can(me, CAP.analytics);
   const CREATE_ACTIONS: { id: string; label: string; keywords: string; icon: ReactNode; path: string }[] = useMemo(
     () =>
       !canWrite
@@ -94,6 +96,15 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
   const actions = useMemo(
     () => CREATE_ACTIONS.filter((action) => matches(`${action.label} ${action.keywords}`, normalizedQuery)),
     [CREATE_ACTIONS, normalizedQuery],
+  );
+
+  const analyticsActions = useMemo(
+    () => !canReadAnalytics ? [] : [
+      { id: 'analytics-7', label: 'Analytics — ultimele 7 zile', keywords: 'vizitatori trafic saptamana', path: '/admin/analytics?range=7' },
+      { id: 'analytics-30', label: 'Analytics — ultimele 30 de zile', keywords: 'vizitatori trafic luna', path: '/admin/analytics?range=30' },
+      { id: 'analytics-articles', label: 'Cele mai citite articole', keywords: 'analytics top continut', path: '/admin/analytics?range=30&view=articles' },
+    ].filter((action) => matches(`${action.label} ${action.keywords}`, normalizedQuery)),
+    [canReadAnalytics, normalizedQuery],
   );
 
   const extraActions = useMemo(
@@ -169,6 +180,7 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
 
   const nothing =
     actions.length === 0 &&
+    analyticsActions.length === 0 &&
     extraActions.length === 0 &&
     results.length === 0 &&
     !searching;
@@ -203,6 +215,17 @@ export function CommandPalette({ client, me }: { client: AdminClient; me: Me }) 
               {actions.map((action) => (
                 <Command.Item key={action.id} value={`create ${action.label} ${action.keywords}`} onSelect={() => go(action.path)}>
                   <span className="dent-cmdk-icon">{action.icon}</span>
+                  <span className="dent-cmdk-label">{action.label}</span>
+                </Command.Item>
+              ))}
+            </Command.Group>
+          )}
+
+          {analyticsActions.length > 0 && (
+            <Command.Group heading="Analytics">
+              {analyticsActions.map((action) => (
+                <Command.Item key={action.id} value={`${action.label} ${action.keywords}`} onSelect={() => go(action.path)}>
+                  <span className="dent-cmdk-icon"><BarChartOutlined /></span>
                   <span className="dent-cmdk-label">{action.label}</span>
                 </Command.Item>
               ))}

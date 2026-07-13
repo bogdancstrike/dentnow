@@ -113,6 +113,17 @@ export class AdminClient {
     return this.request<T>(path, { method: 'DELETE', ifMatch });
   }
 
+  async download(path: string, signal?: AbortSignal): Promise<Blob> {
+    const { apiBase } = getRuntimeConfig();
+    const token = await this.getToken();
+    const response = await fetch(`${apiBase}${path}`, {
+      headers: { Authorization: `Bearer ${token}`, 'X-Correlation-Id': uuid() },
+      signal,
+    });
+    if (!response.ok) throw new AdminApiError(response.status);
+    return response.blob();
+  }
+
   /**
    * Multipart upload. The browser sets the `multipart/form-data` boundary itself, so
    * we must NOT force a JSON `Content-Type`. Still carries the bearer token and a

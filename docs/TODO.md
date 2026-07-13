@@ -319,17 +319,17 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 ## Task 24 — Ops docs + release rehearsal ⬜ NOT STARTED
 - [ ] README rewrite, deployment/recovery/content runbooks, clean release rehearsal
 
-## Task 25 — Privacy-preserving visitor analytics + admin dashboards ⬜ NEW
-- [ ] Add a first-party backend telemetry endpoint for `page_view`, navigation clicks, meaningful section visibility, article reads, treatment views, offer views, and clinic/contact CTA interactions.
-- [ ] Derive a secret-keyed pseudonymous visitor identifier from request/network signals; **never persist raw IP addresses, full user-agent strings, bearer/session values, or unbounded referrers**.
-- [ ] Parse and store only bounded device/browser families and coarse trusted-proxy location fields (country/region; city only after legal/privacy approval). Reject client-supplied IP/location identity claims.
-- [ ] Add retention/aggregation policy, bot filtering, rate limits, DNT/consent behavior, same-origin validation, CSP compatibility, and deletion/rotation for visitor identifiers.
-- [ ] Add PostgreSQL tables/indexes for bounded events and daily aggregates; keep this analytics context separate from immutable admin audit and from any future patient data.
-- [ ] Add permission-protected admin aggregate APIs for new/returning visitors, sessions, page/section/menu views, article reads, treatment/offer popularity, CTA conversion, referrers, device mix, and time-series trends.
-- [ ] Add `/admin/analytics` enterprise dashboard inspired by `testing_platform`: 1/7/30/custom date ranges, KPI cards, accessible trend charts, top-page/article/treatment/offer tables, empty/loading/error states, and CSV export.
-- [ ] Add a cmdk `Analytics` navigation entry plus useful safe quick views such as “Analytics — ultimele 7 zile” and “Cele mai citite articole”; no destructive analytics action in cmdk.
-- [ ] Test event validation/privacy redaction, pseudonym rotation, aggregation correctness/time zones, permissions, bot/rate-limit handling, chart accessibility, responsive layouts, and Compose traffic flow.
-- [!] Confirm lawful basis, consent/cookie requirements, approved geographic precision, analytics retention, and privacy-policy wording before enabling production collection.
+## Task 25 — Controlled first-party visitor analytics + admin dashboards ✅ IMPLEMENTED
+- [x] Add a first-party backend telemetry endpoint for `page_view`, navigation clicks, meaningful section visibility, article reads, treatment views, offer views, and clinic/contact CTA interactions.
+- [x] Derive secret-keyed rotating visitor/session identifiers from request signals; per the 2026-07-13 product decision, also retain server-observed IP (`inet`) and bounded User-Agent under raw-event retention. Never persist bearer/session values or unbounded referrers.
+- [x] Parse bounded device/browser/OS families and trusted-proxy location fields; accept strictly validated browser coordinates only after analytics consent and the browser's explicit geolocation permission.
+- [x] Add retention/aggregation policy and maintenance CLI, bot filtering, rate limits, DNT/GPC/consent behavior, same-origin validation, same-origin CSP-compatible delivery, and visitor deletion/identifier rotation.
+- [x] Add PostgreSQL raw-event and daily-aggregate tables/indexes in a dedicated analytics context, separate from immutable admin audit and future patient data.
+- [x] Add `analytics:read` permission-protected aggregate APIs for new/returning visitors, sessions, page/section/menu views, article reads, treatment/offer/clinic popularity, CTA conversion, referrers, IP/User-Agent/device/browser/OS/geographic mix, and time-series trends.
+- [x] Add `/admin/analytics`: today/7/30/custom ranges, KPI cards, accessible trend and geographic charts, top-content/referrer/technical tables, loading/error/empty states, and authenticated CSV export.
+- [x] Add permission-aware sidebar and cmdk `Analytics` navigation with safe 7-day, 30-day, and top-article quick views; no destructive cmdk action.
+- [x] Test strict event validation, browser-coordinate bounds, request-derived identity, pseudonym rotation, consent/DNT/origin/bot/rate-limit behavior, permissions, chart accessibility, runtime switches, and Compose migration/traffic proxy configuration. Backend and frontend suites/build pass.
+- [!] Production collection remains disabled by default. Approve lawful basis, final consent/cookie and privacy-policy wording, geographic precision, and the configured 90-day raw / 730-day aggregate retention before setting `ANALYTICS_ENABLED=true` in production.
 
 ---
 

@@ -93,6 +93,28 @@ class Config:
     # Keyed hash pepper for one-use preview tokens (secret file in deployment).
     PREVIEW_TOKEN_PEPPER = os.getenv("PREVIEW_TOKEN_PEPPER", "dev-preview-pepper")
 
+    # ── First-party analytics ─────────────────────────────────────────────
+    # Collection remains opt-in at deployment level and consent-gated in the
+    # browser. Network/location fields are never sourced from arbitrary payload
+    # identity claims; browser coordinates require an explicit browser permission.
+    ANALYTICS_ENABLED = _bool("ANALYTICS_ENABLED", False)
+    ANALYTICS_REQUIRE_CONSENT = _bool("ANALYTICS_REQUIRE_CONSENT", True)
+    ANALYTICS_PSEUDONYM_KEY = os.getenv(
+        "ANALYTICS_PSEUDONYM_KEY", os.getenv("SECRET_KEY", "dev-secret-change-me")
+    )
+    ANALYTICS_KEY_VERSION = _int("ANALYTICS_KEY_VERSION", 1)
+    ANALYTICS_VISITOR_ROTATION_DAYS = _int("ANALYTICS_VISITOR_ROTATION_DAYS", 30)
+    ANALYTICS_SESSION_MINUTES = _int("ANALYTICS_SESSION_MINUTES", 30)
+    ANALYTICS_EVENT_RETENTION_DAYS = _int("ANALYTICS_EVENT_RETENTION_DAYS", 90)
+    ANALYTICS_AGGREGATE_RETENTION_DAYS = _int("ANALYTICS_AGGREGATE_RETENTION_DAYS", 730)
+    ANALYTICS_RATE_LIMIT_PER_MINUTE = _int("ANALYTICS_RATE_LIMIT_PER_MINUTE", 60)
+    ANALYTICS_USER_AGENT_MAX_LENGTH = _int("ANALYTICS_USER_AGENT_MAX_LENGTH", 512)
+    ANALYTICS_TRUSTED_PROXY_CIDRS = tuple(
+        item.strip()
+        for item in os.getenv("ANALYTICS_TRUSTED_PROXY_CIDRS", "127.0.0.1/32,::1/128,172.16.0.0/12").split(",")
+        if item.strip()
+    )
+
     # ── Tracing ────────────────────────────────────────────────────────────
     ENABLE_TRACING = _bool("ENABLE_TRACING", False)
     OTLP_ENDPOINT = os.getenv("OTLP_ENDPOINT", "http://localhost:4317")

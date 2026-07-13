@@ -14,7 +14,11 @@ jq -n \
   --arg keycloakRealm "${APP_KEYCLOAK_REALM:-doncik}" \
   --arg keycloakClientId "${APP_KEYCLOAK_CLIENT_ID:-dentnow-admin-spa}" \
   --arg buildRevision "${BUILD_REVISION:-dev}" \
-  '{ apiBase: $apiBase, buildRevision: $buildRevision }
+  --arg analyticsEnabled "${APP_ANALYTICS_ENABLED:-false}" \
+  --arg analyticsRequireConsent "${APP_ANALYTICS_REQUIRE_CONSENT:-true}" \
+  '{ apiBase: $apiBase, buildRevision: $buildRevision,
+     analyticsEnabled: ($analyticsEnabled == "true"),
+     analyticsRequireConsent: ($analyticsRequireConsent != "false") }
    + ( if $previewAppUrl != "" then { previewAppUrl: $previewAppUrl } else {} end )
    + ( if $keycloakUrl != "" then { keycloakUrl: $keycloakUrl, keycloakRealm: $keycloakRealm, keycloakClientId: $keycloakClientId } else {} end )' \
   > "$TMP"

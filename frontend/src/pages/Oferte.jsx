@@ -38,7 +38,12 @@ export default function Oferte() {
         {previewOffers.map((o, i) => {
           const saveAmount = (o.old_amount && o.price_amount) ? o.old_amount - o.price_amount : null;
           return (
-            <article key={o.slug} className={`offer-card rv${i > 0 ? ` d${i % 3}` : ''}${o.featured ? ' featured' : ''}`}>
+            <article
+              key={o.slug}
+              className={`offer-card rv${i > 0 ? ` d${i % 3}` : ''}${o.featured ? ' featured' : ''}`}
+              data-analytics-type="offer"
+              data-analytics-key={o.slug}
+            >
               <div className="offer-badge">{o.badge || 'Promo'}</div>
               <span className="offer-icon">⭐</span>
               <h3 className="offer-name">{o.name}</h3>
@@ -75,7 +80,12 @@ export default function Oferte() {
                   )}
                 </div>
               )}
-              <a href="#oferta-programare" className="btn btn-dark offer-action">Cere programare</a>
+              <a
+                href="#oferta-programare"
+                className="btn btn-dark offer-action"
+                data-analytics-cta="contact"
+                data-analytics-label={`oferta:${o.slug}`}
+              >Cere programare</a>
             </article>
           );
         })}

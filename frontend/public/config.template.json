@@ -3,5 +3,7 @@
   "previewAppUrl": "http://localhost:3001",
   "keycloakUrl": "http://localhost:8080",
   "keycloakRealm": "doncik",
-  "keycloakClientId": "dentnow-admin-spa"
+  "keycloakClientId": "dentnow-admin-spa",
+  "analyticsEnabled": false,
+  "analyticsRequireConsent": true
 }
