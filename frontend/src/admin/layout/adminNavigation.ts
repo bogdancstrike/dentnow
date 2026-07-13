@@ -43,11 +43,9 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
     ],
   },
   {
-    group: 'Media & guvernanță',
+    group: 'Guvernanță',
     items: [
-      { slug: 'media', key: 'media', label: 'Bibliotecă media', capability: CAP.contentRead },
       { slug: 'legal', key: 'legal', label: 'Legal / GDPR', capability: CAP.contentRead },
-      { slug: 'audit', key: 'audit', label: 'Istoric audit', capability: CAP.audit },
     ],
   },
 ];

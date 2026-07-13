@@ -14,7 +14,8 @@ Guarantees:
 - **Clinic scope** — a clinic-manager principal only sees their assigned clinic-bound
   resources; global manually authored reviews follow the normal content-read boundary.
 - **No sensitive payload** — results never carry object keys, checksums, consent,
-  contact details, or other private fields; case-image media never appears in search.
+  contact details, or other private fields. Media is uploaded only from contextual
+  editors and has no standalone search result or admin page.
 """
 from __future__ import annotations
 
@@ -31,7 +32,6 @@ from src.clinics.models import Clinic, Doctor
 from src.editorial.models import Article, Ebook, NewsItem, Review
 from src.iam.capabilities import CAP_CONTENT_READ
 from src.iam.principal import Principal
-from src.media.models import MediaAsset
 from src.site.models import Page
 
 MIN_QUERY_LENGTH = 2
@@ -64,8 +64,6 @@ class _Group:
     title: Callable[[Any], str]
     # Clinic-scope attribute for a clinic manager, or None for globally-readable rows.
     scope_column: str | None = None
-    # Media: only surface public assets, never de-identified case imagery.
-    public_only: bool = False
 
     def route(self, obj: Any) -> str:
         return f"{self.route_prefix}/{obj.id}"
@@ -92,8 +90,6 @@ GROUPS: tuple[_Group, ...] = (
            _first_of("author")),
     _Group("ebook", Ebook, ("title", "slug"), "/admin/ebooks",
            _first_of("title")),
-    _Group("media", MediaAsset, ("original_filename", "alt_text"), "/admin/media",
-           _first_of("original_filename", "alt_text", default="media"), public_only=True),
 )
 
 
@@ -113,8 +109,6 @@ def _search_group(session: Session, group: _Group, pattern: str, cap: int,
     stmt = stmt.where(
         or_(*[getattr(group.model, col).ilike(pattern) for col in group.match_columns])
     )
-    if group.public_only:
-        stmt = stmt.where(group.model.privacy_class == "public")
     if scoped and group.scope_column is not None:
         col = getattr(group.model, group.scope_column)
         stmt = stmt.where(col.in_(scope_ids or {_NO_MATCH}))

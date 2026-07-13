@@ -36,7 +36,6 @@ const RESULT_ICONS: Record<string, React.ReactNode> = {
   article: <FileTextOutlined />,
   news: <FileTextOutlined />,
   review: <FileTextOutlined />,
-  media: <PictureOutlined />,
 };
 
 function matches(value: string, query: string): boolean {
@@ -56,7 +55,6 @@ function routeForResult(result: SearchHit): string | null {
     doctor: '/admin/echipa-medicala',
     treatment: '/admin/tratamente',
     offer: '/admin/oferte',
-    media: '/admin/media',
     news: '/admin/articole',
     review: '/admin/reviws',
   };
