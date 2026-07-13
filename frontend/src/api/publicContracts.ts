@@ -238,6 +238,8 @@ export const OfferSchema = z.object({
   starts_at: z.string().nullable().optional(),
   ends_at: z.string().nullable().optional(),
   features: z.array(z.string()).default([]),
+  treatments: z.array(z.object({ slug: z.string(), name: z.string() })).default([]),
+  clinics: z.array(z.object({ slug: z.string(), name: z.string() })).default([]),
   featured: z.boolean().default(false),
   position: z.number().default(0),
 });

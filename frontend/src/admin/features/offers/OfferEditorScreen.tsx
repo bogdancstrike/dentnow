@@ -21,10 +21,22 @@ import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
 import type { OfferRow } from './OffersScreen';
 import { LivePreview } from '../../components/LivePreview';
+import { RemoteSelect, type RemoteSelectOption } from '../../components/RemoteSelect';
 import '../editorial/articles.css'; // Reuse layout CSS
 import { AdminRequestError } from '../../components/AdminRequestError';
 
 interface OfferFormValues extends OfferRow {}
+
+function selectedRelations(ids: string[] | undefined, options: RemoteSelectOption[]) {
+  return (ids ?? []).flatMap((id) => {
+    const option = options.find((candidate) => candidate.value === id);
+    if (!option) return [];
+    return [{
+      slug: String(option.row.slug ?? ''),
+      name: option.label,
+    }];
+  });
+}
 
 export function OfferEditorScreen({ client }: { client: AdminClient }) {
   const { offerId } = useParams();
@@ -35,6 +47,8 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
   const [form] = Form.useForm<OfferFormValues>();
   const values = (Form.useWatch([], form) ?? {}) as Partial<OfferFormValues>;
   const [dirty, setDirty] = useState(false);
+  const [treatmentOptions, setTreatmentOptions] = useState<RemoteSelectOption[]>([]);
+  const [clinicOptions, setClinicOptions] = useState<RemoteSelectOption[]>([]);
 
   const query = useQuery({
     queryKey: ['admin', 'offer', offerId],
@@ -160,7 +174,7 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
           layout="vertical"
           onValuesChange={() => setDirty(true)}
           onFinish={(v) => save.mutate(v)}
-          initialValues={{ status: 'draft', featured: false }}
+          initialValues={{ status: 'draft', featured: false, treatment_ids: [], clinic_ids: [] }}
         >
           <div className="article-form-section">
             <Typography.Title level={4}>Informații Ofertă</Typography.Title>
@@ -202,6 +216,36 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
             <Form.Item name="features" label="Funcționalități (lista de beneficii separate prin virgulă)">
               <Input.TextArea rows={3} placeholder="Consultație gratuită, Plan de tratament, Radiografie..." />
             </Form.Item>
+
+            <Typography.Title level={4} style={{ marginTop: 24 }}>Disponibilitate</Typography.Title>
+            <Form.Item
+              name="treatment_ids"
+              label="Tratamente incluse"
+              extra="Selectează tratamentele existente la care se aplică oferta."
+            >
+              <RemoteSelect
+                client={client}
+                endpoint="/v1/admin/treatments"
+                labelKey="name"
+                multiple
+                placeholder="Selectează tratamentele"
+                onOptionsLoaded={setTreatmentOptions}
+              />
+            </Form.Item>
+            <Form.Item
+              name="clinic_ids"
+              label="Clinici participante"
+              extra="Lasă lista goală dacă oferta este generală."
+            >
+              <RemoteSelect
+                client={client}
+                endpoint="/v1/admin/clinics"
+                labelKey="name"
+                multiple
+                placeholder="Selectează clinicile"
+                onOptionsLoaded={setClinicOptions}
+              />
+            </Form.Item>
           </div>
         </Form>
       </div>
@@ -222,6 +266,14 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
               features: Array.isArray(values.features)
                 ? values.features
                 : String(values.features || '').split(',').map((item) => item.trim()).filter(Boolean),
+              treatments: selectedRelations(
+                values.treatment_ids ?? query.data?.treatment_ids,
+                treatmentOptions,
+              ),
+              clinics: selectedRelations(
+                values.clinic_ids ?? query.data?.clinic_ids,
+                clinicOptions,
+              ),
             },
           } : null}
         />

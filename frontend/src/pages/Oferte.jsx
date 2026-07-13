@@ -51,6 +51,30 @@ export default function Oferte() {
               <div className="offer-features">
                 {o.features && o.features.map((f) => <div key={f} className="of">{f}</div>)}
               </div>
+              {(o.treatments?.length > 0 || o.clinics?.length > 0) && (
+                <div className="offer-relations" aria-label="Disponibilitatea ofertei">
+                  {o.treatments?.length > 0 && (
+                    <div>
+                      <span className="offer-relations-label">Tratamente</span>
+                      <div className="offer-relation-links">
+                        {o.treatments.map((treatment) => (
+                          <a key={treatment.slug} href={`/tratamente/${treatment.slug}`}>{treatment.name}</a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {o.clinics?.length > 0 && (
+                    <div>
+                      <span className="offer-relations-label">Clinici participante</span>
+                      <div className="offer-relation-links">
+                        {o.clinics.map((clinic) => (
+                          <a key={clinic.slug} href={`/locatii/${clinic.slug}`}>{clinic.name}</a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <a href="#oferta-programare" className="btn btn-dark offer-action">Cere programare</a>
             </article>
           );

@@ -28,6 +28,8 @@ export interface OfferRow extends ResourceRow {
   currency?: string;
   position: number;
   features?: string[] | string;
+  treatment_ids?: string[];
+  clinic_ids?: string[];
 }
 
 interface OfferList {

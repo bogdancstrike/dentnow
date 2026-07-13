@@ -4,11 +4,13 @@
  * typing an id. Options are fetched once and filtered client-side; supports single or
  * multiple selection and is a controlled Ant Form field (pass through `value`/`onChange`).
  */
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Select } from 'antd';
 import type { AdminClient } from '../api/adminClient';
 
 interface RemoteSelectProps {
+  id?: string;
   client: AdminClient;
   endpoint: string; // e.g. /v1/admin/treatment-categories
   /** field on each row to show as the label (default: name || title || label) */
@@ -19,19 +21,27 @@ interface RemoteSelectProps {
   multiple?: boolean;
   placeholder?: string;
   allowClear?: boolean;
+  onOptionsLoaded?: (options: RemoteSelectOption[]) => void;
 }
 
-interface Row {
+export interface RemoteSelectRow {
   id: string;
   [k: string]: unknown;
 }
 
-function labelOf(row: Row, key?: string): string {
+export interface RemoteSelectOption {
+  value: string;
+  label: string;
+  row: RemoteSelectRow;
+}
+
+function labelOf(row: RemoteSelectRow, key?: string): string {
   if (key && row[key] != null) return String(row[key]);
   return String(row.name ?? row.title ?? row.label ?? row.slug ?? row.id);
 }
 
 export function RemoteSelect({
+  id,
   client,
   endpoint,
   labelKey,
@@ -41,20 +51,27 @@ export function RemoteSelect({
   multiple,
   placeholder = 'Selectează…',
   allowClear = true,
+  onOptionsLoaded,
 }: RemoteSelectProps) {
   const query = useQuery({
     queryKey: ['admin', 'options', endpoint],
-    queryFn: async () => (await client.get<{ items: Row[] }>(`${endpoint}?page_size=200`)).data.items ?? [],
+    queryFn: async () => (await client.get<{ items: RemoteSelectRow[] }>(`${endpoint}?page_size=200`)).data.items ?? [],
     staleTime: 60_000,
   });
 
-  const options = (query.data ?? []).map((row) => ({
+  const options = useMemo<RemoteSelectOption[]>(() => (query.data ?? []).map((row) => ({
     value: String(row[valueKey] ?? row.id),
     label: labelOf(row, labelKey),
-  }));
+    row,
+  })), [labelKey, query.data, valueKey]);
+
+  useEffect(() => {
+    onOptionsLoaded?.(options);
+  }, [onOptionsLoaded, options]);
 
   return (
     <Select
+      id={id}
       showSearch={{ optionFilterProp: 'label' }}
       mode={multiple ? 'multiple' : undefined}
       loading={query.isLoading}

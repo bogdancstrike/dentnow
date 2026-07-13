@@ -15,6 +15,7 @@ from src.catalog.service import (
     PriceService,
     TreatmentService,
 )
+from src.clinics.service import ClinicService
 from src.core.errors import ConflictError, PermissionDeniedError, ValidationError
 from src.iam.capabilities import ROLE_ADMIN, ROLE_CLINIC_MANAGER
 from src.iam.principal import Principal
@@ -95,6 +96,45 @@ def test_offer_features_accepts_comma_string(db_session):
         OfferCreate(slug="promo-csv", name="Promo", features="  One, Two ,, Three ").model_dump()
     )
     assert created["features"] == ["One", "Two", "Three"]
+
+
+def test_offer_related_treatments_and_clinics_sync_roundtrip(db_session):
+    first_treatment = _treatment(db_session, "implant-offer")
+    second_treatment = _treatment(db_session, "igienizare-offer")
+    clinic = ClinicService(db_session, ADMIN).create(
+        {"slug": "clinica-oferta", "name": "Clinica ofertă"}
+    )[0]
+    svc = OfferService(db_session, ADMIN)
+
+    created, etag = svc.create(OfferCreate(
+        slug="oferta-relationata",
+        name="Ofertă relaționată",
+        treatment_ids=[first_treatment["id"], second_treatment["id"], first_treatment["id"]],
+        clinic_ids=[clinic["id"]],
+    ).model_dump())
+    assert set(created["treatment_ids"]) == {first_treatment["id"], second_treatment["id"]}
+    assert created["clinic_ids"] == [clinic["id"]]
+
+    updated, _ = svc.update(
+        uuid.UUID(created["id"]),
+        OfferUpdate(treatment_ids=[second_treatment["id"]], clinic_ids=[]).model_dump(exclude_unset=True),
+        etag,
+    )
+    assert updated["treatment_ids"] == [second_treatment["id"]]
+    assert updated["clinic_ids"] == []
+    fetched, _ = svc.get(uuid.UUID(created["id"]))
+    assert fetched["treatment_ids"] == [second_treatment["id"]]
+    assert fetched["clinic_ids"] == []
+
+
+def test_offer_rejects_unknown_related_resource(db_session):
+    with pytest.raises(ValidationError) as exc_info:
+        OfferService(db_session, ADMIN).create(OfferCreate(
+            slug="oferta-invalida",
+            name="Ofertă invalidă",
+            treatment_ids=[str(uuid.uuid4())],
+        ).model_dump())
+    assert exc_info.value.details["field"] == "treatment_ids"
 
 
 def test_manager_cannot_write_global_catalog(db_session):

@@ -9,7 +9,16 @@ from flask import request as flask_request
 from sqlalchemy import select
 
 from src.api._helpers import public_endpoint
-from src.catalog.models import Offer, OfferFeature, Partner, Treatment, TreatmentCategory, TreatmentPrice
+from src.catalog.models import (
+    Offer,
+    OfferClinic,
+    OfferFeature,
+    OfferTreatment,
+    Partner,
+    Treatment,
+    TreatmentCategory,
+    TreatmentPrice,
+)
 from src.clinics.models import (
     Clinic,
     ClinicContact,
@@ -269,12 +278,39 @@ def _query_offers(session):
         features = [f.label for f in sorted(
             session.scalars(_live(OfferFeature).where(OfferFeature.offer_id == o.id)).all(),
             key=lambda f: (f.position, f.label))]
+        treatments = [
+            {"slug": treatment.slug, "name": treatment.name}
+            for treatment in session.scalars(
+                select(Treatment)
+                .join(OfferTreatment, OfferTreatment.treatment_id == Treatment.id)
+                .where(
+                    OfferTreatment.offer_id == o.id,
+                    Treatment.deleted_at.is_(None),
+                    Treatment.active.is_(True),
+                )
+                .order_by(Treatment.position, Treatment.name)
+            ).all()
+        ]
+        clinics = [
+            {"slug": clinic.slug, "name": clinic.name}
+            for clinic in session.scalars(
+                select(Clinic)
+                .join(OfferClinic, OfferClinic.clinic_id == Clinic.id)
+                .where(
+                    OfferClinic.offer_id == o.id,
+                    Clinic.deleted_at.is_(None),
+                    Clinic.status == "active",
+                )
+                .order_by(Clinic.position, Clinic.name)
+            ).all()
+        ]
         offers.append({
             "slug": o.slug, "name": o.name, "summary": o.summary, "badge": o.badge,
             "price_amount": float(o.price_amount) if o.price_amount is not None else None,
             "old_amount": float(o.old_amount) if o.old_amount is not None else None,
             "currency": o.currency, "starts_at": o.starts_at, "ends_at": o.ends_at,
-            "features": features, "featured": o.featured, "position": o.position,
+            "features": features, "treatments": treatments, "clinics": clinics,
+            "featured": o.featured, "position": o.position,
         })
     offers.sort(key=lambda x: (x["position"], x["name"]))
     return offers

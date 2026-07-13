@@ -94,6 +94,65 @@ def test_published_news_has_a_public_detail_page(client, admin):
             ).status_code in (200, 204)
 
 
+def test_public_offer_exposes_admin_selected_treatments_and_clinics(client, admin):
+    treatment_id = clinic_id = offer_id = None
+    suffix = uuid.uuid4().hex[:8]
+    try:
+        treatment = client.post(
+            "/api/v1/admin/treatments",
+            json={"slug": f"tratament-oferta-{suffix}", "name": "Tratament ofertă"},
+            headers=admin,
+        )
+        assert treatment.status_code == 201, treatment.get_data(as_text=True)
+        treatment_id = treatment.get_json()["id"]
+
+        clinic = client.post(
+            "/api/v1/admin/clinics",
+            json={"slug": f"clinica-oferta-{suffix}", "name": "Clinica ofertă"},
+            headers=admin,
+        )
+        assert clinic.status_code == 201, clinic.get_data(as_text=True)
+        clinic_id = clinic.get_json()["id"]
+
+        offer = client.post(
+            "/api/v1/admin/offers",
+            json={
+                "slug": f"oferta-relationata-{suffix}",
+                "name": "Ofertă relaționată",
+                "status": "active",
+                "treatment_ids": [treatment_id],
+                "clinic_ids": [clinic_id],
+            },
+            headers=admin,
+        )
+        assert offer.status_code == 201, offer.get_data(as_text=True)
+        offer_id = offer.get_json()["id"]
+        assert offer.get_json()["treatment_ids"] == [treatment_id]
+        assert offer.get_json()["clinic_ids"] == [clinic_id]
+
+        public_offer = next(
+            item for item in client.get("/api/v1/public/offers").get_json()["items"]
+            if item["slug"] == f"oferta-relationata-{suffix}"
+        )
+        assert public_offer["treatments"] == [
+            {"slug": f"tratament-oferta-{suffix}", "name": "Tratament ofertă"}
+        ]
+        assert public_offer["clinics"] == [
+            {"slug": f"clinica-oferta-{suffix}", "name": "Clinica ofertă"}
+        ]
+    finally:
+        for endpoint, resource_id in (
+            ("offers", offer_id),
+            ("treatments", treatment_id),
+            ("clinics", clinic_id),
+        ):
+            if resource_id:
+                assert client.delete(
+                    f"/api/v1/admin/{endpoint}/{resource_id}",
+                    headers={**admin, "If-Match": '"1"'},
+                ).status_code in (200, 204)
+
+
 def test_case_study_is_public_only_after_consent_approval(client, admin):
     case_id = None
     try:

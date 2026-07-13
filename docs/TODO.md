@@ -22,6 +22,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Built `/admin/before-after` CRUD with separate before/after uploads, clinic/treatment links, consent approval/revocation, browser-only live draft preview, and persisted drag ordering.
 - [x] Rebuilt Footer from live API data: dynamic treatment services, dynamic clinics, per-clinic phone/WhatsApp/map contacts, API social/email links, and a tested allow-list of valid internal resource/legal routes.
 - [x] Connected `/confidentialitate`, `/gdpr`, and `/termeni` to `/admin/legal` documents with unsaved draft preview, audited approval/publication, effective dates, public 404/503 handling, and explicitly approved seed documents; removed duplicate compiled legal copy.
+- [x] Completed offer relations: `/admin/oferte/:id` uses searchable multi-selects for existing treatments and participating clinics, persists both sets atomically, validates stale/unknown references, and renders relation links in the real public/draft preview.
 
 ---
 
@@ -87,8 +88,8 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 
 ## NEW REQUIREMENTS (user, this session) — to implement
 - [x] **URL per admin tab** — React Router inside /admin so each useful section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
-- [~] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id). *(RemoteSelect built; treatment→category wired; remaining relations pending.)*
-- [~] **More CRUD**: nested quiz question/option/band editor and image-carousel/gallery media are complete; offer→treatment selection remains; real-page live preview is wired for current preview-capable editors.
+- [x] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id); shared controls also preserve accessible form-label association.
+- [x] **More CRUD**: nested quiz question/option/band editor, image-carousel/gallery media, before/after relations, and offer→treatment/clinic selection are complete with real-page draft preview.
 - [~] **Implement Google Review syncing**: backend scheduled task to pull reviews pending. Database model `clinics.google_place_id` added.
 - [x] **Restore original frontend UI**: Fixed `/oferte`, `/articole`, and `/tratamente` bug where `useRevealAll` hid items loaded asynchronously. Restored old "Tratamente uzuale" curated card UI on the homepage.
 - [x] **Noutăți (News)**: Split `/admin/articole` into Articole and Noutăți modules. Connected public `/noutati` to read live data from the database `SitePublication` API instead of hardcoded content.

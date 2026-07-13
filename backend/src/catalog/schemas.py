@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import uuid
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -138,6 +139,23 @@ def _coerce_features(v):
     return [s.strip() for s in v if s is not None and str(s).strip()]
 
 
+def _coerce_resource_ids(v):
+    """Normalize a multi-select payload into unique canonical UUID strings."""
+    if v is None:
+        return None
+    if not isinstance(v, (list, tuple, set)):
+        raise ValueError("resource ids must be a list")
+    normalized = []
+    for raw_id in v:
+        try:
+            resource_id = str(uuid.UUID(str(raw_id)))
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise ValueError("resource ids must contain valid UUIDs") from exc
+        if resource_id not in normalized:
+            normalized.append(resource_id)
+    return normalized
+
+
 class OfferCreate(_Strict):
     slug: str
     name: str
@@ -153,8 +171,12 @@ class OfferCreate(_Strict):
     position: int = 0
     # Convenience: manage the offer_features child rows inline from the editor.
     features: Optional[list[str]] = None
+    treatment_ids: Optional[list[str]] = None
+    clinic_ids: Optional[list[str]] = None
     _s = field_validator("slug")(classmethod(lambda cls, v: _validate_slug(v)))
     _f = field_validator("features", mode="before")(classmethod(lambda cls, v: _coerce_features(v)))
+    _t = field_validator("treatment_ids", mode="before")(classmethod(lambda cls, v: _coerce_resource_ids(v)))
+    _c = field_validator("clinic_ids", mode="before")(classmethod(lambda cls, v: _coerce_resource_ids(v)))
 
     @field_validator("status")
     @classmethod
@@ -184,7 +206,11 @@ class OfferUpdate(_Strict):
     featured: Optional[bool] = None
     position: Optional[int] = None
     features: Optional[list[str]] = None
+    treatment_ids: Optional[list[str]] = None
+    clinic_ids: Optional[list[str]] = None
     _f = field_validator("features", mode="before")(classmethod(lambda cls, v: _coerce_features(v)))
+    _t = field_validator("treatment_ids", mode="before")(classmethod(lambda cls, v: _coerce_resource_ids(v)))
+    _c = field_validator("clinic_ids", mode="before")(classmethod(lambda cls, v: _coerce_resource_ids(v)))
 
 
 class OfferFeatureCreate(_Strict):

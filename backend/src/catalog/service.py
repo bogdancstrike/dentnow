@@ -10,7 +10,9 @@ from sqlalchemy import select
 
 from src.catalog.models import (
     Offer,
+    OfferClinic,
     OfferFeature,
+    OfferTreatment,
     Partner,
     Technology,
     Treatment,
@@ -18,6 +20,7 @@ from src.catalog.models import (
     TreatmentFaq,
     TreatmentPrice,
 )
+from src.clinics.models import Clinic
 from src.catalog.serializers import (
     serialize_category,
     serialize_offer,
@@ -142,6 +145,22 @@ class OfferService(CrudService, _SlugUnique):
             .order_by(OfferFeature.position, OfferFeature.label)
         ).all()
         data["features"] = [r.label for r in rows]
+        data["treatment_ids"] = [
+            str(resource_id)
+            for resource_id in self.session.scalars(
+                select(OfferTreatment.treatment_id)
+                .where(OfferTreatment.offer_id == obj.id)
+                .order_by(OfferTreatment.treatment_id)
+            ).all()
+        ]
+        data["clinic_ids"] = [
+            str(resource_id)
+            for resource_id in self.session.scalars(
+                select(OfferClinic.clinic_id)
+                .where(OfferClinic.offer_id == obj.id)
+                .order_by(OfferClinic.clinic_id)
+            ).all()
+        ]
         return data
 
     def before_write(self, obj, data, *, creating): self._slug_unique(obj, creating)
@@ -150,26 +169,52 @@ class OfferService(CrudService, _SlugUnique):
     def to_create_kwargs(self, data):
         data = dict(data)
         data.pop("features", None)
+        data.pop("treatment_ids", None)
+        data.pop("clinic_ids", None)
         return data
 
     def to_update_values(self, data, obj):
         data = dict(data)
         data.pop("features", None)
+        data.pop("treatment_ids", None)
+        data.pop("clinic_ids", None)
         return data
 
     def create(self, data):
         after, etag = super().create(data)
         if data.get("features") is not None:
             self._sync_features(uuid.UUID(after["id"]), data["features"])
-            after["features"] = list(data["features"])
-        return after, etag
+        if data.get("treatment_ids") is not None:
+            self._sync_resources(
+                uuid.UUID(after["id"]), data["treatment_ids"],
+                mapping_model=OfferTreatment, resource_model=Treatment,
+                resource_column="treatment_id", field="treatment_ids",
+            )
+        if data.get("clinic_ids") is not None:
+            self._sync_resources(
+                uuid.UUID(after["id"]), data["clinic_ids"],
+                mapping_model=OfferClinic, resource_model=Clinic,
+                resource_column="clinic_id", field="clinic_ids", check_clinic_scope=True,
+            )
+        return self.serialize(self.session.get(Offer, uuid.UUID(after["id"]))), etag
 
     def update(self, obj_id, data, if_match):
         after, etag = super().update(obj_id, data, if_match)
         if data.get("features") is not None:
             self._sync_features(uuid.UUID(str(obj_id)), data["features"])
-            after["features"] = list(data["features"])
-        return after, etag
+        if data.get("treatment_ids") is not None:
+            self._sync_resources(
+                uuid.UUID(str(obj_id)), data["treatment_ids"],
+                mapping_model=OfferTreatment, resource_model=Treatment,
+                resource_column="treatment_id", field="treatment_ids",
+            )
+        if data.get("clinic_ids") is not None:
+            self._sync_resources(
+                uuid.UUID(str(obj_id)), data["clinic_ids"],
+                mapping_model=OfferClinic, resource_model=Clinic,
+                resource_column="clinic_id", field="clinic_ids", check_clinic_scope=True,
+            )
+        return self.serialize(self.session.get(Offer, uuid.UUID(str(obj_id)))), etag
 
     def _sync_features(self, offer_id, labels):
         """Replace the live offer_features rows for this offer with `labels`."""
@@ -185,6 +230,55 @@ class OfferService(CrudService, _SlugUnique):
                 offer_id=offer_id, label=label, position=i,
                 created_by=self.principal.subject, updated_by=self.principal.subject,
             ))
+        self.session.flush()
+
+    def _sync_resources(
+        self, offer_id, resource_ids, *, mapping_model, resource_model,
+        resource_column, field, check_clinic_scope=False,
+    ):
+        """Replace one offer mapping set after validating every referenced resource."""
+        requested = [uuid.UUID(str(resource_id)) for resource_id in resource_ids]
+        if check_clinic_scope:
+            inaccessible = [
+                str(resource_id)
+                for resource_id in requested
+                if not self.principal.can_access_clinic(resource_id)
+            ]
+            if inaccessible:
+                raise ValidationError(
+                    "offer contains inaccessible clinics",
+                    details={"field": field, "ids": inaccessible},
+                )
+
+        found = set()
+        if requested:
+            found = set(self.session.scalars(
+                select(resource_model.id).where(
+                    resource_model.id.in_(requested),
+                    resource_model.deleted_at.is_(None),
+                )
+            ).all())
+        missing = [str(resource_id) for resource_id in requested if resource_id not in found]
+        if missing:
+            raise ValidationError(
+                "offer contains unknown related resources",
+                details={"field": field, "ids": missing},
+            )
+
+        existing = self.session.scalars(
+            select(mapping_model).where(mapping_model.offer_id == offer_id)
+        ).all()
+        existing_by_id = {getattr(row, resource_column): row for row in existing}
+        requested_set = set(requested)
+        for resource_id, row in existing_by_id.items():
+            if resource_id not in requested_set:
+                self.session.delete(row)
+        for resource_id in requested:
+            if resource_id not in existing_by_id:
+                self.session.add(mapping_model(
+                    offer_id=offer_id,
+                    **{resource_column: resource_id},
+                ))
         self.session.flush()
 
 
