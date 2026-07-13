@@ -17,7 +17,7 @@ import PatientJourney from '../components/sections/PatientJourney';
 import { IconPhone, IconWhatsApp, IconMapPin, IconMail, IconClock, IconFacebook, IconInstagram, IconLinkedIn } from '../components/ui/Icons';
 import './Home.css';
 
-function LocationCard({ loc, className }) {
+function LocationCard({ loc }) {
   const phoneContact = loc.contacts.find((c) => c.kind === 'phone');
   const phoneDisplay = phoneContact?.display_value || '';
   const phoneTel = phoneContact?.url?.replace('tel:', '') || '';
@@ -25,7 +25,7 @@ function LocationCard({ loc, className }) {
   const mapsLink = loc.map_link_url;
 
   return (
-    <div className={`location-card${className ? ` ${className}` : ''}`}>
+    <div className="location-card">
       <div className="location-map">
         {embedUrl && <iframe src={embedUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={`${loc.name} pe Google Maps`} />}
       </div>
@@ -52,11 +52,11 @@ function LocationCard({ loc, className }) {
   );
 }
 
-function ContactClinics({ clinics }) {
+export function ContactClinics({ clinics }) {
   const [index, setIndex] = useState(0);
-  const useCarousel = clinics.length > 3;
-  const current = clinics[index];
-  const prev = () => setIndex((i) => (i === 0 ? clinics.length - 1 : i - 1));
+  const safeIndex = Math.min(index, Math.max(clinics.length - 1, 0));
+  const current = clinics[safeIndex];
+  const prev = () => setIndex((i) => (i <= 0 ? clinics.length - 1 : i - 1));
   const next = () => setIndex((i) => (i + 1) % clinics.length);
 
   return (
@@ -65,19 +65,21 @@ function ContactClinics({ clinics }) {
         <div className="stag rv">Contact, locatii si program</div>
         <h2 className="h2d rv d1">Cele {clinics.length} clinici DentNow din Bucuresti.</h2>
       </div>
-      {useCarousel ? (
+      {current ? (
         <div className="gallery-shell locations-gallery">
           <div>
             <LocationCard loc={current} />
-            <div className="gallery-controls">
-              <button className="icon-btn" type="button" onClick={prev} aria-label="Clinica anterioara">‹</button>
-              <button className="icon-btn" type="button" onClick={next} aria-label="Clinica urmatoare">›</button>
-            </div>
+            {clinics.length > 1 && (
+              <div className="gallery-controls">
+                <button className="icon-btn" type="button" onClick={prev} aria-label="Clinica anterioara">‹</button>
+                <button className="icon-btn" type="button" onClick={next} aria-label="Clinica urmatoare">›</button>
+              </div>
+            )}
           </div>
           <div className="gallery-list">
             {clinics.map((loc, i) => (
               <button
-                className={`gallery-thumb${i === index ? ' active' : ''}`}
+                className={`gallery-thumb${i === safeIndex ? ' active' : ''}`}
                 type="button"
                 onClick={() => setIndex(i)}
                 key={loc.slug}
@@ -92,11 +94,7 @@ function ContactClinics({ clinics }) {
           </div>
         </div>
       ) : (
-        <div className="locations-grid">
-          {clinics.map((loc, i) => (
-            <LocationCard key={loc.slug} loc={loc} className={`rv${i > 0 ? ` d${i}` : ''}`} />
-          ))}
-        </div>
+        <p className="locations-empty">Clinicile vor apărea aici imediat ce sunt publicate.</p>
       )}
     </>
   );

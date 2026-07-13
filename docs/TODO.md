@@ -27,6 +27,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Completed `/admin/parteneri/:id`: uploadable MinIO logo, relationship/badge/link/rights metadata, active state and order, safe HTTP(S) links, publishable-media validation, and a real unsaved desktop/mobile `/parteneri` preview.
 - [x] Replaced automatic Google Places review ingestion with manual review authoring: no Places API key, sync script, or clinic place identifier remains; `/admin/reviws` provides Author/Text/Stele CRUD, drag ordering, cmdk creation/search, and browser-only live preview on the real `/recenzii` page.
 - [x] Fixed legal-document routing so both the admin table link and unsaved preview map `terms` to the real Romanian public route `/termeni` (and `privacy` to `/confidentialitate`).
+- [x] Rebuilt homepage `#contact` clinics with the same always-on `gallery-shell` / `gallery-list` / `gallery-thumb` composition as `#clinica`; the selected location card and every clinic thumbnail use explicit white raised surfaces, independent of clinic count.
 
 ---
 
