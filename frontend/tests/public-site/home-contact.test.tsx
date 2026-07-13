@@ -33,7 +33,7 @@ describe('homepage contact clinics', () => {
     expect(thumbnails).toHaveLength(3);
     fireEvent.click(thumbnails.item(1));
 
-    const selectedCard = container.querySelector('.location-card');
+    const selectedCard = container.querySelector('.location-card.gallery-photo');
     expect(selectedCard).not.toBeNull();
     expect(within(selectedCard as HTMLElement).getByText('DentNow B')).toBeInTheDocument();
   });

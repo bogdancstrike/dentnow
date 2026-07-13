@@ -25,7 +25,7 @@ function LocationCard({ loc }) {
   const mapsLink = loc.map_link_url;
 
   return (
-    <div className="location-card">
+    <div className="location-card gallery-photo">
       <div className="location-map">
         {embedUrl && <iframe src={embedUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={`${loc.name} pe Google Maps`} />}
       </div>
