@@ -296,6 +296,8 @@
 
   .clinic-editor-preview-panel {
     position: static;
+    height: auto;
+    min-height: 0;
   }
 
   .clinic-preview-frame {
@@ -317,7 +319,7 @@
   }
 
   .clinic-form-section {
-    padding: 16px;
+    padding: 14px;
   }
 
   .clinic-preview-frame {
@@ -373,5 +375,13 @@
   .clinic-draft-row,
   .clinic-draft-row--hours {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .clinic-draft-row,
+  .clinic-draft-row--hours {
+    gap: 8px;
+    padding: 12px;
   }
 }

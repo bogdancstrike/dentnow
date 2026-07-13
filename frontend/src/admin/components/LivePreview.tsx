@@ -103,11 +103,11 @@ export function LivePreview({
   return (
     <div className="live-preview">
       <div className="live-preview-toolbar">
-        <Space size="small">
+        <Space className="live-preview-heading" size="small" wrap>
           <Typography.Text strong>Previzualizare live</Typography.Text>
           {draft && <Tag color="gold">Ciornă nesalvată</Tag>}
         </Space>
-        <Space size="small">
+        <Space className="live-preview-actions" size="small" wrap>
           <Segmented
             size="small"
             value={viewport}

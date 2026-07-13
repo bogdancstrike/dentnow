@@ -4,11 +4,12 @@
  * edits are live immediately, so the same proxy serves it). Designed to sit inside an
  * AntD <Form.Item> — it reads `value` (media id) and calls `onChange(id | null)`.
  */
-import { useRef, useState } from 'react';
-import { App, Button, Space, Spin, Typography } from 'antd';
+import { useRef, useState, type CSSProperties } from 'react';
+import { App, Button, Spin, Typography } from 'antd';
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import type { AdminClient } from '../api/adminClient';
 import { mediaUrl } from '../../api/publicClient';
+import './imageUploadField.css';
 
 export interface ImageUploadFieldProps {
   id?: string;
@@ -59,21 +60,15 @@ export function ImageUploadField({
   };
 
   return (
-    <div className="image-upload-field">
-      <Space align="start" size="middle">
-        <div
-          style={{
-            width,
-            height,
-            borderRadius: 10,
-            border: '1px dashed #cbd5e1',
-            background: '#f8fafc',
-            display: 'grid',
-            placeItems: 'center',
-            overflow: 'hidden',
-            flex: '0 0 auto',
-          }}
-        >
+    <div
+      className="image-upload-field"
+      style={{
+        '--image-upload-width': `${width}px`,
+        '--image-upload-ratio': `${width} / ${height}`,
+      } as CSSProperties}
+    >
+      <div className="image-upload-layout">
+        <div className="image-upload-preview">
           {uploading ? (
             <Spin />
           ) : value ? (
@@ -88,7 +83,7 @@ export function ImageUploadField({
             </Typography.Text>
           )}
         </div>
-        <Space orientation="vertical" size="small">
+        <div className="image-upload-actions">
           <Button icon={<UploadOutlined />} onClick={pickFile} loading={uploading}>
             {value ? 'Schimbă imaginea' : 'Încarcă imagine'}
           </Button>
@@ -100,8 +95,8 @@ export function ImageUploadField({
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             JPG / PNG / WebP. Fără SVG.
           </Typography.Text>
-        </Space>
-      </Space>
+        </div>
+      </div>
       <input
         id={id}
         ref={inputRef}

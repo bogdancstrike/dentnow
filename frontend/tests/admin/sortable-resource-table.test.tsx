@@ -11,7 +11,7 @@ const rows = [
 describe('SortableResourceTable', () => {
   it('moves rows deterministically and renders accessible handles', () => {
     expect(moveRows(rows, 'c', 'a').map((row) => row.id)).toEqual(['c', 'a', 'b']);
-    render(
+    const { container } = render(
       <SortableResourceTable
         columns={[{ title: 'Nume', dataIndex: 'name' }]}
         data={rows}
@@ -21,5 +21,6 @@ describe('SortableResourceTable', () => {
     );
     expect(screen.getByRole('button', { name: 'Reordonează Primul' })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Reordonează/ })).toHaveLength(3);
+    expect(container.querySelector('.admin-responsive-table')).toBeInTheDocument();
   });
 });

@@ -286,5 +286,14 @@ const PALETTE_CSS = `
 .dent-cmdk-label{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .dent-cmdk-meta{flex-shrink:0;color:#8b93a1;font:11.5px/1 "JetBrains Mono",ui-monospace,monospace;}
 .dent-cmdk-content [cmdk-empty],.dent-cmdk-searching{padding:28px 12px;color:#8b93a1;font-size:13.5px;text-align:center;}.dent-cmdk-searching{padding:10px 12px;}
+@media(max-width:600px){
+  .dent-cmdk-content{top:max(8px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));left:max(8px,env(safe-area-inset-left));width:auto;max-height:none;transform:none;border-radius:12px;animation:dent-cmdk-mobile-in .16s ease;}
+  .dent-cmdk-input-row{padding:0 12px;}
+  .dent-cmdk-esc{display:none;}
+  .dent-cmdk-content [cmdk-list]{max-height:none;}
+  .dent-cmdk-content [cmdk-item]{min-height:44px;}
+  .dent-cmdk-meta{max-width:28%;overflow:hidden;text-overflow:ellipsis;}
+}
+@keyframes dent-cmdk-mobile-in{from{opacity:0;transform:translateY(-6px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.dent-cmdk-overlay,.dent-cmdk-content{animation:none;}}
 `;

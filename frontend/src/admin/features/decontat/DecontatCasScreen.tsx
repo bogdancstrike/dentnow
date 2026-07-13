@@ -77,7 +77,7 @@ function SubCrud({
 
   return (
     <div className="article-form-section" style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div className="admin-subresource-header" style={{ marginBottom: 12 }}>
         <Typography.Title level={5} style={{ margin: 0 }}>{title}</Typography.Title>
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({} as Row); form.resetFields(); }}>
           Adaugă
@@ -111,7 +111,8 @@ function SubCrud({
         title={editing?.id ? `Editează ${singular}` : `${singular} nou`}
         open={editing !== undefined}
         onClose={() => setEditing(undefined)}
-        size={480}
+        size="min(100vw, 520px)"
+        styles={{ body: { padding: 'clamp(12px, 4vw, 24px)' } }}
         destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>

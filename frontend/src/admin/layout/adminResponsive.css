@@ -1,0 +1,87 @@
+.admin-resource-stack {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 16px;
+}
+
+.admin-resource-header,
+.admin-subresource-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-resource-header h2,
+.admin-subresource-header h3 {
+  margin: 0;
+}
+
+.admin-table-scroll-hint {
+  display: none;
+  color: #8b93a1;
+  font-size: 12px;
+}
+
+.admin-responsive-table {
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-subresource-section {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .admin-resource-stack {
+    gap: 12px;
+  }
+
+  .admin-resource-header,
+  .admin-subresource-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-resource-header > button,
+  .admin-subresource-header > button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .admin-table-scroll-hint {
+    display: block;
+    margin: -4px 0;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form-actions > button {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 359px) {
+  .admin-resource-header h2 {
+    font-size: 21px;
+  }
+
+  .admin-form-actions > button {
+    flex: 1 1 100%;
+  }
+}

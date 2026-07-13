@@ -173,7 +173,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
               <Input.TextArea rows={2} placeholder="Rezumatul care apare în liste..." />
             </Form.Item>
 
-            <Space size="large" style={{ marginTop: 12 }}>
+            <Space size="large" wrap style={{ marginTop: 12 }}>
               <Form.Item name="active" label="Activ pe site?" valuePropName="checked">
                 <input type="checkbox" />
               </Form.Item>

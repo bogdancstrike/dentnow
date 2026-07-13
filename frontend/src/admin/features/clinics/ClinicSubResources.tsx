@@ -31,6 +31,9 @@ interface ChildProps {
   onChanged?: () => void;
 }
 
+const DRAWER_SIZE = 'min(100vw, 520px)';
+const DRAWER_STYLES = { body: { padding: 'clamp(12px, 4vw, 24px)' } } as const;
+
 function scopedItems(data: { items?: ChildRow[] } | undefined, clinicId: string): ChildRow[] {
   return (data?.items ?? []).filter((row) => row.clinic_id === clinicId);
 }
@@ -71,8 +74,8 @@ export function ClinicContacts({ clinicId, client, onChanged }: ChildProps) {
   });
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div className="admin-subresource-section" style={{ marginTop: 24 }}>
+      <div className="admin-subresource-header" style={{ marginBottom: 16 }}>
         <Typography.Title level={5} style={{ margin: 0 }}>Contacte</Typography.Title>
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
@@ -81,6 +84,8 @@ export function ClinicContacts({ clinicId, client, onChanged }: ChildProps) {
         rowKey="id"
         pagination={false}
         size="small"
+        className="admin-responsive-table"
+        scroll={{ x: 'max-content' }}
         columns={[
           { title: 'Tip', dataIndex: 'kind' },
           { title: 'Valoare', dataIndex: 'display_value' },
@@ -98,7 +103,7 @@ export function ClinicContacts({ clinicId, client, onChanged }: ChildProps) {
           },
         ]}
       />
-      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Contact" destroyOnHidden>
+      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Contact" size={DRAWER_SIZE} styles={DRAWER_STYLES} destroyOnHidden>
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
           <Form.Item name="kind" label="Tip" rules={[{ required: true }]}>
             <Select
@@ -161,8 +166,8 @@ export function ClinicHours({ clinicId, client, onChanged }: ChildProps) {
   const zile = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div className="admin-subresource-section" style={{ marginTop: 24 }}>
+      <div className="admin-subresource-header" style={{ marginBottom: 16 }}>
         <Typography.Title level={5} style={{ margin: 0 }}>Orar</Typography.Title>
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
@@ -171,6 +176,8 @@ export function ClinicHours({ clinicId, client, onChanged }: ChildProps) {
         rowKey="id"
         pagination={false}
         size="small"
+        className="admin-responsive-table"
+        scroll={{ x: 'max-content' }}
         columns={[
           { title: 'Zi', dataIndex: 'weekday', render: (v) => zile[v] },
           { title: 'Deschis', dataIndex: 'opens_at' },
@@ -189,7 +196,7 @@ export function ClinicHours({ clinicId, client, onChanged }: ChildProps) {
           },
         ]}
       />
-      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Program Zi" destroyOnHidden>
+      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Program Zi" size={DRAWER_SIZE} styles={DRAWER_STYLES} destroyOnHidden>
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
           <Form.Item name="weekday" label="Zi" rules={[{ required: true }]}>
             <Select options={zile.map((z, i) => ({ value: i, label: z }))} />
@@ -246,8 +253,8 @@ export function ClinicFaqs({ clinicId, client, onChanged }: ChildProps) {
   });
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div className="admin-subresource-section" style={{ marginTop: 24 }}>
+      <div className="admin-subresource-header" style={{ marginBottom: 16 }}>
         <Typography.Title level={5} style={{ margin: 0 }}>Întrebări Frecvente</Typography.Title>
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
@@ -274,7 +281,7 @@ export function ClinicFaqs({ clinicId, client, onChanged }: ChildProps) {
           },
         ]}
       />
-      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="FAQ" destroyOnHidden>
+      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="FAQ" size={DRAWER_SIZE} styles={DRAWER_STYLES} destroyOnHidden>
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
           <Form.Item name="question" label="Întrebare" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="answer" label="Răspuns" rules={[{ required: true }]}><Input.TextArea rows={4} /></Form.Item>
@@ -322,8 +329,8 @@ export function ClinicTransit({ clinicId, client, onChanged }: ChildProps) {
   });
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div className="admin-subresource-section" style={{ marginTop: 24 }}>
+      <div className="admin-subresource-header" style={{ marginBottom: 16 }}>
         <Typography.Title level={5} style={{ margin: 0 }}>Mijloace de Transport</Typography.Title>
         <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => { setEditing({}); form.resetFields(); }}>Adaugă</Button>
       </div>
@@ -332,6 +339,8 @@ export function ClinicTransit({ clinicId, client, onChanged }: ChildProps) {
         rowKey="id"
         pagination={false}
         size="small"
+        className="admin-responsive-table"
+        scroll={{ x: 'max-content' }}
         columns={[
           { title: 'Mod (ex. metrou, bus)', dataIndex: 'mode' },
           { title: 'Label', dataIndex: 'label' },
@@ -349,7 +358,7 @@ export function ClinicTransit({ clinicId, client, onChanged }: ChildProps) {
           },
         ]}
       />
-      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Transport" destroyOnHidden>
+      <Drawer open={editing !== undefined} onClose={() => setEditing(undefined)} title="Transport" size={DRAWER_SIZE} styles={DRAWER_STYLES} destroyOnHidden>
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
           <Form.Item name="mode" label="Mod de transport">
             <Select

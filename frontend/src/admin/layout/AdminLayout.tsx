@@ -1,7 +1,8 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
   App,
   Button,
+  Drawer,
   Empty,
   Layout,
   Menu,
@@ -11,7 +12,9 @@ import {
 import type { MenuProps } from 'antd';
 import {
   LogoutOutlined,
+  CloseOutlined,
   GlobalOutlined,
+  MenuOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SearchOutlined,
@@ -41,7 +44,9 @@ import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
 import { openCommandPalette } from './adminEvents';
 import { AccessDeniedPage } from '../pages/AccessDeniedPage';
 import { StatusPage } from '../../shared/StatusPage';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import './adminLayout.css';
+import './adminResponsive.css';
 
 const { Header, Sider, Content } = Layout;
 const AnalyticsScreen = lazy(async () => {
@@ -54,7 +59,20 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
   const { message } = App.useApp();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1199px)');
   const currentSlug = location.pathname.replace(/^\/admin\/?/, '').split('/')[0] || 'clinici';
+
+  useEffect(() => {
+    if (isMobile) {
+      setMobileMenuOpen(false);
+      return;
+    }
+    setCollapsed(isTablet);
+  }, [isMobile, isTablet]);
+
+  useEffect(() => setMobileMenuOpen(false), [location.pathname]);
 
   const menuItems: MenuProps['items'] = useMemo(
     () =>
@@ -80,73 +98,106 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
       ? element
       : <AccessDeniedPage title="Acces restricționat" detail="Contul tău nu are permisiunea necesară pentru această secțiune." />;
 
+  const navigateFromMenu: MenuProps['onClick'] = (event) => {
+    setMobileMenuOpen(false);
+    navigate(`/admin/${event.key}`);
+  };
+
+  const navigationMenu = (compact: boolean) => (
+    <>
+      <Menu
+        className="admin-navigation-menu"
+        theme="dark"
+        mode="inline"
+        inlineCollapsed={compact}
+        selectedKeys={[currentSlug]}
+        items={menuItems}
+        onClick={navigateFromMenu}
+      />
+      <div className="admin-sidebar-footer">
+        <Button
+          type="text"
+          block
+          icon={<GlobalOutlined />}
+          aria-label="Vezi site-ul public"
+          onClick={() => window.open('/', '_blank', 'noopener')}
+        >
+          {!compact && 'Vezi site-ul public'}
+        </Button>
+      </div>
+    </>
+  );
+
   return (
     <Layout className="admin-shell" hasSider>
       <a className="admin-skip-link" href="#admin-main">Sari la conținut</a>
       <CommandPalette client={client} me={me} />
-      <Sider
-        className="admin-sidebar"
-        theme="dark"
-        width={264}
-        collapsedWidth={80}
-        collapsed={collapsed}
-        breakpoint="lg"
-        onBreakpoint={setCollapsed}
-        trigger={null}
-      >
-        <div className="admin-sidebar-inner">
-        <button
-          type="button"
-          className="admin-brand"
-          aria-label="Deschide secțiunea Clinici"
-          onClick={() => navigate('/admin/clinici')}
-        >
-          <img
-            className="admin-brand-mark"
-            src="/favicon.svg"
-            width="34"
-            height="34"
-            alt=""
-            aria-hidden="true"
-          />
-          {!collapsed && (
-            <span className="admin-brand-copy">
-              <strong>DentNow</strong>
-              <small>Content operations</small>
-            </span>
-          )}
-        </button>
-        <Menu
+      {!isMobile && (
+        <Sider
+          className="admin-sidebar"
           theme="dark"
-          mode="inline"
-          inlineCollapsed={collapsed}
-          selectedKeys={[currentSlug]}
-          items={menuItems}
-          onClick={(event) => navigate(`/admin/${event.key}`)}
-        />
-        <div className="admin-sidebar-footer">
-          <Button
-            type="text"
-            block
-            icon={<GlobalOutlined />}
-            aria-label="Vezi site-ul public"
-            onClick={() => window.open('/', '_blank', 'noopener')}
-          >
-            {!collapsed && 'Vezi site-ul public'}
-          </Button>
-        </div>
-        </div>
-      </Sider>
+          width={264}
+          collapsedWidth={80}
+          collapsed={collapsed}
+          trigger={null}
+        >
+          <div className="admin-sidebar-inner">
+            <button
+              type="button"
+              className="admin-brand"
+              aria-label="Deschide secțiunea Clinici"
+              onClick={() => navigate('/admin/clinici')}
+            >
+              <img
+                className="admin-brand-mark"
+                src="/favicon.svg"
+                width="34"
+                height="34"
+                alt=""
+                aria-hidden="true"
+              />
+              {!collapsed && (
+                <span className="admin-brand-copy">
+                  <strong>DentNow</strong>
+                  <small>Content operations</small>
+                </span>
+              )}
+            </button>
+            {navigationMenu(collapsed)}
+          </div>
+        </Sider>
+      )}
 
-      <Layout>
+      <Drawer
+        open={isMobile && mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        placement="left"
+        size="min(88vw, 320px)"
+        title={(
+          <span className="admin-mobile-brand">
+            <img src="/favicon.svg" width="32" height="32" alt="" aria-hidden="true" />
+            <span>DentNow <small>Administrare</small></span>
+          </span>
+        )}
+        closeIcon={<CloseOutlined style={{ color: '#ffffff' }} />}
+        styles={{
+          header: { minHeight: 64, borderBottomColor: 'rgba(148, 163, 184, 0.14)', background: '#12141a', color: '#fff' },
+          body: { display: 'flex', minHeight: 0, flexDirection: 'column', padding: 0, background: '#12141a' },
+        }}
+        destroyOnHidden
+      >
+        {navigationMenu(false)}
+      </Drawer>
+
+      <Layout className="admin-main-layout">
         <Header className="admin-header">
           <Space size="middle">
             <Button
               type="text"
               className="admin-collapse-button"
-              aria-label={collapsed ? 'Extinde meniul' : 'Restrânge meniul'}
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed((value) => !value)}
+              aria-label={isMobile ? 'Deschide meniul' : collapsed ? 'Extinde meniul' : 'Restrânge meniul'}
+              icon={isMobile ? <MenuOutlined /> : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => isMobile ? setMobileMenuOpen(true) : setCollapsed((value) => !value)}
             />
             <div className="admin-context">
               <Typography.Text className="admin-context-kicker">Workspace</Typography.Text>

@@ -41,7 +41,7 @@ export function CaseConsentControl({
         description="Confirmarea este separată de editarea conținutului și necesită permisiunea de aprobare."
         style={{ marginBottom: 16 }}
       />
-      <Space>
+      <Space className="admin-form-actions" wrap>
         <Button
           type="primary"
           disabled={approved}

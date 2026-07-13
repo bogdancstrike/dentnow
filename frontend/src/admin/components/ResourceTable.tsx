@@ -1,7 +1,7 @@
 /** Reusable server-paginated table. Owns query state (page/size) and selection; the
  *  domain feature supplies columns and row actions. Stable `rowKey="id"`.
  */
-import { Button, Space, Alert } from 'antd';
+import { Button, Alert } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { SortableResourceTable } from './SortableResourceTable';
 
@@ -40,16 +40,17 @@ export function ResourceTable<T extends ResourceRow>({
   reordering,
 }: Props<T>) {
   return (
-    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
-      <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+    <section className="admin-resource-stack">
+      <header className="admin-resource-header">
         <h2 style={{ margin: 0 }}>{title}</h2>
         {onCreate && (
           <Button type="primary" onClick={onCreate}>
             Adaugă
           </Button>
         )}
-      </Space>
+      </header>
       {error && <Alert type="error" title={error} showIcon />}
+      <span className="admin-table-scroll-hint">Glisează orizontal pentru a vedea toate coloanele.</span>
       <SortableResourceTable<T>
         columns={columns}
         data={data}
@@ -60,10 +61,12 @@ export function ResourceTable<T extends ResourceRow>({
           current: page,
           pageSize,
           total,
+          responsive: true,
+          showLessItems: true,
           showSizeChanger: true,
           onChange: onPageChange,
         }}
       />
-    </Space>
+    </section>
   );
 }

@@ -201,14 +201,14 @@ export function OfferEditorScreen({ client }: { client: AdminClient }) {
             </Form.Item>
 
             <Typography.Title level={4} style={{ marginTop: 24 }}>Prețuri și Promovare</Typography.Title>
-            <Space size="large" style={{ width: '100%' }}>
+            <div className="admin-form-grid">
               <Form.Item name="price_amount" label="Preț Nou (RON)">
-                <InputNumber style={{ width: 160 }} />
+                <InputNumber style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item name="old_amount" label="Preț Vechi (RON)">
-                <InputNumber style={{ width: 160 }} />
+                <InputNumber style={{ width: '100%' }} />
               </Form.Item>
-            </Space>
+            </div>
             <Form.Item name="featured" label="Ofertă recomandată (Featured)" valuePropName="checked">
               <input type="checkbox" />
             </Form.Item>

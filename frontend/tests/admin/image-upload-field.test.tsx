@@ -6,7 +6,7 @@ import { ImageUploadField } from '../../src/admin/components/ImageUploadField';
 
 describe('ImageUploadField', () => {
   it('renders the doctor-specific generic placeholder when no portrait was uploaded', () => {
-    render(
+    const { container } = render(
       <ConfigProvider>
         <AntApp>
           <ImageUploadField
@@ -19,5 +19,7 @@ describe('ImageUploadField', () => {
 
     expect(screen.getByText('Echipa DentNow medic stomatolog')).toBeInTheDocument();
     expect(screen.queryByText(/Daria/i)).not.toBeInTheDocument();
+    expect(container.querySelector('.image-upload-preview')).toBeInTheDocument();
+    expect(container.querySelector('.image-upload-field')).toHaveStyle('--image-upload-width: 160px');
   });
 });

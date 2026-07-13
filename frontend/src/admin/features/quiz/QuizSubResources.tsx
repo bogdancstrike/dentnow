@@ -274,9 +274,11 @@ export function QuizSubResources({
           showExpandColumn: false,
           expandedRowRender: (question) => (
             <Table<OptionRow>
+              className="admin-responsive-table"
               rowKey="id"
               size="small"
               pagination={false}
+              scroll={{ x: 'max-content' }}
               columns={optionColumns}
               dataSource={options.filter((option) => option.question_id === question.id)}
               locale={{ emptyText: 'Nu există răspunsuri. Folosește „Adaugă răspuns”.' }}
@@ -285,7 +287,7 @@ export function QuizSubResources({
         }}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 32, marginBottom: 12 }}>
+      <div className="admin-subresource-header" style={{ marginTop: 32, marginBottom: 12 }}>
         <div>
           <Typography.Title level={4} style={{ margin: 0 }}>Rezultate</Typography.Title>
           <Typography.Text type="secondary">Mesajele afișate pentru intervalele de punctaj.</Typography.Text>
@@ -295,9 +297,11 @@ export function QuizSubResources({
         </Button>
       </div>
       <Table<BandRow>
+        className="admin-responsive-table"
         rowKey="id"
         size="small"
         pagination={false}
+        scroll={{ x: 'max-content' }}
         loading={bandsQuery.isLoading}
         dataSource={bands}
         columns={[
@@ -318,7 +322,14 @@ export function QuizSubResources({
         ]}
       />
 
-      <Drawer open={editor !== null} onClose={() => setEditor(null)} destroyOnHidden size="large" title={drawerTitle}>
+      <Drawer
+        open={editor !== null}
+        onClose={() => setEditor(null)}
+        destroyOnHidden
+        size="min(100vw, 720px)"
+        styles={{ body: { padding: 'clamp(12px, 4vw, 24px)' } }}
+        title={drawerTitle}
+      >
         <Form form={form} layout="vertical" onFinish={(values) => save.mutate(values)}>
           {editor?.kind === 'question' && (
             <>
@@ -343,10 +354,10 @@ export function QuizSubResources({
           )}
           {editor?.kind === 'band' && (
             <>
-              <Space size="middle" style={{ width: '100%' }}>
-                <Form.Item name="min_score" label="Punctaj minim" rules={[{ required: true }]}><InputNumber min={0} /></Form.Item>
-                <Form.Item name="max_score" label="Punctaj maxim" rules={[{ required: true }]}><InputNumber min={0} /></Form.Item>
-              </Space>
+              <div className="admin-form-grid">
+                <Form.Item name="min_score" label="Punctaj minim" rules={[{ required: true }]}><InputNumber min={0} style={{ width: '100%' }} /></Form.Item>
+                <Form.Item name="max_score" label="Punctaj maxim" rules={[{ required: true }]}><InputNumber min={0} style={{ width: '100%' }} /></Form.Item>
+              </div>
               <Form.Item name="title" label="Titlu rezultat" rules={[{ required: true }]}><Input /></Form.Item>
               <Form.Item name="description" label="Descriere"><Input.TextArea rows={3} /></Form.Item>
               <Form.Item name="recommendations" label="Recomandări"><Input.TextArea rows={4} /></Form.Item>

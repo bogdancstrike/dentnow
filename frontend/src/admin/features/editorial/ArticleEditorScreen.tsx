@@ -175,7 +175,7 @@ export function ArticleEditorScreen({ client }: { client: AdminClient }) {
   return (
     <section className="article-editor" aria-labelledby="article-editor-title">
       <header className="article-editor-toolbar">
-        <Space size="middle">
+        <div className="article-editor-title-row">
           <Button aria-label="Înapoi la articole" icon={<ArrowLeftOutlined />} onClick={leaveEditor} />
           <div>
             <Space size="small" wrap>
@@ -188,8 +188,8 @@ export function ArticleEditorScreen({ client }: { client: AdminClient }) {
               {editing ? `/${articleQuery.data?.slug ?? ''}` : 'Draft editorial nou'}
             </Typography.Text>
           </div>
-        </Space>
-        <Space wrap>
+        </div>
+        <div className="article-editor-actions">
           {editing && articleQuery.data?.status === 'published' && (
             <Button
               icon={<EyeOutlined />}
@@ -226,7 +226,7 @@ export function ArticleEditorScreen({ client }: { client: AdminClient }) {
           >
             Salvează articolul
           </Button>
-        </Space>
+        </div>
       </header>
 
       <div className="article-editor-grid">

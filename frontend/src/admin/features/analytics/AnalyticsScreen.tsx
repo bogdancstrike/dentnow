@@ -79,7 +79,16 @@ const dimensionColumns: ColumnsType<AnalyticsDimension> = [
 function ContentTable({ title, items }: { title: string; items: AnalyticsDimension[] }) {
   return (
     <Card className="analytics-panel" title={title}>
-      <Table rowKey="key" columns={dimensionColumns} dataSource={items} pagination={{ pageSize: 8, hideOnSinglePage: true }} size="small" locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nu există activitate" /> }} />
+      <Table
+        className="admin-responsive-table"
+        rowKey="key"
+        columns={dimensionColumns}
+        dataSource={items}
+        pagination={{ pageSize: 8, hideOnSinglePage: true, responsive: true, showLessItems: true }}
+        scroll={{ x: 480 }}
+        size="small"
+        locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nu există activitate" /> }}
+      />
     </Card>
   );
 }
@@ -124,7 +133,7 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
           <Typography.Title level={2}>Analytics DentNow</Typography.Title>
           <Typography.Paragraph>Vizitatori, comportament, conținut și distribuție geografică într-o singură vedere.</Typography.Paragraph>
         </div>
-        <Space wrap>
+        <Space className="analytics-controls" wrap>
           <Segmented options={[{ label: 'Azi', value: '1' }, { label: '7 zile', value: '7' }, { label: '30 zile', value: '30' }, { label: 'Personalizat', value: 'custom' }]} value={range.preset} onChange={setPreset} />
           {range.preset === 'custom' && (
             <RangePicker aria-label="Alege perioada analytics" onChange={(_dates, strings) => {

@@ -237,6 +237,8 @@ export function ArticlesScreen({ client }: { client: AdminClient }) {
             current: page,
             pageSize,
             total: listQuery.data?.total ?? 0,
+            responsive: true,
+            showLessItems: true,
             showSizeChanger: true,
             onChange: (nextPage, nextPageSize) => {
               setPage(nextPage);

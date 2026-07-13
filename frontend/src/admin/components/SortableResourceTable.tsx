@@ -27,6 +27,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import './sortableTable.css';
 
 export interface SortableRow {
@@ -111,11 +112,16 @@ export function SortableResourceTable<T extends SortableRow>({
   data,
   onReorder,
   reordering = false,
+  pagination,
+  scroll,
+  size,
+  className,
   rowLabel = (row) => String((row as T & { name?: string; title?: string }).name
     || (row as T & { title?: string }).title
     || row.id),
   ...tableProps
 }: SortableResourceTableProps<T>) {
+  const useCompactPagination = useMediaQuery('(max-width: 520px)');
   const [orderedData, setOrderedData] = useState(data);
   useEffect(() => setOrderedData(data), [data]);
 
@@ -143,9 +149,18 @@ export function SortableResourceTable<T extends SortableRow>({
   const table = (
     <Table<T>
       {...tableProps}
+      className={['admin-responsive-table', className].filter(Boolean).join(' ')}
       rowKey="id"
       columns={sortableColumns}
       dataSource={orderedData}
+      pagination={pagination === false ? false : {
+        responsive: true,
+        showLessItems: true,
+        ...(typeof pagination === 'object' ? pagination : {}),
+        ...(useCompactPagination ? { simple: true, showSizeChanger: false } : {}),
+      }}
+      scroll={scroll ?? { x: 'max-content' }}
+      size={size ?? 'middle'}
       components={onReorder ? { body: { row: DraggableRow } } : undefined}
       onRow={(row) => ({ 'aria-label': rowLabel(row) }) as HTMLAttributes<HTMLTableRowElement>}
     />

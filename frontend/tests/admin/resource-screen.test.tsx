@@ -46,6 +46,7 @@ describe('generic ResourceScreen via registry', () => {
     );
     await waitFor(() => expect(screen.getByText('Eveniment Nou')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'Adaugă' })).toBeInTheDocument();
+    expect(screen.getByText('Glisează orizontal pentru a vedea toate coloanele.')).toBeInTheDocument();
   });
 
   it('getResourceConfig returns configs for generic keys only', () => {

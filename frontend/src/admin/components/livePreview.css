@@ -94,6 +94,57 @@
   color: #8b93a1;
 }
 
+@media (max-width: 767px) {
+  .live-preview {
+    height: auto;
+  }
+
+  .live-preview-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .live-preview-heading,
+  .live-preview-actions {
+    width: 100%;
+  }
+
+  .live-preview-actions {
+    justify-content: space-between;
+  }
+
+  .live-preview-stage {
+    min-height: 560px;
+    padding: 6px;
+  }
+
+  .live-preview-frame {
+    min-width: 0;
+    border-radius: 8px;
+  }
+
+  .live-preview-chrome {
+    padding: 8px;
+  }
+
+  .live-preview-chrome > span {
+    width: 8px;
+    height: 8px;
+  }
+
+  .live-preview-url {
+    margin-left: 4px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .live-preview-iframe,
+  .live-preview-stage--mobile .live-preview-iframe {
+    min-height: 560px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .live-preview-toolbar { background: #10151c; border-color: #232b36; }
   .live-preview-stage { background: #0b0f14; }

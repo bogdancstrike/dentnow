@@ -30,6 +30,7 @@ import {
   ClinicFaqs,
 } from './ClinicSubResources';
 import { LivePreview } from '../../components/LivePreview';
+import '../editorial/articles.css';
 import './clinics.css';
 import { AdminRequestError } from '../../components/AdminRequestError';
 import {
@@ -417,14 +418,14 @@ export function ClinicEditorScreen({ client }: { client: AdminClient }) {
             </Form.Item>
 
             <Typography.Title level={4} style={{ marginTop: 32 }}>Hartă & Localizare (Google Maps)</Typography.Title>
-            <Space size="large" style={{ width: '100%' }}>
+            <div className="admin-form-grid">
               <Form.Item name="latitude" label="Latitudine">
-                <InputNumber style={{ width: 160 }} />
+                <InputNumber style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item name="longitude" label="Longitudine">
-                <InputNumber style={{ width: 160 }} />
+                <InputNumber style={{ width: '100%' }} />
               </Form.Item>
-            </Space>
+            </div>
             <Form.Item name="map_embed_url" label="URL Iframe (Google Maps Embed)">
               <Input.TextArea rows={2} placeholder="https://www.google.com/maps/embed?pb=..." />
             </Form.Item>

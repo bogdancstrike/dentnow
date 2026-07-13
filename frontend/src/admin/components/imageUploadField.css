@@ -1,0 +1,40 @@
+.image-upload-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.image-upload-preview {
+  display: grid;
+  width: min(100%, var(--image-upload-width));
+  aspect-ratio: var(--image-upload-ratio);
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.image-upload-actions {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+@media (max-width: 520px) {
+  .image-upload-layout {
+    flex-direction: column;
+  }
+
+  .image-upload-actions {
+    width: 100%;
+  }
+
+  .image-upload-actions > button {
+    width: 100%;
+    min-height: 42px;
+  }
+}
