@@ -26,6 +26,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Completed offer relations: `/admin/oferte/:id` uses searchable multi-selects for existing treatments and participating clinics, persists both sets atomically, validates stale/unknown references, and renders relation links in the real public/draft preview.
 - [x] Completed `/admin/parteneri/:id`: uploadable MinIO logo, relationship/badge/link/rights metadata, active state and order, safe HTTP(S) links, publishable-media validation, and a real unsaved desktop/mobile `/parteneri` preview.
 - [x] Replaced automatic Google Places review ingestion with manual review authoring: no Places API key, sync script, or clinic place identifier remains; `/admin/reviws` provides Author/Text/Stele CRUD, drag ordering, cmdk creation/search, and browser-only live preview on the real `/recenzii` page.
+- [x] Fixed legal-document routing so both the admin table link and unsaved preview map `terms` to the real Romanian public route `/termeni` (and `privacy` to `/confidentialitate`).
 
 ---
 

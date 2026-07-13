@@ -28,6 +28,14 @@ function makeConfig(cfg: ResourceConfig<Row>): ResourceConfig<Row> {
   return cfg;
 }
 
+function legalPublicPath(docType: unknown): string | null {
+  const type = String(docType ?? '');
+  if (!type) return null;
+  if (type === 'privacy') return '/confidentialitate';
+  if (type === 'terms') return '/termeni';
+  return `/${type}`;
+}
+
 // treatments has been moved to dedicated screen
 
 // offers has been moved to dedicated screen
@@ -42,13 +50,11 @@ const legal = makeConfig({
     { title: 'Tip', dataIndex: 'doc_type' },
     { title: 'Versiune', dataIndex: 'version_label' },
     { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
-    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={`/${record.doc_type === 'privacy' ? 'confidentialitate' : record.doc_type}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={legalPublicPath(record.doc_type) ?? undefined} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { active: false },
   previewPath: (row, values) => {
-    const t = String(values?.doc_type ?? (row as { doc_type?: string } | null)?.doc_type ?? '');
-    if (!t) return null;
-    return `/${t === 'privacy' ? 'confidentialitate' : t}`;
+    return legalPublicPath(values?.doc_type ?? (row as { doc_type?: string } | null)?.doc_type);
   },
   previewKind: 'legal-document',
   previewAlwaysDraft: true,

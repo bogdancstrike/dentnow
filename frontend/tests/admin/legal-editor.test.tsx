@@ -10,6 +10,14 @@ describe('legal admin editor', () => {
     expect(config?.previewAlwaysDraft).toBe(true);
     expect(config?.editExtra).toBeTypeOf('function');
     expect(config?.previewPath?.(null, { doc_type: 'privacy' })).toBe('/confidentialitate');
+    expect(config?.previewPath?.(null, { doc_type: 'terms' })).toBe('/termeni');
+
+    const viewColumn = config?.columns.find((column) => column.title === 'View');
+    const termsLink = viewColumn && 'render' in viewColumn
+      ? viewColumn.render?.(undefined, { id: 'terms-id', version: 1, doc_type: 'terms' }, 0)
+      : null;
+    render(<>{termsLink}</>);
+    expect(screen.getByRole('link', { name: /Vezi$/ })).toHaveAttribute('href', '/termeni');
 
     render(
       <Form>
