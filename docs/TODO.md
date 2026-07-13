@@ -91,7 +91,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [x] **URL per admin tab** — React Router inside /admin so each useful section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
 - [x] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id); shared controls also preserve accessible form-label association.
 - [x] **More CRUD**: nested quiz question/option/band editor, image-carousel/gallery media, before/after relations, and offer→treatment/clinic selection are complete with real-page draft preview.
-- [~] **Implement Google Review syncing**: backend scheduled task to pull reviews pending. Database model `clinics.google_place_id` added.
+- [!] **Google Reviews integration requires a compliant source choice.** A scheduled PostgreSQL copy from Places API is not allowed by the current [Places caching/attribution policy](https://developers.google.com/maps/documentation/places/web-service/policies): only `place_id` is exempt from storage restrictions, and every displayed review needs Google Maps + author + direct-review attribution. Choose either Google Business Profile API (OAuth + owned-account location identifiers) for managed ingestion, or live/non-persistent Places API/Places UI Kit rendering; the existing legacy sync script must not be enabled as-is.
 - [x] **Restore original frontend UI**: Fixed `/oferte`, `/articole`, and `/tratamente` bug where `useRevealAll` hid items loaded asynchronously. Restored old "Tratamente uzuale" curated card UI on the homepage.
 - [x] **Noutăți (News)**: Split `/admin/articole` into Articole and Noutăți modules. Connected public `/noutati` to read live data from the database `SitePublication` API instead of hardcoded content.
 - [x] **Quick Publish Action**: Added "Publică" button directly to the `/admin/articole` list to instantly switch Drafts to Published without opening the full editor.
@@ -334,3 +334,4 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [!] Verified clinic hours/prices/offers/CAS/credentials/review metadata
 - [!] Lawful basis/DPIA for before/after patient imagery
 - [!] Off-host backup destination, RPO/RTO
+- [!] Google Reviews source: Business Profile OAuth ingestion vs live/non-persistent Places rendering with mandatory attribution
