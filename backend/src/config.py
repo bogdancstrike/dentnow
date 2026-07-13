@@ -94,9 +94,8 @@ class Config:
     PREVIEW_TOKEN_PEPPER = os.getenv("PREVIEW_TOKEN_PEPPER", "dev-preview-pepper")
 
     # ── First-party analytics ─────────────────────────────────────────────
-    # Collection remains opt-in at deployment level and consent-gated in the
-    # browser. Network/location fields are never sourced from arbitrary payload
-    # identity claims; browser coordinates require an explicit browser permission.
+    # Limited events are collected without raw network identifiers. Consent unlocks
+    # raw IP/user-agent retention and the optional browser geolocation request.
     ANALYTICS_ENABLED = _bool("ANALYTICS_ENABLED", False)
     ANALYTICS_REQUIRE_CONSENT = _bool("ANALYTICS_REQUIRE_CONSENT", True)
     ANALYTICS_PSEUDONYM_KEY = os.getenv(

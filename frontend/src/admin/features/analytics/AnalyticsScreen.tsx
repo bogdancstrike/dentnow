@@ -140,7 +140,11 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
       {query.isError && <Alert type="error" showIcon title="Datele analytics nu au putut fi încărcate" description={(query.error as Error).message} action={<Button onClick={() => void query.refetch()}>Reîncearcă</Button>} />}
       {query.data && (
         <>
-          <div className="analytics-range-note">{range.from} — {range.to} · fus orar {query.data.range.timezone}</div>
+          <div className="analytics-range-note">
+            {range.from} — {range.to} · fus orar {query.data.range.timezone}
+            {' · '}{numberFormatter.format(query.data.collection.full_events)} evenimente complete
+            {' · '}{numberFormatter.format(query.data.collection.limited_events)} evenimente limitate
+          </div>
           {!query.data.collection.enabled && (
             <Alert
               className="analytics-collection-alert"

@@ -21,6 +21,7 @@ export const AnalyticsOverviewSchema = z.object({
   collection: z.object({
     enabled: z.boolean(), require_consent: z.boolean(),
     raw_retention_days: z.number(), aggregate_retention_days: z.number(),
+    full_events: z.number(), limited_events: z.number(),
   }),
   kpis: z.object({
     visitors: z.number(), sessions: z.number(), page_views: z.number(), cta_clicks: z.number(),

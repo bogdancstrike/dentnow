@@ -43,7 +43,7 @@ export function privacySignalEnabled(): boolean {
 }
 
 export function requestBrowserCoordinates(): Promise<BrowserCoordinates | null> {
-  if (!('geolocation' in navigator)) return Promise.resolve(null);
+  if (typeof navigator.geolocation?.getCurrentPosition !== 'function') return Promise.resolve(null);
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => resolve({
@@ -64,16 +64,15 @@ export async function sendAnalyticsEvent(
   const config = getRuntimeConfig();
   if (!config.analyticsEnabled || privacySignalEnabled()) return;
   const consent = analyticsConsent();
-  if (config.analyticsRequireConsent !== false && consent !== 'granted') return;
   const body = JSON.stringify({
     ...payload,
     ...(coordinates ?? {}),
-    consent_granted: consent === 'granted' || config.analyticsRequireConsent === false,
+    consent_granted: consent === 'granted',
   });
   try {
     await fetch(`${config.apiBase}/v1/public/analytics/events`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Analytics-Consent': 'granted' },
+      headers: { 'Content-Type': 'application/json' },
       body,
       keepalive: true,
       credentials: 'same-origin',
@@ -82,4 +81,3 @@ export async function sendAnalyticsEvent(
     // Analytics must never degrade the public experience.
   }
 }
-

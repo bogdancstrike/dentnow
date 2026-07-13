@@ -130,13 +130,11 @@ def origin_is_allowed(request) -> bool:
     return normalized in {item.rstrip("/") for item in Config.ALLOWED_ORIGINS}
 
 
-def tracking_suppression_reason(request, consent_granted: bool) -> str | None:
+def tracking_suppression_reason(request) -> str | None:
     if not Config.ANALYTICS_ENABLED:
         return "disabled"
     if request.headers.get("DNT") == "1" or request.headers.get("Sec-GPC") == "1":
         return "privacy_signal"
-    if Config.ANALYTICS_REQUIRE_CONSENT and not consent_granted:
-        return "consent_required"
     if not origin_is_allowed(request):
         return "origin_rejected"
     if is_bot(request.headers.get("User-Agent", "")):

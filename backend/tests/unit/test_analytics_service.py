@@ -53,6 +53,41 @@ def test_collect_event_rate_limit_is_non_mutating(monkeypatch):
     session.add.assert_not_called()
 
 
+def test_limited_event_keeps_metrics_but_not_raw_ip_or_user_agent(monkeypatch):
+    monkeypatch.setattr(Config, "ANALYTICS_ENABLED", True)
+    monkeypatch.setattr(Config, "ANALYTICS_REQUIRE_CONSENT", True)
+    monkeypatch.setattr(Config, "ANALYTICS_PSEUDONYM_KEY", "test-key")
+    monkeypatch.setattr(Config, "ANALYTICS_TRUSTED_PROXY_CIDRS", ("127.0.0.1/32",))
+    session = MagicMock()
+    session.scalar.return_value = 0
+    app = Flask(__name__)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Android Mobile) Chrome/126",
+        "CF-IPCountry": "RO",
+        "CF-Region": "București",
+        "CF-IPCity": "București",
+        "CF-IPLatitude": "44.4268",
+        "CF-IPLongitude": "26.1025",
+    }
+    with app.test_request_context(
+        "/", headers=headers, environ_base={"REMOTE_ADDR": "127.0.0.1"}
+    ):
+        result = collect_event(
+            session,
+            AnalyticsEventInput(event_type="page_view", path="/"),
+            request,
+        )
+
+    assert result == {"accepted": True}
+    event = session.add.call_args.args[0]
+    assert event.client_ip is None
+    assert event.user_agent is None
+    assert event.consent_granted is False
+    assert event.device_family == "mobile"
+    assert event.country_code == "RO"
+    assert float(event.latitude) == 44.4268
+
+
 def test_csv_export_contains_trend_and_dimensions():
     overview = {
         "trend": [

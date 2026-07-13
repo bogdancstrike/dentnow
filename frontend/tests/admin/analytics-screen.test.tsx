@@ -14,7 +14,10 @@ vi.mock('echarts-for-react/lib/core', () => ({
 
 const overview = {
   range: { from: '2026-07-07', to: '2026-07-13', timezone: 'Europe/Bucharest' },
-  collection: { enabled: true, require_consent: true, raw_retention_days: 90, aggregate_retention_days: 730 },
+  collection: {
+    enabled: true, require_consent: true, raw_retention_days: 90,
+    aggregate_retention_days: 730, full_events: 360, limited_events: 120,
+  },
   kpis: {
     visitors: 120, sessions: 160, page_views: 480, cta_clicks: 18,
     new_visitors: 92, returning_visitors: 28, cta_conversion: 15,

@@ -83,22 +83,22 @@ def test_pseudonym_rotates_and_is_stable_within_window(app, monkeypatch):
     assert first.visitor_key != rotated.visitor_key
 
 
-def test_suppression_respects_disabled_consent_dnt_origin_and_bots(app, monkeypatch):
+def test_suppression_allows_limited_events_and_respects_dnt_origin_and_bots(app, monkeypatch):
     monkeypatch.setattr(Config, "ANALYTICS_ENABLED", True)
     monkeypatch.setattr(Config, "ANALYTICS_REQUIRE_CONSENT", True)
     monkeypatch.setattr(Config, "ALLOWED_ORIGINS", ["https://dentnow.ro"])
     with app.test_request_context("/", headers={"User-Agent": "Chrome/126"}):
-        assert tracking_suppression_reason(request, False) == "consent_required"
+        assert tracking_suppression_reason(request) is None
     with app.test_request_context(
         "/", headers={"User-Agent": "Chrome/126", "DNT": "1"}
     ):
-        assert tracking_suppression_reason(request, True) == "privacy_signal"
+        assert tracking_suppression_reason(request) == "privacy_signal"
     with app.test_request_context(
         "/", headers={"User-Agent": "Chrome/126", "Origin": "https://evil.test"}
     ):
-        assert tracking_suppression_reason(request, True) == "origin_rejected"
+        assert tracking_suppression_reason(request) == "origin_rejected"
     with app.test_request_context("/", headers={"User-Agent": "Googlebot"}):
-        assert tracking_suppression_reason(request, True) == "bot"
+        assert tracking_suppression_reason(request) == "bot"
 
 
 def test_bounded_classification_and_referrer_hostname_only():

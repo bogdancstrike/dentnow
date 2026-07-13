@@ -24,10 +24,11 @@ function routeEvent(path: string): Pick<AnalyticsEventPayload, 'event_type' | 't
 export function AnalyticsObserver() {
   const location = useLocation();
   const config = getRuntimeConfig();
-  const [consent, setConsentState] = useState(analyticsConsent());
-  // undefined = browser permission still pending, null = unavailable/refused.
-  const [coordinates, setCoordinates] = useState<BrowserCoordinates | null | undefined>(
-    config.analyticsRequireConsent === false ? null : undefined,
+  const initialConsent = useRef(analyticsConsent());
+  const [consent, setConsentState] = useState(initialConsent.current);
+  const coordinates = useRef<BrowserCoordinates | null>(null);
+  const [initialLocationReady, setInitialLocationReady] = useState(
+    initialConsent.current !== 'granted',
   );
   const initialReferrer = useRef(document.referrer || undefined);
 
@@ -38,15 +39,23 @@ export function AnalyticsObserver() {
   }, []);
 
   useEffect(() => {
-    if (consent !== 'granted' || coordinates !== undefined) return;
-    void requestBrowserCoordinates().then(setCoordinates);
-  }, [consent, coordinates]);
+    if (consent !== 'granted') {
+      coordinates.current = null;
+      return;
+    }
+    let active = true;
+    void requestBrowserCoordinates().then((value) => {
+      if (!active) return;
+      coordinates.current = value;
+      setInitialLocationReady(true);
+    });
+    return () => { active = false; };
+  }, [consent]);
 
   useEffect(() => {
-    const allowed = config.analyticsEnabled && (config.analyticsRequireConsent === false || consent === 'granted');
-    if (!allowed || (config.analyticsRequireConsent !== false && coordinates === undefined)) return;
+    if (!config.analyticsEnabled || !initialLocationReady) return;
     const path = location.pathname;
-    const emit = (event: AnalyticsEventPayload) => void sendAnalyticsEvent(event, coordinates ?? null);
+    const emit = (event: AnalyticsEventPayload) => void sendAnalyticsEvent(event, coordinates.current);
     emit({ event_type: 'page_view', path, target_type: 'page', target_key: path, referrer: initialReferrer.current });
     const typed = routeEvent(path);
     if (typed && typed.event_type !== 'article_read') emit({ ...typed, path });
@@ -96,14 +105,14 @@ export function AnalyticsObserver() {
       sectionObserver?.disconnect();
       document.removeEventListener('click', onClick, { capture: true });
     };
-  }, [config.analyticsEnabled, config.analyticsRequireConsent, consent, coordinates, location.pathname]);
+  }, [config.analyticsEnabled, initialLocationReady, location.pathname]);
 
   if (!config.analyticsEnabled || config.analyticsRequireConsent === false || consent !== null) return null;
   return (
     <aside className="analytics-consent" aria-label="Preferințe analiză trafic">
       <div>
         <strong>Ne ajuți să îmbunătățim experiența?</strong>
-        <p>Putem măsura utilizarea site-ului și, cu permisiunea browserului, zona geografică. Datele au retenție limitată.</p>
+        <p>Colectăm statistici limitate fără a păstra IP-ul sau user-agentul. Cu acordul tău putem include aceste detalii și, separat, zona permisă de browser.</p>
         <Link to="/confidentialitate">Detalii despre confidențialitate</Link>
       </div>
       <div className="analytics-consent__actions">

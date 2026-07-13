@@ -29,7 +29,7 @@ def collect_event(
     *,
     now: datetime | None = None,
 ) -> dict:
-    reason = tracking_suppression_reason(request, payload.consent_granted)
+    reason = tracking_suppression_reason(request)
     if reason:
         return {"accepted": False, "reason": reason}
     now = now or datetime.now(timezone.utc)
@@ -45,14 +45,16 @@ def collect_event(
     )
     if recent >= Config.ANALYTICS_RATE_LIMIT_PER_MINUTE:
         return {"accepted": False, "reason": "rate_limited"}
+    full_collection = payload.consent_granted
     session.add(
         AnalyticsEvent(
             occurred_at=now,
             visitor_key=identity.visitor_key,
             session_key=identity.session_key,
             key_version=identity.key_version,
-            client_ip=identity.client_ip,
-            user_agent=identity.user_agent,
+            client_ip=identity.client_ip if full_collection else None,
+            user_agent=identity.user_agent if full_collection else None,
+            consent_granted=full_collection,
             event_type=payload.event_type,
             path=payload.path,
             target_type=payload.target_type,
@@ -66,12 +68,12 @@ def collect_event(
             region=identity.region,
             city=identity.city,
             latitude=payload.latitude
-            if payload.latitude is not None
+            if full_collection and payload.latitude is not None
             else identity.latitude,
             longitude=payload.longitude
-            if payload.longitude is not None
+            if full_collection and payload.longitude is not None
             else identity.longitude,
-            geo_accuracy_m=payload.geo_accuracy_m,
+            geo_accuracy_m=payload.geo_accuracy_m if full_collection else None,
             engaged_seconds=payload.engaged_seconds,
         )
     )
@@ -155,6 +157,16 @@ def analytics_overview(
     span = end - start
     current = _scalar_metrics(session, start, end)
     previous = _scalar_metrics(session, start - span, start)
+    collection_row = session.execute(
+        select(
+            func.count(AnalyticsEvent.id)
+            .filter(AnalyticsEvent.consent_granted.is_(True))
+            .label("full_events"),
+            func.count(AnalyticsEvent.id)
+            .filter(AnalyticsEvent.consent_granted.is_(False))
+            .label("limited_events"),
+        ).where(*_range_filter(start, end))
+    ).one()
 
     active_visitors = (
         select(AnalyticsEvent.visitor_key.label("visitor_key"))
@@ -262,6 +274,8 @@ def analytics_overview(
             "require_consent": Config.ANALYTICS_REQUIRE_CONSENT,
             "raw_retention_days": Config.ANALYTICS_EVENT_RETENTION_DAYS,
             "aggregate_retention_days": Config.ANALYTICS_AGGREGATE_RETENTION_DAYS,
+            "full_events": int(collection_row.full_events or 0),
+            "limited_events": int(collection_row.limited_events or 0),
         },
         "kpis": {**current, "deltas": deltas},
         "trend": trend,
@@ -328,10 +342,20 @@ def analytics_overview(
         "browsers": _dimension(session, start, end, AnalyticsEvent.browser_family),
         "operating_systems": _dimension(session, start, end, AnalyticsEvent.os_family),
         "ip_addresses": _dimension(
-            session, start, end, func.host(AnalyticsEvent.client_ip), limit=20
+            session,
+            start,
+            end,
+            func.host(AnalyticsEvent.client_ip),
+            filters=(AnalyticsEvent.client_ip.is_not(None),),
+            limit=20,
         ),
         "user_agents": _dimension(
-            session, start, end, AnalyticsEvent.user_agent, limit=20
+            session,
+            start,
+            end,
+            AnalyticsEvent.user_agent,
+            filters=(AnalyticsEvent.user_agent.is_not(None),),
+            limit=20,
         ),
         "geography": geography,
     }
