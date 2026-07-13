@@ -311,6 +311,14 @@ def analytics_overview(
             filters=(AnalyticsEvent.target_type == "article",),
             limit=20,
         ),
+        "top_clicks": _dimension(
+            session,
+            start,
+            end,
+            AnalyticsEvent.target_key,
+            filters=(AnalyticsEvent.event_type == "navigation_click", AnalyticsEvent.target_key.is_not(None)),
+            limit=30,
+        ),
         "top_treatments": _dimension(
             session,
             start,

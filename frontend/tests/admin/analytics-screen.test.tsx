@@ -29,6 +29,7 @@ const overview = {
   ],
   top_pages: [{ key: '/', views: 250, visitors: 100 }],
   top_sections: [], top_articles: [{ key: 'implant-dentar', views: 80, visitors: 60 }],
+  top_clicks: [{ key: '/#contact', views: 50, visitors: 40 }],
   top_treatments: [], top_offers: [], top_clinics: [],
   contact_ctas: [{ key: 'telefon', views: 18, visitors: 16 }],
   referrers: [{ key: 'google.com', views: 90, visitors: 70 }],

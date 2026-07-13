@@ -37,6 +37,7 @@ export const AnalyticsOverviewSchema = z.object({
   })),
   top_pages: z.array(DimensionSchema), top_sections: z.array(DimensionSchema),
   top_articles: z.array(DimensionSchema), top_treatments: z.array(DimensionSchema),
+  top_clicks: z.array(DimensionSchema),
   top_offers: z.array(DimensionSchema), top_clinics: z.array(DimensionSchema),
   contact_ctas: z.array(DimensionSchema), referrers: z.array(DimensionSchema),
   devices: z.array(DimensionSchema), browsers: z.array(DimensionSchema),

@@ -16,7 +16,7 @@ import { SVGRenderer } from 'echarts/renderers';
 import type { EChartsOption } from 'echarts';
 import ReactEChartsCore from 'echarts-for-react/lib/core';
 import type { AnalyticsOverview } from './analyticsContracts';
-import romaniaGeoJson from './maps/romania.geo.json';
+import romaniaCountiesGeoJson from './maps/romania-counties.geo.json';
 import bucharestSectorsGeoJson from './maps/bucharest-sectors.geo.json';
 
 const ROMANIA_MAP = 'dentnow-romania';
@@ -39,7 +39,7 @@ echarts.use([
   VisualMapComponent,
 ]);
 
-echarts.registerMap(ROMANIA_MAP, mapInput(romaniaGeoJson));
+echarts.registerMap(ROMANIA_MAP, mapInput(romaniaCountiesGeoJson));
 echarts.registerMap(BUCHAREST_MAP, mapInput(bucharestSectorsGeoJson));
 echarts.registerTheme(CHART_THEME, {
   color: ['#0f7f8d', '#d99a43', '#4a8d79', '#315b66', '#9a6a42'],
@@ -83,7 +83,7 @@ interface MapFeature {
   };
 }
 
-const ROMANIA_FEATURE = romaniaGeoJson.features[0] as unknown as MapFeature;
+const ROMANIA_FEATURES = romaniaCountiesGeoJson.features as unknown as MapFeature[];
 const BUCHAREST_FEATURES = bucharestSectorsGeoJson.features as unknown as MapFeature[];
 
 function pointInRing([x, y]: Position, ring: Position[]): boolean {
@@ -217,7 +217,7 @@ export function TrafficTrendChart({ data }: { data: AnalyticsOverview['trend'] }
 function RomaniaChart({ rows }: { rows: GeographyRow[] }) {
   const points = useMemo(() => rows.flatMap((row) => {
     const point = chartPoint(row);
-    return point && featureContains(ROMANIA_FEATURE, point) ? [{
+    return point && ROMANIA_FEATURES.some((candidate) => featureContains(candidate, point)) ? [{
       name: locationName(row),
       value: [point[0], point[1], row.visitors, row.views],
     }] : [];

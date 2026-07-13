@@ -197,6 +197,8 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
 
           <section id="analytics-content" className="analytics-grid analytics-grid--two" aria-label="Conținut și achiziție">
             <ContentTable title="Cele mai accesate pagini" items={query.data.top_pages} />
+            <ContentTable title="Cele mai accesate secțiuni" items={query.data.top_sections} />
+            <ContentTable title="Cele mai frecvente clickuri (navigare/linkuri)" items={query.data.top_clicks} />
             <ContentTable title="Cele mai citite articole" items={query.data.top_articles} />
             <ContentTable title="Tratamente populare" items={query.data.top_treatments} />
             <ContentTable title="Oferte populare" items={query.data.top_offers} />
