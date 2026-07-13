@@ -55,9 +55,15 @@ def build_snapshot(session) -> SiteSnapshotV1:
 
     # ── links ────────────────────────────────────────────────────────────────
     links = [
-        LinkPublic(kind=l.kind, label=l.label, value=l.value, display_value=l.display_value,
-                   url=l.url, position=l.position)
-        for l in session.scalars(_live(SiteLink).where(SiteLink.enabled.is_(True))).all()
+        LinkPublic(
+            kind=link.kind,
+            label=link.label,
+            value=link.value,
+            display_value=link.display_value,
+            url=link.url,
+            position=link.position,
+        )
+        for link in session.scalars(_live(SiteLink).where(SiteLink.enabled.is_(True))).all()
     ]
     links.sort(key=lambda x: (x.kind, x.position, x.label))
 
@@ -215,11 +221,11 @@ def build_snapshot(session) -> SiteSnapshotV1:
     news.sort(key=lambda x: x.position)
 
     reviews = [
-        ReviewPublic(author=r.author, review_date=r.review_date.isoformat(), rating=r.rating,
-                     text_body=r.text_body, source=r.source)
+        ReviewPublic(id=str(r.id), author=r.author, rating=r.rating,
+                     text_body=r.text_body, position=r.position)
         for r in session.scalars(_live(Review).where(Review.status == "published")).all()
     ]
-    reviews.sort(key=lambda x: (x.review_date, x.author), reverse=True)
+    reviews.sort(key=lambda x: (x.position, x.author))
 
     # ── media referenced by the snapshot ───────────────────────────────────────
     media: dict[str, MediaPublic] = {}

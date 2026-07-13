@@ -24,7 +24,7 @@ These extend/adjust the original plan:
 1. **URL per admin tab** (React Router deep-links: `/admin/clinici`, `/admin/echipa-medicala`, …).
 2. **Searchable dropdowns** for every existing-entity reference in /admin (`RemoteSelect`, never a free-text id).
 3. **More CRUD**: nested quiz editor, image-carousel/gallery media, offer→treatment selection, live real-page preview.
-4. **Reviews auto-synced from Google** per clinic Maps location (adds `clinics.google_place_id` + Google Places API key; **overrides §23 non-goal** on Google review ingestion).
+4. **Reviews copied manually from Google** through `/admin/reviws`: administrators author only Author, Text, and 1–5 Stele, with unsaved live preview and no Google API key, place identifier, scheduled job, or external review request.
 5. **Enterprise/professional visual polish** + `cmdk` command palette.
 
 ---

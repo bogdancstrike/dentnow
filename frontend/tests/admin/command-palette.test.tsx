@@ -26,6 +26,7 @@ describe('CommandPalette', () => {
     await screen.findByRole('dialog', { name: 'Comenzi administrare' });
 
     expect(screen.queryByText('Navigare')).not.toBeInTheDocument();
+    expect(screen.getByText('Recenzie nouă')).toBeInTheDocument();
     const paletteCss = Array.from(document.querySelectorAll('style'))
       .map((style) => style.textContent ?? '')
       .find((css) => css.includes('.dent-cmdk-content'));

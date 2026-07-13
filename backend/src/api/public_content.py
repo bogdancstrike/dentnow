@@ -372,10 +372,10 @@ def _query_reviews(session):
     reviews = []
     for r in session.scalars(_live(Review).where(Review.status == "published")).all():
         reviews.append({
-            "author": r.author, "review_date": r.review_date.isoformat(),
-            "rating": r.rating, "text_body": r.text_body, "source": r.source,
+            "id": str(r.id), "author": r.author, "rating": r.rating,
+            "text_body": r.text_body, "position": r.position,
         })
-    reviews.sort(key=lambda x: (x["review_date"], x["author"]), reverse=True)
+    reviews.sort(key=lambda x: (x["position"], x["author"]))
     return reviews
 
 

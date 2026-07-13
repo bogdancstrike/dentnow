@@ -1,8 +1,6 @@
 """Editorial service tests (DB-backed)."""
 from __future__ import annotations
 
-from datetime import date
-
 import pytest
 from pydantic import ValidationError as PydValidationError
 
@@ -29,20 +27,28 @@ def test_article_unique_slug_and_html_render(db_session):
         svc.create({"slug": "prevention", "title": "Dup"})
 
 
-def test_review_requires_exact_date_and_rating_range():
-    # relative-only date is not accepted; a real date is required by the schema
+def test_manual_review_contract_accepts_only_authored_card_fields():
+    review = ReviewCreate(author="Ana", text_body="Foarte atent.", rating=5)
+    assert review.model_dump() == {
+        "author": "Ana", "text_body": "Foarte atent.", "rating": 5, "position": 0,
+    }
     with pytest.raises(PydValidationError):
-        ReviewCreate(author="Ana", rating=5)  # missing review_date
+        ReviewCreate(author="Ana", text_body="Bine", rating=9)
     with pytest.raises(PydValidationError):
-        ReviewCreate(author="Ana", review_date=date(2026, 1, 1), rating=9)
+        ReviewCreate(
+            author="Ana", text_body="Bine", rating=5,
+            source_url="https://maps.example/review",
+        )
 
 
 def test_review_create(db_session):
     body, _ = ReviewService(db_session, ADMIN).create(
-        {"author": "Ana", "review_date": "2026-01-15", "rating": 5, "source": "google"}
+        {"author": "Ana", "text_body": "Recomand.", "rating": 5}
     )
     assert body["rating"] == 5
-    assert body["review_date"] == "2026-01-15"
+    assert body["text_body"] == "Recomand."
+    assert body["status"] == "published"
+    assert body["source"] == "google"
 
 
 def test_quiz_band_overlap_rejected(db_session):

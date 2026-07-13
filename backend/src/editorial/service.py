@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 from typing import Any
 
 from sqlalchemy import and_, select
@@ -74,23 +75,19 @@ class ReviewService(CrudService):
     model = Review
     entity_type = "review"
     event_prefix = "review"
-    clinic_scope_column = "clinic_id"
-    sortable = ("review_date", "rating", "position", "created_at", "updated_at")
+    manager_writable = False
+    sortable = ("position", "rating", "created_at", "updated_at")
     search_columns = ("author", "text_body")
 
     def serialize(self, obj): return serialize_review(obj)
 
     def to_create_kwargs(self, data):
-        data = dict(data)
-        if data.get("clinic_id"):
-            data["clinic_id"] = uuid.UUID(str(data["clinic_id"]))
-        return data
-
-    def to_update_values(self, data, obj):
-        data = dict(data)
-        if data.get("clinic_id"):
-            data["clinic_id"] = uuid.UUID(str(data["clinic_id"]))
-        return data
+        return {
+            **data,
+            "review_date": date.today(),
+            "source": "google",
+            "status": "published",
+        }
 
 
 class CaseService(CrudService):

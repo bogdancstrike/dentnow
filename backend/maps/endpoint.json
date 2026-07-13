@@ -1441,6 +1441,19 @@
     },
     {
       "namespace": "api",
+      "operation_name": "reviews_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/reviews/<review_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "reviews_get"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "reviews_create",
       "model_name": "Empty",
       "request_method": [

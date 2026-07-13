@@ -431,7 +431,7 @@ Database checks enforce non-negative amounts, valid ranges, currency format, `en
 | --- | --- |
 | `articles` | Unique slug, category, title, excerpt, safe markdown body, cover media, author/reviewer, dates, status |
 | `news_items` | Slug, category, title, summary/body, media, event/publish dates, status |
-| `reviews` | Source, source URL/ID, author, exact review date, rating, text, verification time, clinic, status |
+| `reviews` | Manually curated author, text, 1–5 rating and order; server-owned provenance/date/status metadata is not part of the admin form |
 | `case_studies` | Treatment, clinic, title/description, before/after media, disclaimer, consent state |
 | `ebooks` | Slug, title, category, description, cover media, downloadable media, active/order |
 | `legal_documents` | Type (`gdpr`, `privacy`, `terms`, `cookies`), version label, effective date, safe markdown, approval metadata |

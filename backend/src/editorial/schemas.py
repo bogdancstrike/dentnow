@@ -83,28 +83,16 @@ class NewsUpdate(_Strict):
 
 
 class ReviewCreate(_Strict):
-    author: str
-    review_date: date  # exact date required; relative display is derived client-side
+    author: str = Field(min_length=1)
+    text_body: str = Field(min_length=1)
     rating: int = Field(ge=1, le=5)
-    source: Optional[str] = None
-    source_url: Optional[str] = None
-    source_id: Optional[str] = None
-    text_body: Optional[str] = None
-    clinic_id: Optional[str] = None
-    status: str = "draft"
     position: int = 0
 
 
 class ReviewUpdate(_Strict):
-    author: Optional[str] = None
-    review_date: Optional[date] = None
+    author: Optional[str] = Field(default=None, min_length=1)
+    text_body: Optional[str] = Field(default=None, min_length=1)
     rating: Optional[int] = Field(default=None, ge=1, le=5)
-    source: Optional[str] = None
-    source_url: Optional[str] = None
-    source_id: Optional[str] = None
-    text_body: Optional[str] = None
-    clinic_id: Optional[str] = None
-    status: Optional[str] = None
     position: Optional[int] = None
 
 

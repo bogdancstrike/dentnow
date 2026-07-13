@@ -11,16 +11,15 @@ Guarantees:
   only fetches at 2+ characters).
 - **Default-deny** — a principal without ``content:read`` gets an empty result set
   even though the endpoint decorator already enforces the capability.
-- **Clinic scope** — a clinic-manager principal only sees their assigned clinics and
-  the reviews attached to them; omitting an unassigned record is preferred to
-  revealing it.
+- **Clinic scope** — a clinic-manager principal only sees their assigned clinic-bound
+  resources; global manually authored reviews follow the normal content-read boundary.
 - **No sensitive payload** — results never carry object keys, checksums, consent,
   contact details, or other private fields; case-image media never appears in search.
 """
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable
 
 from sqlalchemy import or_
@@ -89,8 +88,8 @@ GROUPS: tuple[_Group, ...] = (
            _first_of("title")),
     _Group("news", NewsItem, ("title", "slug"), "/admin/news",
            _first_of("title")),
-    _Group("review", Review, ("author",), "/admin/reviews",
-           _first_of("author"), scope_column="clinic_id"),
+    _Group("review", Review, ("author",), "/admin/reviws",
+           _first_of("author")),
     _Group("ebook", Ebook, ("title", "slug"), "/admin/ebooks",
            _first_of("title")),
     _Group("media", MediaAsset, ("original_filename", "alt_text"), "/admin/media",

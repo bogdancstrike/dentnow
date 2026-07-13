@@ -219,12 +219,11 @@ export const ArticleSummarySchema = z.object({
 });
   
 export const ReviewSchema = z.object({
-  id: z.string().optional(),
+  id: z.string(),
   author: z.string(),
   rating: z.number(),
   text_body: z.string().nullable().optional(),
-  source: z.string().nullable().optional(),
-  review_date: z.string(),
+  position: z.number().default(0),
 });
 
 export const OfferSchema = z.object({

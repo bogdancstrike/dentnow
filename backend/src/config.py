@@ -69,8 +69,6 @@ class Config:
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "doncik")
     KEYCLOAK_ADMIN_CLIENT_ID = os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "dentnow-api")
 
-    # ── External Services ──────────────────────────────────────────────────
-    GOOGLE_PLACES_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY", "")
     KEYCLOAK_SPA_CLIENT_ID = os.getenv("KEYCLOAK_SPA_CLIENT_ID", "dentnow-admin-spa")
     KEYCLOAK_AUDIENCE = os.getenv("KEYCLOAK_AUDIENCE", "dentnow-api")
     KEYCLOAK_AUTHORIZED_PARTY = os.getenv(
@@ -109,8 +107,6 @@ class Config:
     ERROR_TOPIC = os.getenv("ERROR_TOPIC", "dentnow-errors")
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
-    # ── External APIs ──────────────────────────────────────────────────────
-    GOOGLE_PLACES_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY", "")
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT = os.getenv("REDIS_PORT", "6379")
     REDIS_DB = os.getenv("REDIS_DB", "0")

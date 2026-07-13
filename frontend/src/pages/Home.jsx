@@ -6,8 +6,7 @@ import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
 import { trustStats, services } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
-import { useQuery } from '@tanstack/react-query';
-import { fetchReviews, publicQueryKeys } from '../api/publicClient';
+import { useReviews } from '../hooks/useReviews';
 import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
 import TrustStrip from '../components/sections/TrustStrip';
@@ -106,10 +105,7 @@ function ContactClinics({ clinics }) {
 export default function Home() {
   const openPicker = useClinicPicker();
   const siteData = useSiteData();
-  const { data: reviews = [] } = useQuery({
-    queryKey: publicQueryKeys.reviews,
-    queryFn: fetchReviews,
-  });
+  const { data: reviews = [] } = useReviews();
 
   const revealRef = useRevealAll([reviews]);
 

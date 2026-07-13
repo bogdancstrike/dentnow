@@ -132,11 +132,11 @@ class NewsPublic(_Model):
 
 
 class ReviewPublic(_Model):
+    id: str
     author: str
-    review_date: str
     rating: int
     text_body: str | None = None
-    source: str | None = None
+    position: int = 0
 
 
 class EditorialPublic(_Model):

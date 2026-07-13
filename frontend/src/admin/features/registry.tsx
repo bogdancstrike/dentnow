@@ -1,7 +1,7 @@
 /** Maps admin nav keys to CRUD screens. Most reuse the generic ResourceScreen with a
  *  typed config; clinics has its own screen. Screens not yet built render a placeholder.
  */
-import { Form, Input, Select, Tag, Button } from 'antd';
+import { Form, Input, Rate, Select, Tag, Button } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
 import type { ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
@@ -160,6 +160,48 @@ const news = makeConfig({
   ),
 });
 
+const reviews = makeConfig({
+  title: 'Recenzii',
+  singular: 'recenzie',
+  endpoint: '/v1/admin/reviews',
+  reorderable: true,
+  columns: [
+    { title: 'Autor', dataIndex: 'author' },
+    { title: 'Text', dataIndex: 'text_body', ellipsis: true },
+    { title: 'Stele', dataIndex: 'rating', render: (value) => <Rate disabled value={Number(value)} /> },
+    { title: 'Ordine', dataIndex: 'position' },
+  ],
+  defaults: { rating: 5 },
+  previewPath: () => '/recenzii',
+  previewKind: 'review',
+  previewAlwaysDraft: true,
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    rating: Number(values.rating ?? (row as unknown as Record<string, unknown> | null)?.rating ?? 5),
+    __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
+  }),
+  previewHint: 'Completează autorul, textul și numărul de stele pentru a vedea recenzia pe pagina publică înainte de salvare.',
+  sample: {
+    author: 'Andreea P.',
+    text_body: 'Echipa a explicat clar fiecare etapă, iar experiența a fost foarte plăcută.',
+    rating: 5,
+  },
+  form: () => (
+    <>
+      <Item name="author" label="Autor" rules={[{ required: true, whitespace: true }]}>
+        <Input placeholder="Numele afișat în recenzia Google" maxLength={160} showCount />
+      </Item>
+      <Item name="text_body" label="Textul recenziei" rules={[{ required: true, whitespace: true }]}>
+        <Input.TextArea rows={7} placeholder="Copiază textul recenziei Google" autoSize={{ minRows: 7, maxRows: 14 }} />
+      </Item>
+      <Item name="rating" label="Stele" rules={[{ required: true, message: 'Selectează numărul de stele.' }]}>
+        <Rate aria-label="Evaluare în stele" allowClear={false} tooltips={['1 stea', '2 stele', '3 stele', '4 stele', '5 stele']} />
+      </Item>
+    </>
+  ),
+});
+
 const homepageServices = makeConfig({
   title: 'Servicii pe prima pagină',
   singular: 'serviciu',
@@ -297,7 +339,7 @@ const beforeAfter = makeConfig({
 });
 
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  legal, quiz, news, 'homepage-services': homepageServices, gallery, 'before-after': beforeAfter,
+  legal, quiz, news, reviews, 'homepage-services': homepageServices, gallery, 'before-after': beforeAfter,
 };
 
 /** Generic list+editor config for a nav key, or null for bespoke/other screens. */

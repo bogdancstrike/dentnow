@@ -53,7 +53,7 @@ def _crud(prefix, service, create_schema, update_schema, id_param, *, has_get=Fa
 
 _crud("articles", SV.ArticleService, S.ArticleCreate, S.ArticleUpdate, "article_id", has_get=True)
 _crud("news", SV.NewsService, S.NewsCreate, S.NewsUpdate, "news_id", has_get=True)
-_crud("reviews", SV.ReviewService, S.ReviewCreate, S.ReviewUpdate, "review_id")
+_crud("reviews", SV.ReviewService, S.ReviewCreate, S.ReviewUpdate, "review_id", has_get=True)
 _crud("cases", SV.CaseService, S.CaseCreate, S.CaseUpdate, "case_id", has_get=True)
 _crud("ebooks", SV.EbookService, S.EbookCreate, S.EbookUpdate, "ebook_id")
 _crud("legal", SV.LegalService, S.LegalCreate, S.LegalUpdate, "legal_id", has_get=True)

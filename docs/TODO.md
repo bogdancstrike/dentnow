@@ -25,6 +25,7 @@ pipeline, CI, backups). It is large; progress is committed task-by-task.
 - [x] Connected `/confidentialitate`, `/gdpr`, and `/termeni` to `/admin/legal` documents with unsaved draft preview, audited approval/publication, effective dates, public 404/503 handling, and explicitly approved seed documents; removed duplicate compiled legal copy.
 - [x] Completed offer relations: `/admin/oferte/:id` uses searchable multi-selects for existing treatments and participating clinics, persists both sets atomically, validates stale/unknown references, and renders relation links in the real public/draft preview.
 - [x] Completed `/admin/parteneri/:id`: uploadable MinIO logo, relationship/badge/link/rights metadata, active state and order, safe HTTP(S) links, publishable-media validation, and a real unsaved desktop/mobile `/parteneri` preview.
+- [x] Replaced automatic Google Places review ingestion with manual review authoring: no Places API key, sync script, or clinic place identifier remains; `/admin/reviws` provides Author/Text/Stele CRUD, drag ordering, cmdk creation/search, and browser-only live preview on the real `/recenzii` page.
 
 ---
 
@@ -92,7 +93,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [x] **URL per admin tab** — React Router inside /admin so each useful section deep-links (`/admin/clinici`, `/admin/echipa-medicala`, …) instead of state-based tabs.
 - [x] **Dropdowns for existing refs** everywhere in /admin (existing clinic/category/treatment/page → searchable `RemoteSelect`, not free-text id); shared controls also preserve accessible form-label association.
 - [x] **More CRUD**: nested quiz question/option/band editor, image-carousel/gallery media, before/after relations, and offer→treatment/clinic selection are complete with real-page draft preview.
-- [!] **Google Reviews integration requires a compliant source choice.** A scheduled PostgreSQL copy from Places API is not allowed by the current [Places caching/attribution policy](https://developers.google.com/maps/documentation/places/web-service/policies): only `place_id` is exempt from storage restrictions, and every displayed review needs Google Maps + author + direct-review attribution. Choose either Google Business Profile API (OAuth + owned-account location identifiers) for managed ingestion, or live/non-persistent Places API/Places UI Kit rendering; the existing legacy sync script must not be enabled as-is.
+- [x] **Google reviews are authored manually** — automatic Places/Business Profile ingestion is out of scope. Administrators copy the approved author, text and star count into `/admin/reviws`; the app makes no Google review API request and stores no clinic place identifier/API key.
 - [x] **Restore original frontend UI**: Fixed `/oferte`, `/articole`, and `/tratamente` bug where `useRevealAll` hid items loaded asynchronously. Restored old "Tratamente uzuale" curated card UI on the homepage.
 - [x] **Noutăți (News)**: Split `/admin/articole` into Articole and Noutăți modules. Connected public `/noutati` to read live data from the database `SitePublication` API instead of hardcoded content.
 - [x] **Quick Publish Action**: Added "Publică" button directly to the `/admin/articole` list to instantly switch Drafts to Published without opening the full editor.
@@ -100,7 +101,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [x] **cmdk feature rule** — every new admin feature is reviewed for a safe, permission-aware quick action; frequent create/navigate/search actions are added, while destructive/high-risk actions remain in their normal confirmed flow. (`Articol nou` added.)
 - [x] Added persistent **Vezi site-ul public** in the admin sidebar plus the matching cmdk action.
 - [x] Removed the user-rejected **Prezentare generală** and generic **Pagini & SEO** admin pages; `/admin` now opens `/admin/clinici`.
-- [x] Removed manual **Recenzii** CRUD navigation; reviews will be a Google-synced clinic data source, not an authored page.
+- [x] Restored manual **Recenzii** CRUD at the explicitly requested `/admin/reviws` route, with dedicated create/edit URLs and unsaved real-page preview.
 - [x] Removed website publication/version controls from `/admin`. Preview is contextual per edited entity, never a global publish action.
 - [x] **Articles newsroom slice**: `/admin/articole`, `/admin/articole/nou`, and `/admin/articole/:id`; full-screen create/edit form, status workflow, existing-category dropdown, safe unsaved-change handling, desktop/mobile sandboxed iframe preview.
 - [x] **Non-technical article authoring:** Tiptap visual editor with headings, bold, italic, strike, links, lists, quote, undo/redo; Markdown remains the safe backend storage format and is no longer the default UI.
@@ -111,7 +112,7 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [x] **Homepage quick-treatment strip:** the Implant/Albire/GBT/Obturații cards are treatment-backed fields (`homepage_featured`, label, icon, price/link); finish admin controls and public API renderer so no card text is hardcoded.
 - [x] Public navbar places **Decontare CAS** immediately after Acasă; duplicate “Decontare CAS / Gratuit copii” was removed from the Tratamente dropdown and seed fixture.
 - [x] Keycloak bootstrap and local realm now register the exact public homepage post-logout redirect; infrastructure regression check added for the previous “Invalid redirect uri” failure.
-- [x] Remove `/recenzii` as a standalone page/route and render Google-synced reviews only inside relevant clinic/site sections.
+- [x] Keep `/recenzii` as the public collection and real preview target; both it and the homepage render the manually curated review API contract.
 
 ---
 
@@ -335,4 +336,3 @@ enterprise editors. Migrations 0001–0008 exist; the complete clean-stack rehea
 - [!] Verified clinic hours/prices/offers/CAS/credentials/review metadata
 - [!] Lawful basis/DPIA for before/after patient imagery
 - [!] Off-host backup destination, RPO/RTO
-- [!] Google Reviews source: Business Profile OAuth ingestion vs live/non-persistent Places rendering with mandatory attribution

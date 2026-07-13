@@ -7,8 +7,11 @@ import shutil
 import subprocess
 import sys
 
+from src.config import Config
+
 
 CONFIG_SOURCE = Path(__file__).resolve().parents[2] / "src" / "config.py"
+BACKEND_DIR = CONFIG_SOURCE.parents[1]
 
 
 def _load_isolated_config(tmp_path: Path, process_values: dict[str, str]) -> dict:
@@ -55,3 +58,8 @@ def test_process_environment_takes_precedence_over_backend_dotenv(tmp_path):
         "service": "from-process",
         "port": 5999,
     }
+
+
+def test_google_places_review_ingestion_is_not_configurable():
+    assert not hasattr(Config, "GOOGLE_PLACES_API_KEY")
+    assert not (BACKEND_DIR / "scripts" / "sync_google_reviews.py").exists()

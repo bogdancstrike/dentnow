@@ -48,6 +48,7 @@ ROUTES = [
     ("/tratamente", "treatments", "treatment-index", "Tratamente & Tarife"),
     ("/oferte", "offers", "offers-index", "Oferte"),
     ("/articole", "articles", "article-index", "Articole"),
+    ("/recenzii", "reviews", "generic", "Recenzii"),
     ("/before-after", "before-after", "generic", "Before & After"),
     ("/noutati", "news", "article-index", "Noutăți"),
     ("/scor-igiena", "quiz", "quiz", "Scor Igienă Orală"),

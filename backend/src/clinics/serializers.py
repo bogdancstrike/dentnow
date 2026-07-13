@@ -27,7 +27,6 @@ def serialize_clinic(c: Any) -> dict:
         "longitude": float(c.longitude) if c.longitude is not None else None,
         "map_embed_url": c.map_embed_url,
         "map_link_url": c.map_link_url,
-        "google_place_id": c.google_place_id,
         "status": c.status,
         "position": c.position,
         "created_at": _iso(c.created_at),

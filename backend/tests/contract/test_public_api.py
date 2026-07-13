@@ -94,6 +94,40 @@ def test_published_news_has_a_public_detail_page(client, admin):
             ).status_code in (200, 204)
 
 
+def test_manual_review_crud_is_public_without_google_ingestion_fields(client, admin):
+    review_id = None
+    try:
+        created = client.post(
+            "/api/v1/admin/reviews",
+            json={"author": "Pacient Manual", "text_body": "O experiență foarte bună.", "rating": 4},
+            headers=admin,
+        )
+        assert created.status_code == 201, created.get_data(as_text=True)
+        body = created.get_json()
+        review_id = body["id"]
+        assert body["status"] == "published"
+
+        detail = client.get(f"/api/v1/admin/reviews/{review_id}", headers=admin)
+        assert detail.status_code == 200
+        assert detail.get_json()["author"] == "Pacient Manual"
+
+        public_items = client.get("/api/v1/public/reviews").get_json()["items"]
+        public_review = next(item for item in public_items if item["id"] == review_id)
+        assert public_review == {
+            "id": review_id,
+            "author": "Pacient Manual",
+            "text_body": "O experiență foarte bună.",
+            "rating": 4,
+            "position": 0,
+        }
+    finally:
+        if review_id:
+            assert client.delete(
+                f"/api/v1/admin/reviews/{review_id}",
+                headers={**admin, "If-Match": '"1"'},
+            ).status_code in (200, 204)
+
+
 def test_public_offer_exposes_admin_selected_treatments_and_clinics(client, admin):
     treatment_id = clinic_id = offer_id = None
     suffix = uuid.uuid4().hex[:8]

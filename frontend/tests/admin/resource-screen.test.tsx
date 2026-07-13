@@ -49,7 +49,7 @@ describe('generic ResourceScreen via registry', () => {
   });
 
   it('getResourceConfig returns configs for generic keys only', () => {
-    for (const key of ['legal', 'quiz', 'news', 'homepage-services', 'gallery']) {
+    for (const key of ['legal', 'quiz', 'news', 'reviews', 'homepage-services', 'gallery']) {
       expect(getResourceConfig(key)).not.toBeNull();
     }
     for (const key of ['clinics', 'treatments', 'offers', 'doctors', 'partners', 'articles', 'settings', 'nope']) {
