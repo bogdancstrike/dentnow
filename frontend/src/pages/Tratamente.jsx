@@ -45,6 +45,7 @@ export default function Tratamente() {
     t.prices.forEach((p) => {
       cat.rows.push({
         name: t.name,
+        slug: t.slug,
         price: p.amount ? `${p.amount} ${p.currency}` : 'La cerere',
         oldPrice: p.old_amount ? `${p.old_amount} ${p.currency}` : null,
         promo: !!p.old_amount,
@@ -81,7 +82,12 @@ export default function Tratamente() {
             </div>
             <div className="tarife-table">
               {cat.rows.map((row, idx) => (
-                <div key={`${row.name}-${idx}`} className={`t-row${row.promo ? ' promo' : ''}`}>
+                <div
+                  key={`${row.name}-${idx}`}
+                  className={`t-row${row.promo ? ' promo' : ''}`}
+                  data-analytics-type="treatment"
+                  data-analytics-key={row.slug}
+                >
                   <span className="tr-name">{row.name}{row.promo && <span className="promo-tag">PROMO</span>}</span>
                   {row.oldPrice && <span className="tr-old">{row.oldPrice}</span>}
                   <span className={`tr-price${row.promo ? ' promo-p' : ''}`}>{row.price}</span>

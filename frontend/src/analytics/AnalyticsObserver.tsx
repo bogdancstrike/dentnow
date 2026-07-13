@@ -64,6 +64,7 @@ export function AnalyticsObserver() {
       ? window.setTimeout(() => emit({ ...typed, path, engaged_seconds: 15 }), 15_000)
       : undefined;
     const observed = new Set<string>();
+    const analyticsSelector = 'main section[id], main [data-analytics-section], main [data-analytics-type][data-analytics-key]';
     const sectionObserver = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const element = entry.target as HTMLElement;
@@ -84,7 +85,14 @@ export function AnalyticsObserver() {
         }
       });
     }, { threshold: 0.55 }) : null;
-    document.querySelectorAll<HTMLElement>('main section[id], main [data-analytics-section], main [data-analytics-type][data-analytics-key]').forEach((element) => sectionObserver?.observe(element));
+    const observeAnalyticsElements = () => {
+      document.querySelectorAll<HTMLElement>(analyticsSelector).forEach((element) => sectionObserver?.observe(element));
+    };
+    observeAnalyticsElements();
+    const mutationObserver = sectionObserver && 'MutationObserver' in window
+      ? new MutationObserver(observeAnalyticsElements)
+      : null;
+    mutationObserver?.observe(document.querySelector('main') ?? document.body, { childList: true, subtree: true });
 
     const onClick = (event: MouseEvent) => {
       const element = (event.target as Element | null)?.closest<HTMLElement>('a,button');
@@ -102,6 +110,7 @@ export function AnalyticsObserver() {
     document.addEventListener('click', onClick, { capture: true });
     return () => {
       if (articleTimer) window.clearTimeout(articleTimer);
+      mutationObserver?.disconnect();
       sectionObserver?.disconnect();
       document.removeEventListener('click', onClick, { capture: true });
     };
@@ -112,7 +121,7 @@ export function AnalyticsObserver() {
     <aside className="analytics-consent" aria-label="Preferințe analiză trafic">
       <div>
         <strong>Ne ajuți să îmbunătățim experiența?</strong>
-        <p>Colectăm statistici limitate fără a păstra IP-ul sau user-agentul. Cu acordul tău putem include aceste detalii și, separat, zona permisă de browser.</p>
+        <p>Colectăm date tehnice despre vizită, inclusiv adresa IP, user-agentul și o localizare aproximativă derivată din IP. Cu acordul tău putem folosi separat localizarea mai precisă permisă de browser.</p>
         <Link to="/confidentialitate">Detalii despre confidențialitate</Link>
       </div>
       <div className="analytics-consent__actions">

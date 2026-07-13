@@ -53,7 +53,7 @@ def test_collect_event_rate_limit_is_non_mutating(monkeypatch):
     session.add.assert_not_called()
 
 
-def test_limited_event_keeps_metrics_but_not_raw_ip_or_user_agent(monkeypatch):
+def test_event_without_location_consent_keeps_request_ip_and_user_agent(monkeypatch):
     monkeypatch.setattr(Config, "ANALYTICS_ENABLED", True)
     monkeypatch.setattr(Config, "ANALYTICS_REQUIRE_CONSENT", True)
     monkeypatch.setattr(Config, "ANALYTICS_PSEUDONYM_KEY", "test-key")
@@ -80,8 +80,8 @@ def test_limited_event_keeps_metrics_but_not_raw_ip_or_user_agent(monkeypatch):
 
     assert result == {"accepted": True}
     event = session.add.call_args.args[0]
-    assert event.client_ip is None
-    assert event.user_agent is None
+    assert event.client_ip == "127.0.0.1"
+    assert "Android Mobile" in event.user_agent
     assert event.consent_granted is False
     assert event.device_family == "mobile"
     assert event.country_code == "RO"
@@ -109,6 +109,8 @@ def test_csv_export_contains_trend_and_dimensions():
                 "devices",
                 "browsers",
                 "referrers",
+                "internet_providers",
+                "timezones",
                 "ip_addresses",
                 "user_agents",
             )

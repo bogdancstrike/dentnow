@@ -35,6 +35,8 @@ const overview = {
   devices: [{ key: 'mobile', views: 320, visitors: 85 }],
   browsers: [{ key: 'Chrome', views: 360, visitors: 90 }],
   operating_systems: [{ key: 'Android', views: 220, visitors: 65 }],
+  internet_providers: [{ key: 'RCS & RDS', views: 180, visitors: 52 }],
+  timezones: [{ key: 'Europe/Bucharest', views: 300, visitors: 80 }],
   ip_addresses: [{ key: '203.0.113.1', views: 8, visitors: 1 }],
   user_agents: [{ key: 'Mozilla/5.0 Chrome/126', views: 8, visitors: 1 }],
   geography: [{ country: 'RO', region: 'București', city: 'București', latitude: 44.4268, longitude: 26.1025, visitors: 80, views: 300 }],
@@ -64,6 +66,8 @@ describe('AnalyticsScreen', () => {
     expect(echarts.getMap('dentnow-bucharest-sectors')).toBeDefined();
     expect(screen.getByText('203.0.113.1')).toBeInTheDocument();
     expect(screen.getByText('Mozilla/5.0 Chrome/126')).toBeInTheDocument();
+    expect(screen.getByText('Clickuri pe telefon, WhatsApp și e-mail')).toBeInTheDocument();
+    expect(screen.getByText('RCS & RDS')).toBeInTheDocument();
     expect(client.get).toHaveBeenCalledWith(expect.stringContaining('from='));
   });
 

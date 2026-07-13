@@ -45,16 +45,16 @@ def collect_event(
     )
     if recent >= Config.ANALYTICS_RATE_LIMIT_PER_MINUTE:
         return {"accepted": False, "reason": "rate_limited"}
-    full_collection = payload.consent_granted
+    precise_location_consent = payload.consent_granted
     session.add(
         AnalyticsEvent(
             occurred_at=now,
             visitor_key=identity.visitor_key,
             session_key=identity.session_key,
             key_version=identity.key_version,
-            client_ip=identity.client_ip if full_collection else None,
-            user_agent=identity.user_agent if full_collection else None,
-            consent_granted=full_collection,
+            client_ip=identity.client_ip,
+            user_agent=identity.user_agent,
+            consent_granted=precise_location_consent,
             event_type=payload.event_type,
             path=payload.path,
             target_type=payload.target_type,
@@ -64,16 +64,24 @@ def collect_event(
             device_family=identity.device_family,
             browser_family=identity.browser_family,
             os_family=identity.os_family,
+            country_name=identity.country_name,
             country_code=identity.country_code,
             region=identity.region,
+            region_code=identity.region_code,
             city=identity.city,
             latitude=payload.latitude
-            if full_collection and payload.latitude is not None
+            if precise_location_consent and payload.latitude is not None
             else identity.latitude,
             longitude=payload.longitude
-            if full_collection and payload.longitude is not None
+            if precise_location_consent and payload.longitude is not None
             else identity.longitude,
-            geo_accuracy_m=payload.geo_accuracy_m if full_collection else None,
+            postal_code=identity.postal_code,
+            timezone_name=identity.timezone_name,
+            connection_asn=identity.connection_asn,
+            connection_isp=identity.connection_isp,
+            geo_accuracy_m=(
+                payload.geo_accuracy_m if precise_location_consent else None
+            ),
             engaged_seconds=payload.engaged_seconds,
         )
     )
@@ -341,6 +349,22 @@ def analytics_overview(
         "devices": _dimension(session, start, end, AnalyticsEvent.device_family),
         "browsers": _dimension(session, start, end, AnalyticsEvent.browser_family),
         "operating_systems": _dimension(session, start, end, AnalyticsEvent.os_family),
+        "internet_providers": _dimension(
+            session,
+            start,
+            end,
+            AnalyticsEvent.connection_isp,
+            filters=(AnalyticsEvent.connection_isp.is_not(None),),
+            limit=20,
+        ),
+        "timezones": _dimension(
+            session,
+            start,
+            end,
+            AnalyticsEvent.timezone_name,
+            filters=(AnalyticsEvent.timezone_name.is_not(None),),
+            limit=20,
+        ),
         "ip_addresses": _dimension(
             session,
             start,
@@ -387,6 +411,8 @@ def overview_csv(overview: dict[str, Any]) -> str:
         "devices",
         "browsers",
         "referrers",
+        "internet_providers",
+        "timezones",
         "ip_addresses",
         "user_agents",
     ):

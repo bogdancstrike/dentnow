@@ -41,6 +41,7 @@ export const AnalyticsOverviewSchema = z.object({
   contact_ctas: z.array(DimensionSchema), referrers: z.array(DimensionSchema),
   devices: z.array(DimensionSchema), browsers: z.array(DimensionSchema),
   operating_systems: z.array(DimensionSchema), ip_addresses: z.array(DimensionSchema),
+  internet_providers: z.array(DimensionSchema), timezones: z.array(DimensionSchema),
   user_agents: z.array(DimensionSchema), geography: z.array(GeoSchema),
 });
 

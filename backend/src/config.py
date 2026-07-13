@@ -5,6 +5,7 @@ MinIO. There is no Kafka, no Redis, no ETL worker, and no in-process scheduler i
 the first release. A few Redis/Kafka defaults remain only because qf imports its
 ETL modules eagerly even with ``enable_etl=False``; they configure nothing.
 """
+
 import os
 from pathlib import Path
 
@@ -25,6 +26,13 @@ def _bool(name: str, default: bool) -> bool:
 def _int(name: str, default: int) -> int:
     try:
         return int(os.getenv(name, str(default)))
+    except ValueError:
+        return default
+
+
+def _float(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, str(default)))
     except ValueError:
         return default
 
@@ -94,8 +102,8 @@ class Config:
     PREVIEW_TOKEN_PEPPER = os.getenv("PREVIEW_TOKEN_PEPPER", "dev-preview-pepper")
 
     # ── First-party analytics ─────────────────────────────────────────────
-    # Limited events are collected without raw network identifiers. Consent unlocks
-    # raw IP/user-agent retention and the optional browser geolocation request.
+    # IP/user-agent and coarse IP geolocation are request metadata. Consent unlocks
+    # only the optional, more precise browser geolocation request.
     ANALYTICS_ENABLED = _bool("ANALYTICS_ENABLED", False)
     ANALYTICS_REQUIRE_CONSENT = _bool("ANALYTICS_REQUIRE_CONSENT", True)
     ANALYTICS_PSEUDONYM_KEY = os.getenv(
@@ -110,9 +118,21 @@ class Config:
     ANALYTICS_USER_AGENT_MAX_LENGTH = _int("ANALYTICS_USER_AGENT_MAX_LENGTH", 512)
     ANALYTICS_TRUSTED_PROXY_CIDRS = tuple(
         item.strip()
-        for item in os.getenv("ANALYTICS_TRUSTED_PROXY_CIDRS", "127.0.0.1/32,::1/128,172.16.0.0/12").split(",")
+        for item in os.getenv(
+            "ANALYTICS_TRUSTED_PROXY_CIDRS",
+            "127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12",
+        ).split(",")
         if item.strip()
     )
+    ANALYTICS_GEOIP_ENABLED = _bool("ANALYTICS_GEOIP_ENABLED", True)
+    ANALYTICS_GEOIP_URL = os.getenv("ANALYTICS_GEOIP_URL", "https://ipwho.is")
+    ANALYTICS_GEOIP_TIMEOUT_SECONDS = _float("ANALYTICS_GEOIP_TIMEOUT_SECONDS", 1.5)
+    ANALYTICS_GEOIP_DAILY_LIMIT = _int("ANALYTICS_GEOIP_DAILY_LIMIT", 1000)
+    ANALYTICS_GEOIP_CACHE_HOURS = _int("ANALYTICS_GEOIP_CACHE_HOURS", 24)
+    ANALYTICS_GEOIP_FAILURE_CACHE_MINUTES = _int(
+        "ANALYTICS_GEOIP_FAILURE_CACHE_MINUTES", 60
+    )
+    ANALYTICS_GEOIP_CACHE_MAX_ENTRIES = _int("ANALYTICS_GEOIP_CACHE_MAX_ENTRIES", 10000)
 
     # ── Tracing ────────────────────────────────────────────────────────────
     ENABLE_TRACING = _bool("ENABLE_TRACING", False)

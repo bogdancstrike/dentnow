@@ -31,6 +31,7 @@ describe('homepage contact clinics', () => {
 
     const thumbnails = container.querySelectorAll('.gallery-thumb');
     expect(thumbnails).toHaveLength(3);
+    expect(Array.from(thumbnails).every((thumbnail) => thumbnail.matches('button.gallery-thumb'))).toBe(true);
     fireEvent.click(thumbnails.item(1));
 
     const selectedCard = container.querySelector('.location-card.gallery-photo');

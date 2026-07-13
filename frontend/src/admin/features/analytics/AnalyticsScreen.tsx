@@ -142,8 +142,8 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
         <>
           <div className="analytics-range-note">
             {range.from} — {range.to} · fus orar {query.data.range.timezone}
-            {' · '}{numberFormatter.format(query.data.collection.full_events)} evenimente complete
-            {' · '}{numberFormatter.format(query.data.collection.limited_events)} evenimente limitate
+            {' · '}{numberFormatter.format(query.data.collection.full_events)} evenimente cu acord pentru locație precisă
+            {' · '}{numberFormatter.format(query.data.collection.limited_events)} evenimente fără acord pentru locație precisă
           </div>
           {!query.data.collection.enabled && (
             <Alert
@@ -179,7 +179,9 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
             <ContentTable title="Tratamente populare" items={query.data.top_treatments} />
             <ContentTable title="Oferte populare" items={query.data.top_offers} />
             <ContentTable title="Surse de trafic" items={query.data.referrers} />
-            <ContentTable title="CTA de contact" items={query.data.contact_ctas} />
+            <ContentTable title="Clickuri pe telefon, WhatsApp și e-mail" items={query.data.contact_ctas} />
+            <ContentTable title="Furnizori de internet" items={query.data.internet_providers} />
+            <ContentTable title="Fusuri orare estimate" items={query.data.timezones} />
             <ContentTable title="Adrese IP active" items={query.data.ip_addresses} />
             <ContentTable title="User-Agent-uri" items={query.data.user_agents} />
           </section>

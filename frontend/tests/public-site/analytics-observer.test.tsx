@@ -14,6 +14,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   Object.defineProperty(navigator, 'geolocation', {
     configurable: true,
     value: originalGeolocation,
@@ -35,7 +36,7 @@ describe('AnalyticsObserver', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('starts with a limited page view and sends full subsequent events after consent', async () => {
+  it('starts without precise-location consent and sends consented subsequent events', async () => {
     await configure(true);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 202 }));
     render(
@@ -93,5 +94,43 @@ describe('AnalyticsObserver', () => {
       path: '/noutati',
       consent_granted: false,
     }));
+  });
+
+  it('tracks treatment rows that are rendered after the analytics observer mounts', async () => {
+    await configure(true, false);
+    class ImmediateIntersectionObserver {
+      constructor(private readonly callback: IntersectionObserverCallback) {}
+      observe(element: Element) {
+        this.callback([{ isIntersecting: true, target: element } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+      }
+      unobserve() {}
+      disconnect() {}
+      takeRecords() { return []; }
+      root = null;
+      rootMargin = '0px';
+      thresholds = [0.55];
+    }
+    vi.stubGlobal('IntersectionObserver', ImmediateIntersectionObserver);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 202 }));
+    const { rerender } = render(
+      <MemoryRouter initialEntries={['/tratamente']}>
+        <AnalyticsObserver />
+        <main />
+      </MemoryRouter>,
+    );
+
+    rerender(
+      <MemoryRouter initialEntries={['/tratamente']}>
+        <AnalyticsObserver />
+        <main><div data-analytics-type="treatment" data-analytics-key="implant-dentar" /></main>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      const bodies = fetchSpy.mock.calls.map((call) => JSON.parse(String((call[1] as RequestInit).body)));
+      expect(bodies).toContainEqual(expect.objectContaining({
+        event_type: 'treatment_view', target_type: 'treatment', target_key: 'implant-dentar',
+      }));
+    });
   });
 });

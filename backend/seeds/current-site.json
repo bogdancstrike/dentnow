@@ -1806,10 +1806,11 @@
         ]
       },
       {
-        "title": "3. Date tehnice",
-        "paragraphs": [
-          "Website-ul poate prelucra date tehnice necesare pentru afișare, securitate, depanare și măsurarea performanței. Aceste date pot include adresa IP, tipul dispozitivului, browserul, paginile vizitate și momentul accesării."
-        ]
+    "title": "3. Date tehnice",
+    "paragraphs": [
+      "Website-ul prelucrează date tehnice necesare pentru afișare, securitate, depanare și măsurarea performanței.",
+      "Această localizare este aproximativă. Localizarea mai precisă furnizată de browser este solicitată și utilizată numai după acordul tău."
+    ]
       },
       {
         "title": "4. Formulare, telefon și WhatsApp",
