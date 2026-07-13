@@ -804,6 +804,14 @@ def analytics_overview(
             filters=(AnalyticsEvent.event_type == SECTION_VIEW,),
             limit=20,
         ),
+        "top_clicks": _dimension(
+            session,
+            start,
+            end,
+            AnalyticsEvent.target_key,
+            filters=(AnalyticsEvent.event_type == "navigation_click",),
+            limit=50,
+        ),
         "top_articles": _dimension(
             session,
             start,
@@ -1087,6 +1095,8 @@ def rollup_day(
         ("country", AnalyticsEvent.country_code, page_view_filter),
         ("page", AnalyticsEvent.path, page_view_filter),
         ("referrer", AnalyticsEvent.referrer_host, page_view_filter),
+        ("click", AnalyticsEvent.target_key, (AnalyticsEvent.event_type == "navigation_click",)),
+        ("section", AnalyticsEvent.section_id, (AnalyticsEvent.event_type == SECTION_VIEW,)),
     )
 
     for dimension_name, column, filters in dimensions:
