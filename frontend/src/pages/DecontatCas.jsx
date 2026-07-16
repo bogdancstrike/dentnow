@@ -2,6 +2,7 @@ import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import config from '../config';
 import { useClinicPicker } from '../hooks/useClinicPicker';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 import { IconPhone, IconClock, IconAlert, IconWhatsApp, IconMapPin } from '../components/ui/Icons';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { clinicPhone } from '../lib/clinicContact';
@@ -9,11 +10,24 @@ import './DecontatCas.css';
 
 import { faqs as staticFaqs, steps as staticSteps } from '../data/cas';
 
+function BenefitItem({ text }) {
+  const separator = text.indexOf(': ');
+  if (separator < 0) return <li>{text}</li>;
+  return (
+    <li>
+      <strong>{text.slice(0, separator)}:</strong> {text.slice(separator + 2)}
+    </li>
+  );
+}
+
 export default function DecontatCas() {
   const openPicker = useClinicPicker();
+  const t = useSiteTexts();
   const { decontat_cas: cas, clinics } = useSiteData();
   const steps = cas?.steps?.length ? cas.steps.map((s) => ({ title: s.title, text: s.text || '' })) : staticSteps;
   const faqs = cas?.faqs?.length ? cas.faqs : staticFaqs;
+  const clinicCount = clinics.length;
+  const clinicNames = clinics.map((clinic) => clinic.area || clinic.name).join(' · ');
 
   const jsonLd = [
     {
@@ -43,74 +57,64 @@ export default function DecontatCas() {
       />
 
       <PageHero
-        tag="SERVICII DECONTATE CAS & GRATUITĂȚI PEDIATRIE"
-        title="Tratamente Dentare Decontate prin CAS & Stomatologie Gratuită pentru Copii"
-        subtitle="DentNow este în contract cu Casa de Asigurări de Sănătate (CAS), oferind gratuități pentru copii și decontări la servicii stomatologice uzuale."
+        tag={t('cas.hero.tag')}
+        title={t('cas.hero.title')}
+        subtitle={t('cas.hero.subtitle')}
       />
 
       <section className="cas-sec">
         {/* AI Overview Summary Box */}
         <div className="sge-ai-box">
           <div className="sge-ai-header">
-            <span className="sge-ai-badge">✨ Decontare CAS DentNow</span>
-            <span className="sge-ai-tag">Ghid Asigurați CAS</span>
+            <span className="sge-ai-badge">{t('cas.ai.badge')}</span>
+            <span className="sge-ai-tag">{t('cas.ai.tag')}</span>
           </div>
-          <p className="sge-ai-text">
-            Persoanele asigurate în sistemul public de sănătate din România și copiii cu vârsta de până la 18 ani beneficiază de tratamente stomatologice decontate integral (100% gratuit) sau parțial prin CAS la clinica DentNow. Serviciile gratuite pentru copii includ consultații, obturații (plombe), sigilări și extracții de dinți temporari.
-          </p>
+          <p className="sge-ai-text">{t('cas.ai.text')}</p>
         </div>
 
         {/* Quick facts strip */}
         <div className="cas-stats">
           <div className="cas-stat">
-            <strong>100% Gratuit</strong>
-            <span>Stomatologie pentru copii 0 – 18 ani</span>
+            <strong>{t('cas.stats.free.title')}</strong>
+            <span>{t('cas.stats.free.text')}</span>
           </div>
+          {clinicCount > 0 && (
+            <div className="cas-stat">
+              <strong>{t('cas.stats.clinics.title', { count: clinicCount })}</strong>
+              <span>{t('cas.stats.clinics.text', { count: clinicCount, names: clinicNames })}</span>
+            </div>
+          )}
           <div className="cas-stat">
-            <strong>3 Clinici</strong>
-            <span>Dristor · Baba Novac · Prel. Ghencea</span>
-          </div>
-          <div className="cas-stat">
-            <strong>Fără Dosare</strong>
-            <span>Decontarea se face direct de clinică</span>
+            <strong>{t('cas.stats.direct.title')}</strong>
+            <span>{t('cas.stats.direct.text')}</span>
           </div>
         </div>
 
         <div className="cas-grid">
           {/* Main CAS Content */}
           <div className="cas-main">
-            <h2>Stomatologie Gratuită pentru Copii (0 – 18 Ani)</h2>
-            <p>Sănătatea dentară a copiilor este o prioritate la DentNow. Prin contractul cu CAS, copiii primesc îngrijire pediatrică de specialitate fără niciun cost pentru părinți:</p>
+            <h2>{t('cas.children.title')}</h2>
+            <p>{t('cas.children.intro')}</p>
 
             <ul className="cas-benefits-list">
-              <li><strong>Consultație de specialitate pedodonție:</strong> Gratuită 100%</li>
-              <li><strong>Obturații (plombe) dinți de lapte și definitivi:</strong> Decontate integral</li>
-              <li><strong>Sigilarea șanțurilor și fosetelor (prevenirea cariilor):</strong> Decontată CAS</li>
-              <li><strong>Extracții dinți temporari:</strong> Gratuit prin CAS</li>
-              <li><strong>Igienizare & Fluorizare:</strong> Inclusă în abonamentul preventiv</li>
+              {['cas.children.item1', 'cas.children.item2', 'cas.children.item3', 'cas.children.item4', 'cas.children.item5'].map((key) => (
+                <BenefitItem key={key} text={t(key)} />
+              ))}
             </ul>
 
-            <h2>Tratamente Decontate pentru Adulți Asigurați</h2>
-            <p>Pachetul de servicii decontate prin Casa de Asigurări de Sănătate acoperă o gamă largă de tratamente de bază:</p>
+            <h2>{t('cas.adults.title')}</h2>
+            <p>{t('cas.adults.intro')}</p>
 
             <div className="cas-services-cards">
-              <div className="cas-card">
-                <h3>Consultație & Diagnostic</h3>
-                <p>Evaluare parodontală și stabilirea planului de tratament decontată 100%.</p>
-              </div>
-
-              <div className="cas-card">
-                <h3>Obturații Fizionomice</h3>
-                <p>Tratamentul cariilor simple decontat conform plafonului CAS lunar.</p>
-              </div>
-
-              <div className="cas-card">
-                <h3>Extracții Dentare</h3>
-                <p>Extracții dinți monoradiculari și pluriradiculari decontate parțial sau integral.</p>
-              </div>
+              {['card1', 'card2', 'card3'].map((card) => (
+                <div className="cas-card" key={card}>
+                  <h3>{t(`cas.adults.${card}.title`)}</h3>
+                  <p>{t(`cas.adults.${card}.text`)}</p>
+                </div>
+              ))}
             </div>
 
-            <h2>Cum funcționează decontarea, în 3 pași</h2>
+            <h2>{t('cas.steps.title')}</h2>
             <div className="cas-steps">
               {steps.map((s, i) => (
                 <div key={s.title} className="cas-step">
@@ -121,26 +125,26 @@ export default function DecontatCas() {
               ))}
             </div>
 
-            <h2>Acte necesare pentru programarea CAS</h2>
+            <h2>{t('cas.docs.title')}</h2>
             <div className="cas-docs-grid">
               <div className="cas-doc-card">
-                <h3>Pentru Copii</h3>
-                <p>Certificat de naștere (sau Carte de Identitate dacă are peste 14 ani) și buletinul unuia dintre părinți.</p>
+                <h3>{t('cas.docs.children.title')}</h3>
+                <p>{t('cas.docs.children.text')}</p>
               </div>
               <div className="cas-doc-card">
-                <h3>Pentru Adulți Asigurați</h3>
-                <p>Carte de Identitate (CI) și dovadă de asigurat: adeverință de salariat, talon de pensie sau Card de Sănătate.</p>
+                <h3>{t('cas.docs.adults.title')}</h3>
+                <p>{t('cas.docs.adults.text')}</p>
               </div>
             </div>
 
             <div className="cas-note">
               <IconAlert size={20} />
               <p>
-                <strong>Bine de știut:</strong> plafonul lunar decontat de CAS este limitat per clinică. Dacă plafonul lunii curente s-a epuizat, te programăm cu prioritate imediat ce se deblochează fondurile lunii următoare.
+                <strong>{t('cas.note.label')}</strong> {t('cas.note.text')}
               </p>
             </div>
 
-            <h2>Întrebări frecvente despre decontarea CAS</h2>
+            <h2>{t('cas.faq.title')}</h2>
             <div className="cas-faq-list">
               {faqs.map((f) => (
                 <div key={f.q} className="cas-faq-item">
@@ -154,15 +158,15 @@ export default function DecontatCas() {
           {/* Sidebar CTA Card */}
           <aside className="cas-sidebar">
             <div className="cas-cta-card">
-              <h3>Programează-te cu Decontare CAS</h3>
-              <p>Plafoanele lunare decontate de CAS sunt limitate! Vă recomandăm să vă programați din timp, la începutul lunii.</p>
+              <h3>{t('cas.sidebar.title')}</h3>
+              <p>{t('cas.sidebar.text')}</p>
 
               <button type="button" className="btn btn-dark full-width" onClick={() => openPicker('both')}>
-                <IconPhone size={18} /> Programează-te la DentNow
+                <IconPhone size={18} /> {t('cas.sidebar.callButton')}
               </button>
 
               <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-whatsapp full-width cas-wa-btn">
-                <IconWhatsApp size={18} /> Întreabă-ne pe WhatsApp
+                <IconWhatsApp size={18} /> {t('cas.sidebar.whatsappButton')}
               </a>
 
               <div className="cas-phone-lines">
@@ -182,8 +186,8 @@ export default function DecontatCas() {
               </div>
 
               <div className="cas-contact-info">
-                <div><IconClock size={16} color="var(--accent)" /> Luni – Vineri: 09:00 – 19:00 · Sâmbătă: 09:00 – 15:00</div>
-                <div><IconAlert size={16} color="var(--green)" /> Decontare 100% pentru copii sub 18 ani</div>
+                <div><IconClock size={16} color="var(--accent)" /> {t('cas.sidebar.hours')}</div>
+                <div><IconAlert size={16} color="var(--green)" /> {t('cas.sidebar.note')}</div>
               </div>
             </div>
           </aside>
@@ -191,14 +195,14 @@ export default function DecontatCas() {
 
         {/* Bottom CTA banner */}
         <div className="cas-cta-banner">
-          <h2>Programează un consult decontat CAS</h2>
-          <p>Verificăm plafonul disponibil și îți confirmăm programarea în aceeași zi, în oricare dintre cele 3 clinici DentNow din București.</p>
+          <h2>{t('cas.banner.title')}</h2>
+          <p>{t('cas.banner.text', { count: clinicCount })}</p>
           <div className="cas-banner-actions">
             <button type="button" className="btn btn-white btn-lg" onClick={() => openPicker('both')}>
-              <IconPhone size={18} /> Sună pentru programare
+              <IconPhone size={18} /> {t('cas.banner.callButton')}
             </button>
             <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline-white btn-lg">
-              <IconWhatsApp size={18} /> Scrie-ne pe WhatsApp
+              <IconWhatsApp size={18} /> {t('cas.banner.whatsappButton')}
             </a>
           </div>
         </div>

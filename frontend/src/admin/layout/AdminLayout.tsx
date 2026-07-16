@@ -40,6 +40,7 @@ import { DoctorEditorScreen } from '../features/doctors/DoctorEditorScreen';
 import { PartnersScreen } from '../features/partners/PartnersScreen';
 import { PartnerEditorScreen } from '../features/partners/PartnerEditorScreen';
 import { DecontatCasScreen } from '../features/decontat/DecontatCasScreen';
+import { SiteTextsScreen } from '../features/site-texts/SiteTextsScreen';
 import { ADMIN_NAVIGATION, ADMIN_NAV_ITEMS } from './adminNavigation';
 import { openCommandPalette } from './adminEvents';
 import { AccessDeniedPage } from '../pages/AccessDeniedPage';
@@ -250,6 +251,7 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
             <Route path="parteneri/:partnerId" element={contentRoute(<PartnerEditorScreen client={client} />)} />
 
             <Route path="decontat-cas" element={contentRoute(<DecontatCasScreen client={client} />)} />
+            <Route path="texte-site" element={contentRoute(<SiteTextsScreen client={client} />)} />
             <Route
               path="analytics"
               element={can(me, CAP.analytics)
@@ -263,7 +265,7 @@ export function AdminLayout({ me, client }: { me: Me; client: AdminClient }) {
 
             {ADMIN_NAV_ITEMS.filter(
               (item) =>
-                !['analytics', 'articole', 'clinici', 'tratamente', 'oferte', 'echipa-medicala', 'parteneri', 'decontat-cas'].includes(item.slug),
+                !['analytics', 'articole', 'clinici', 'tratamente', 'oferte', 'echipa-medicala', 'parteneri', 'decontat-cas', 'texte-site'].includes(item.slug),
             ).flatMap((item) => {
               const config = getResourceConfig(item.key);
               if (config) {

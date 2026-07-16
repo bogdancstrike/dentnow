@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 import { whatsappUrlFor } from '../lib/leadCapture';
 import config from '../config';
-import { trustStats, services } from '../data/content';
+import { services } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { useReviews } from '../hooks/useReviews';
 import Seo from '../components/seo/Seo';
@@ -53,6 +54,7 @@ function LocationCard({ loc }) {
 }
 
 export function ContactClinics({ clinics }) {
+  const t = useSiteTexts();
   const [index, setIndex] = useState(0);
   const safeIndex = Math.min(index, Math.max(clinics.length - 1, 0));
   const current = clinics[safeIndex];
@@ -62,8 +64,8 @@ export function ContactClinics({ clinics }) {
   return (
     <>
       <div className="contact-heading">
-        <div className="stag rv">Contact, locatii si program</div>
-        <h2 className="h2d rv d1">Cele {clinics.length} clinici DentNow din Bucuresti.</h2>
+        <div className="stag rv">{t('home.contact.tag')}</div>
+        <h2 className="h2d rv d1">{t('home.contact.title', { count: clinics.length })}</h2>
       </div>
       {current ? (
         <div className="gallery-shell locations-gallery">
@@ -102,8 +104,14 @@ export function ContactClinics({ clinics }) {
 
 export default function Home() {
   const openPicker = useClinicPicker();
+  const t = useSiteTexts();
   const siteData = useSiteData();
   const { data: reviews = [] } = useReviews();
+  const trustItems = [1, 2, 3].map((i) => ({
+    value: t(`home.trust.${i}.title`),
+    accent: '',
+    label: t(`home.trust.${i}.text`),
+  }));
 
   const revealRef = useRevealAll([reviews]);
 
@@ -114,15 +122,15 @@ export default function Home() {
       <section className="hero clinical-hero">
         <div className="hero-grid">
           <div className="hero-copy">
-            <p className="hero-clinic-label">Clinica stomatologica · Bucuresti</p>
+            <p className="hero-clinic-label">{t('home.hero.label')}</p>
             <h1 className="hero-clinic-name">Dent<span>Now</span></h1>
-            <p className="hero-tagline">Tratament explicat clar, deviz inainte de interventie si programari rapide pentru urgente.</p>
+            <p className="hero-tagline">{t('home.hero.tagline')}</p>
             <div className="hero-cta-row left">
-              <button type="button" onClick={() => openPicker('call')} className="cta-phone-big"><IconPhone size={18} /> Suna acum</button>
-              <button type="button" onClick={() => openPicker('whatsapp')} className="cta-wa"><IconWhatsApp size={18} /> WhatsApp</button>
-              <a href="#contact" className="btn btn-outline">Program si locatie</a>
+              <button type="button" onClick={() => openPicker('call')} className="cta-phone-big"><IconPhone size={18} /> {t('home.hero.callButton')}</button>
+              <button type="button" onClick={() => openPicker('whatsapp')} className="cta-wa"><IconWhatsApp size={18} /> {t('home.hero.whatsappButton')}</button>
+              <a href="#contact" className="btn btn-outline">{t('home.hero.contactButton')}</a>
             </div>
-            <TrustStrip items={trustStats} />
+            <TrustStrip items={trustItems} />
           </div>
           <div className="hero-media-panel">
             <img src="/assets/dentnow/treatment-room.svg" alt="Ilustrație cabinet stomatologic DentNow" />
@@ -148,9 +156,9 @@ export default function Home() {
 
       <section className="services-section" id="servicii">
         <div className="services-header">
-          <div className="stag rv">Servicii DentNow</div>
-          <h2 className="h2d rv d1">Tratamente uzuale, explicate pe intelesul pacientului.</h2>
-          <p className="lead rv d2">Am redus promisiunile vagi si am pastrat lucrurile care ajuta pacientul sa decida: serviciu, pret de pornire, pas urmator.</p>
+          <div className="stag rv">{t('home.services.tag')}</div>
+          <h2 className="h2d rv d1">{t('home.services.title')}</h2>
+          <p className="lead rv d2">{t('home.services.lead')}</p>
         </div>
         <div className="services-grid">
           {(siteData.homepage_services && siteData.homepage_services.length > 0
@@ -166,7 +174,7 @@ export default function Home() {
           ))}
         </div>
         <div className="section-action">
-          <Link to="/tratamente" className="btn btn-dark">Vezi tratamente si tarife</Link>
+          <Link to="/tratamente" className="btn btn-dark">{t('home.services.cta')}</Link>
         </div>
       </section>
 
@@ -177,15 +185,15 @@ export default function Home() {
 
       <section className="testi-section">
         <div className="testi-header">
-          <div className="stag rv">Recenzii pacienti</div>
-          <h2 className="h2d rv d1">Experiente recente, de verificat inainte de lansare.</h2>
-          <p className="lead rv d2">Pastreaza doar recenzii verificate si actualizeaza ratingul cu sursa reala.</p>
+          <div className="stag rv">{t('home.reviews.tag')}</div>
+          <h2 className="h2d rv d1">{t('home.reviews.title')}</h2>
+          <p className="lead rv d2">{t('home.reviews.lead')}</p>
         </div>
         <div className="reviews-static-grid">
           {reviews.slice(0, 3).map((r) => <ReviewCard key={r.id || r.author} review={r} />)}
         </div>
         <div className="section-action">
-          <Link to="/recenzii" className="btn btn-dark">Vezi recenziile</Link>
+          <Link to="/recenzii" className="btn btn-dark">{t('home.reviews.cta')}</Link>
         </div>
       </section>
 

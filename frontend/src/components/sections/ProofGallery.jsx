@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { clinicGallery } from '../../data/clinicProof';
 import { useSiteData } from '../../public-site/SiteDataProvider';
+import { useSiteTexts } from '../../hooks/useSiteTexts';
 import { mediaUrl } from '../../api/publicClient';
 import './Sections.css';
 
 export default function ProofGallery({ items: itemsProp }) {
+  const t = useSiteTexts();
   const { gallery } = useSiteData();
   const items = itemsProp ?? (gallery && gallery.length > 0
     ? gallery.map((g) => ({
@@ -22,9 +24,9 @@ export default function ProofGallery({ items: itemsProp }) {
   return (
     <section className="section-wrap alt" id="clinica">
       <div className="section-inner">
-        <div className="section-kicker">Clinica</div>
-        <h2 className="section-title">Un spatiu clinic clar, curat si usor de recunoscut.</h2>
-        <p className="section-lead">Aceste imagini sunt placeholders puse in acelasi director. Cand ai fotografiile reale, le inlocuiesti pastrand aceleasi nume sau actualizezi `clinicProof.js`.</p>
+        <div className="section-kicker">{t('home.gallery.tag')}</div>
+        <h2 className="section-title">{t('home.gallery.title')}</h2>
+        <p className="section-lead">{t('home.gallery.lead')}</p>
         <div className="gallery-shell">
           <div>
             <div className="gallery-photo">

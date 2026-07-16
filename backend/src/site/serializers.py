@@ -20,6 +20,13 @@ def serialize_site_state(s: Any) -> dict:
     }
 
 
+def serialize_site_text(t: Any) -> dict:
+    return {
+        "id": str(t.id), "version": t.version, "key": t.key, "value": t.value,
+        "created_at": _iso(t.created_at), "updated_at": _iso(t.updated_at),
+    }
+
+
 def serialize_cas_step(s: Any) -> dict:
     return {
         "id": str(s.id), "version": s.version, "title": s.title, "text": s.text,

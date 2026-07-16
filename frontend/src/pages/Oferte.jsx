@@ -7,8 +7,10 @@ import ContactCTA from '../components/sections/ContactCTA';
 import './Oferte.css';
 import { usePreviewDraft } from '../api/previewDraft';
 import { StatusPage } from '../shared/StatusPage';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function Oferte() {
+  const t = useSiteTexts();
   const { data: offers = [], isLoading, isError } = useQuery({
     queryKey: publicQueryKeys.offers,
     queryFn: fetchOffers,
@@ -32,7 +34,7 @@ export default function Oferte() {
   return (
     <div ref={ref}>
       <Seo title="Oferte stomatologice DentNow" description="Oferte DentNow pentru consultatii, igienizare, implanturi si albire. Preturile se confirma inainte de tratament." path="/oferte" />
-      <PageHero dark tag="Oferte DentNow" title='Pachete clare,<br><em class="ac">fara presiune falsa.</em>' subtitle="Ofertele sunt afisate cu pret de pornire si trebuie confirmate de clinica inainte de lansare." />
+      <PageHero dark tag={t('oferte.hero.tag')} title={t('oferte.hero.title')} subtitle={t('oferte.hero.subtitle')} />
       <div className="offers-grid">
         {isLoading && <div style={{ color: 'white', padding: '2rem' }}>Se incarcă ofertele...</div>}
         {previewOffers.map((o, i) => {

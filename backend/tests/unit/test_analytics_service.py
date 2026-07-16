@@ -104,6 +104,7 @@ def test_csv_export_contains_trend_and_dimensions():
             for key in (
                 "top_pages",
                 "top_articles",
+                "top_clicks",
                 "top_treatments",
                 "top_offers",
                 "devices",

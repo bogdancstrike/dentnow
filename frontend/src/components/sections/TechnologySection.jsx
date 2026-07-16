@@ -1,13 +1,15 @@
 import { technologies } from '../../data/clinicProof';
 import './Sections.css';
+import { useSiteTexts } from '../../hooks/useSiteTexts';
 
 export default function TechnologySection() {
+  const t = useSiteTexts();
   return (
     <section className="section-wrap alt">
       <div className="section-inner">
-        <div className="section-kicker">Tehnologie si siguranta</div>
-        <h2 className="section-title">Explicam pacientului cu ce lucram si de ce conteaza.</h2>
-        <p className="section-lead">Tehnologia trebuie prezentata ca beneficiu clinic concret: confort, precizie, diagnostic si siguranta.</p>
+        <div className="section-kicker">{t('home.tech.tag')}</div>
+        <h2 className="section-title">{t('home.tech.title')}</h2>
+        <p className="section-lead">{t('home.tech.lead')}</p>
         <div className="technology-grid">
           {technologies.map((tech) => (
             <article className="technology-card" key={tech.title}>

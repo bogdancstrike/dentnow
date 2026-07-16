@@ -29,6 +29,8 @@ from src.site.schemas import (
     SeoCreate,
     SeoUpdate,
     SiteSettingsUpdate,
+    SiteTextCreate,
+    SiteTextUpdate,
 )
 from src.site.service import (
     CasFaqService,
@@ -42,6 +44,7 @@ from src.site.service import (
     SectionService,
     SeoService,
     SiteSettingsService,
+    SiteTextService,
 )
 
 
@@ -83,6 +86,32 @@ def homepage_services_update(app, operation, request, principal=None, service_id
 @require_capability(CAP_CONTENT_WRITE)
 def homepage_services_delete(app, operation, request, principal=None, service_id=None, **kw):
     return do_delete(HomepageServiceService, principal, service_id)
+
+
+# ── site texts (overrides for hardcoded public copy) ─────────────────────────
+@require_capability(CAP_CONTENT_READ)
+def site_texts_list(app, operation, request, principal=None, **kw):
+    return do_list(SiteTextService, principal)
+
+
+@require_capability(CAP_CONTENT_READ)
+def site_texts_get(app, operation, request, principal=None, text_id=None, **kw):
+    return do_get(SiteTextService, principal, text_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def site_texts_create(app, operation, request, principal=None, **kw):
+    return do_create(SiteTextService, SiteTextCreate, principal)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def site_texts_update(app, operation, request, principal=None, text_id=None, **kw):
+    return do_update(SiteTextService, SiteTextUpdate, principal, text_id)
+
+
+@require_capability(CAP_CONTENT_WRITE)
+def site_texts_delete(app, operation, request, principal=None, text_id=None, **kw):
+    return do_delete(SiteTextService, principal, text_id)
 
 
 # ── decontat CAS: steps + faqs ───────────────────────────────────────────────

@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { useSiteData } from '../../public-site/SiteDataProvider';
 import { mediaUrl } from '../../api/publicClient';
 import './Sections.css';
+import { useSiteTexts } from '../../hooks/useSiteTexts';
 
 const FALLBACK_PORTRAIT = '/assets/dentnow/team.svg';
 
 export default function DoctorTeam() {
+  const t = useSiteTexts();
   const { doctors } = useSiteData();
   const useCarousel = doctors && doctors.length >= 4;
 
@@ -35,9 +37,9 @@ export default function DoctorTeam() {
   return (
     <section className="section-wrap" id="echipa">
       <div className="section-inner">
-        <div className="section-kicker">Echipa</div>
-        <h2 className="section-title">Medici prezentati clar, fara mister.</h2>
-        <p className="section-lead">Profiluri scurte si verificabile — medicii care iti explica fiecare pas al tratamentului, inainte sa incepi.</p>
+        <div className="section-kicker">{t('home.team.tag')}</div>
+        <h2 className="section-title">{t('home.team.title')}</h2>
+        <p className="section-lead">{t('home.team.lead')}</p>
         {useCarousel ? (
           <div className="doctor-carousel">
             <div className="doctor-carousel-viewport" aria-label="Echipa medicală, carusel orizontal">

@@ -6,8 +6,10 @@ import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import { DarkCTA } from '../components/ui/SharedSections';
 import './Recenzii.css';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function Recenzii() {
+  const t = useSiteTexts();
   const { data: reviews = [] } = useReviews();
   const ref = useRevealAll([reviews]);
   const average = reviews.length
@@ -19,7 +21,7 @@ export default function Recenzii() {
   return (
     <div ref={ref}>
       <Seo title="Recenzii pacienti DentNow" description="Recenzii pacienti DentNow si link catre profilul Google pentru verificare." path="/recenzii" />
-      <PageHero tag="Recenzii pacienti" title='Ce spun <em class="ac">pacientii.</em>' subtitle="Recenzii verificate, preluate din profilul Google al clinicilor DentNow." />
+      <PageHero tag={t('recenzii.hero.tag')} title={t('recenzii.hero.title')} subtitle={t('recenzii.hero.subtitle')} />
       <div className="rating-hero" data-nav-dark>
         <div className="big-rating rv">{displayAverage}</div>
         <div className="rating-stars rv d1" aria-label={`${displayAverage} din 5 stele`}>

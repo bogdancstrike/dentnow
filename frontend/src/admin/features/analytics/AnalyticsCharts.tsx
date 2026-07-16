@@ -379,9 +379,24 @@ function BucharestSectorsChart({ rows }: { rows: GeographyRow[] }) {
   );
 }
 
-export function GeographyCharts({ rows }: { rows: AnalyticsOverview['geography'] }) {
+export function GeographyCharts({
+  rows,
+  collection,
+}: {
+  rows: AnalyticsOverview['geography'];
+  collection?: AnalyticsOverview['collection'];
+}) {
+  const numberFormat = new Intl.NumberFormat('ro-RO');
   return (
     <section className="analytics-map-grid" aria-label="Distribuție geografică">
+      {collection && collection.unlocated_events > 0 && (
+        <p className="analytics-map-coverage">
+          {numberFormat.format(collection.located_events)} evenimente cu coordonate
+          {' '}({numberFormat.format(collection.browser_located_events)} cu locație precisă din browser) ·{' '}
+          {numberFormat.format(collection.unlocated_events)} evenimente fără coordonate — vizitatorii
+          lor nu pot fi afișați pe hărți.
+        </p>
+      )}
       <Card
         className="analytics-panel analytics-map-card"
         title={<span><EnvironmentOutlined /> România · distribuție națională</span>}

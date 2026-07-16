@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 let doctors: Array<Record<string, unknown>> = [];
 
 vi.mock('../../src/public-site/SiteDataProvider', () => ({
+  useOptionalSiteData: () => null,
   useSiteData: () => ({ doctors }),
 }));
 vi.mock('../../src/api/publicClient', () => ({

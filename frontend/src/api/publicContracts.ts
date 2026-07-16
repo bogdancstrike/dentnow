@@ -183,6 +183,7 @@ export const BootstrapSchema = z.object({
     .default({ steps: [], faqs: [] }),
   homepage_treatments: z.array(TreatmentSchema).default([]),
   quiz: QuizSchema.nullable().default(null),
+  texts: z.record(z.string(), z.string()).default({}),
 });
 
 export const SectionSchema = z.object({

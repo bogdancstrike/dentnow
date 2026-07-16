@@ -8,8 +8,10 @@ import Seo from '../components/seo/Seo';
 import { DarkCTA } from '../components/ui/SharedSections';
 import './BeforeAfter.css';
 import { StatusPage } from '../shared/StatusPage';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function BeforeAfter() {
+  const t = useSiteTexts();
   const { data: savedCases = [], isError } = useQuery({
     queryKey: publicQueryKeys.caseStudies,
     queryFn: fetchCaseStudies,
@@ -32,7 +34,7 @@ export default function BeforeAfter() {
   return (
     <div ref={ref}>
       <Seo title="Before & After DentNow" description="Exemple vizuale DentNow pregatite pentru fotografii reale cu acordul pacientilor." path="/before-after" />
-      <PageHero dark tag="Exemple vizuale DentNow" title='Before & <em class="ac">After.</em>' subtitle="Exemple vizuale ilustrative — fotografiile de caz reale se publica doar cu acordul scris al pacientilor." />
+      <PageHero dark tag={t('beforeafter.hero.tag')} title={t('beforeafter.hero.title')} subtitle={t('beforeafter.hero.subtitle')} />
       <div className="case-grid">
         {cases.map((c, i) => {
           const fallback = beforeAfterCases[i % beforeAfterCases.length];

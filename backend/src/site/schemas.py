@@ -21,6 +21,16 @@ class SiteSettingsUpdate(_Strict):
     default_timezone: Optional[str] = None
 
 
+class SiteTextCreate(_Strict):
+    key: str = Field(min_length=1, max_length=160)
+    value: str = Field(max_length=4000)
+
+
+class SiteTextUpdate(_Strict):
+    key: Optional[str] = Field(default=None, min_length=1, max_length=160)
+    value: Optional[str] = Field(default=None, max_length=4000)
+
+
 class LinkCreate(_Strict):
     kind: str
     label: str

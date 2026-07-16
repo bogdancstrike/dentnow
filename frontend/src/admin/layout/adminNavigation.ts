@@ -39,6 +39,7 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
       { slug: 'reviws', key: 'reviews', label: 'Recenzii', capability: CAP.contentRead },
       { slug: 'before-after', key: 'before-after', label: 'Before & After', capability: CAP.contentRead },
       { slug: 'decontat-cas', key: 'decontat-cas', label: 'Decontare CAS', capability: CAP.contentRead },
+      { slug: 'texte-site', key: 'site-texts', label: 'Texte site', capability: CAP.contentRead },
       { slug: 'quiz', key: 'quiz', label: 'Quiz', capability: CAP.contentRead },
     ],
   },

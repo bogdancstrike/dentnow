@@ -53,6 +53,7 @@ from src.site.models import (
     PageSeo,
     SiteLink,
     SiteState,
+    SiteText,
 )
 
 
@@ -415,6 +416,13 @@ def _query_links(session):
     return links
 
 
+def _query_site_texts(session):
+    return {
+        t.key: t.value
+        for t in session.scalars(_live(SiteText)).all()
+    }
+
+
 def _query_site(session):
     state = session.get(SiteState, 1) or SiteState(id=1)
     return {
@@ -441,6 +449,7 @@ def bootstrap(app, operation, request, **kw):
         gallery = _query_gallery(session)
         decontat_cas = _query_decontat_cas(session)
         quiz = _query_quiz(session)
+        texts = _query_site_texts(session)
 
     homepage_treatments = [t for t in treatments_data if t.get("homepage_featured")]
     return _json_response({
@@ -456,6 +465,7 @@ def bootstrap(app, operation, request, **kw):
         "decontat_cas": decontat_cas,
         "homepage_treatments": homepage_treatments,
         "quiz": quiz,
+        "texts": texts,
     })
 
 

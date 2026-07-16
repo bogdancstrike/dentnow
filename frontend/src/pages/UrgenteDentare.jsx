@@ -6,8 +6,10 @@ import config from '../config';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { clinicPhone } from '../lib/clinicContact';
 import './UrgenteDentare.css';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function UrgenteDentare() {
+  const t = useSiteTexts();
   const openPicker = useClinicPicker();
   const { clinics } = useSiteData();
   const jsonLd = {
@@ -44,9 +46,9 @@ export default function UrgenteDentare() {
       />
 
       <PageHero
-        tag="ASISTENȚĂ DENTARĂ RAPIDĂ"
-        title="Urgențe Dentare în București — Scapă Imediat de Durere"
-        subtitle="Echipa DentNow este pregătită să preia cazurile urgente: dureri acute, abcese, traume dentare și fracturi."
+        tag={t('urgente.hero.tag')}
+        title={t('urgente.hero.title')}
+        subtitle={t('urgente.hero.subtitle')}
       />
 
       <section className="emergency-sec">

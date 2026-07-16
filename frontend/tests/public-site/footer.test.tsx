@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('../../src/public-site/SiteDataProvider', () => ({
+  useOptionalSiteData: () => null,
   useSiteData: () => ({
     links: [
       { kind: 'email', label: 'Email', value: 'contact@dentnow.test', url: 'mailto:contact@dentnow.test' },

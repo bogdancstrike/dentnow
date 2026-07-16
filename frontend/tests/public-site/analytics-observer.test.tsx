@@ -96,6 +96,43 @@ describe('AnalyticsObserver', () => {
     }));
   });
 
+  it('never blocks events on geolocation and sends a coordinate ping once a fix arrives', async () => {
+    await configure(true);
+    localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
+    let deliverFix: (() => void) | undefined;
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      deliverFix = () => success({
+        coords: { latitude: 44.42681, longitude: 26.10254, accuracy: 35 },
+      } as GeolocationPosition);
+    });
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    });
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 202 }));
+
+    render(<MemoryRouter initialEntries={['/noutati']}><AnalyticsObserver /></MemoryRouter>);
+
+    // The page_view must go out immediately, before the location prompt resolves.
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+    const first = JSON.parse(String((fetchSpy.mock.calls[0]?.[1] as RequestInit).body));
+    expect(first).toEqual(expect.objectContaining({ event_type: 'page_view', path: '/noutati' }));
+    expect(first.latitude).toBeUndefined();
+
+    deliverFix?.();
+    await waitFor(() => {
+      const bodies = fetchSpy.mock.calls.map((call) => JSON.parse(String((call[1] as RequestInit).body)));
+      expect(bodies).toContainEqual(expect.objectContaining({
+        event_type: 'navigation_click',
+        latitude: 44.42681,
+        longitude: 26.10254,
+        consent_granted: true,
+      }));
+      const ping = bodies.find((body) => body.latitude !== undefined);
+      expect(ping.target_key).toBeUndefined();
+    });
+  });
+
   it('tracks treatment rows that are rendered after the analytics observer mounts', async () => {
     await configure(true, false);
     class ImmediateIntersectionObserver {

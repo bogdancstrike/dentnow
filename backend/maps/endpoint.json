@@ -2702,9 +2702,76 @@
     },
     {
       "namespace": "api",
+      "operation_name": "site_texts_list",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/site-texts",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "site_texts_list"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "site_texts_create",
+      "model_name": "Empty",
+      "request_method": [
+        "POST"
+      ],
+      "api_url": "/v1/admin/site-texts",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "site_texts_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "site_texts_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/site-texts/<text_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "site_texts_get"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "site_texts_update",
+      "model_name": "Empty",
+      "request_method": [
+        "PATCH"
+      ],
+      "api_url": "/v1/admin/site-texts/<text_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "site_texts_update"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "site_texts_delete",
+      "model_name": "Empty",
+      "request_method": [
+        "DELETE"
+      ],
+      "api_url": "/v1/admin/site-texts/<text_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "site_texts_delete"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "analytics_event_create",
       "model_name": "Empty",
-      "request_method": ["POST"],
+      "request_method": [
+        "POST"
+      ],
       "api_url": "/v1/public/analytics/events",
       "exec_method": {
         "module_name": "src.api.analytics_public",
@@ -2715,7 +2782,9 @@
       "namespace": "api",
       "operation_name": "analytics_overview_get",
       "model_name": "Empty",
-      "request_method": ["GET"],
+      "request_method": [
+        "GET"
+      ],
       "api_url": "/v1/admin/analytics/overview",
       "exec_method": {
         "module_name": "src.api.analytics_admin",
@@ -2726,7 +2795,9 @@
       "namespace": "api",
       "operation_name": "analytics_reset_post",
       "model_name": "Empty",
-      "request_method": ["POST"],
+      "request_method": [
+        "POST"
+      ],
       "api_url": "/v1/admin/analytics/reset",
       "exec_method": {
         "module_name": "src.api.analytics_admin",
@@ -2737,7 +2808,9 @@
       "namespace": "api",
       "operation_name": "analytics_export_get",
       "model_name": "Empty",
-      "request_method": ["GET"],
+      "request_method": [
+        "GET"
+      ],
       "api_url": "/v1/admin/analytics/export.csv",
       "exec_method": {
         "module_name": "src.api.analytics_admin",

@@ -5,14 +5,16 @@ import PageHero from '../components/ui/PageHero';
 import PlaceholderCover from '../components/ui/PlaceholderCover';
 import Seo from '../components/seo/Seo';
 import './Ebook.css';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function Ebook() {
+  const t = useSiteTexts();
   const ref = useRevealAll([]);
 
   return (
     <div ref={ref}>
       <Seo title="E-bookuri DentNow" description="Resurse gratuite DentNow pentru igiena orala, implanturi, estetica si preventie." path="/ebook" />
-      <PageHero dark tag="Resurse gratuite" title='E-bookuri <em class="ac">DentNow.</em>' subtitle="Cere ghidul dorit pe WhatsApp si ti-l trimitem direct. Fara formular online." />
+      <PageHero dark tag={t('ebook.hero.tag')} title={t('ebook.hero.title')} subtitle={t('ebook.hero.subtitle')} />
 
       <div className="ebook-grid">
         {ebooks.map((eb, i) => (

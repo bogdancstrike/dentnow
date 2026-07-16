@@ -7,8 +7,10 @@ import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import ContactCTA from '../components/sections/ContactCTA';
 import './Tratamente.css';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function Tratamente() {
+  const t = useSiteTexts();
   const openPicker = useClinicPicker();
   const [activeId, setActiveId] = useState('');
 
@@ -58,7 +60,7 @@ export default function Tratamente() {
   return (
     <div ref={revealRef}>
       <Seo title="Tratamente si tarife DentNow" description="Lista de tratamente stomatologice DentNow, preturi de pornire, pachete si detalii pentru programare." path="/tratamente" />
-      <PageHero tag="Tratamente & Tarife" title='Preturi clare, <em class="ac">explicate inainte.</em>' subtitle="Preturile sunt orientative si se confirma prin deviz dupa consult." />
+      <PageHero tag={t('tratamente.hero.tag')} title={t('tratamente.hero.title')} subtitle={t('tratamente.hero.subtitle')} />
 
       <div className="jump-nav">
         {jumpNavItems.map((j) => <a key={j.id} href={`#${j.id}`} className={`jump-btn${activeId === j.id ? ' active' : ''}`}>{j.label}</a>)}

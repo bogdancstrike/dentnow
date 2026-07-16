@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTreatments, publicQueryKeys } from '../../api/publicClient';
 import { useSiteData } from '../../public-site/SiteDataProvider';
+import { useSiteTexts } from '../../hooks/useSiteTexts';
 import { whatsappUrlFor } from '../../lib/leadCapture';
 import { IconFacebook, IconInstagram, IconWhatsApp, IconLinkedIn } from '../ui/Icons';
 import './Footer.css';
@@ -26,6 +27,7 @@ function SocialIcon({ label }) {
 
 export default function Footer() {
   const siteData = useSiteData();
+  const t = useSiteTexts();
   const { data: treatments = [] } = useQuery({
     queryKey: publicQueryKeys.treatments,
     queryFn: fetchTreatments,
@@ -45,9 +47,7 @@ export default function Footer() {
       <div className="footer-top">
         <div>
           <Link to="/" className="footer-logo">Dent<span>Now</span></Link>
-          <p className="footer-desc">
-            Clinică stomatologică în București, cu tratamente explicate clar, deviz înainte de intervenție și acces rapid la echipa fiecărei locații.
-          </p>
+          <p className="footer-desc">{t('footer.description')}</p>
           <div className="footer-social">
             {socialLinks.map((social) => (
               <a

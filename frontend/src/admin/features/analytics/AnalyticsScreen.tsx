@@ -16,6 +16,7 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DeleteOutlined, DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
 import type { AdminClient } from '../../api/adminClient';
 import {
@@ -146,9 +147,16 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
         <Space className="analytics-controls" wrap>
           <Segmented options={[{ label: 'Azi', value: '1' }, { label: '7 zile', value: '7' }, { label: '30 zile', value: '30' }, { label: 'Personalizat', value: 'custom' }]} value={range.preset} onChange={setPreset} />
           {range.preset === 'custom' && (
-            <RangePicker aria-label="Alege perioada analytics" onChange={(_dates, strings) => {
-              if (strings[0] && strings[1]) setSearchParams({ range: 'custom', from: strings[0], to: strings[1] });
-            }} />
+            <RangePicker
+              aria-label="Alege perioada analytics"
+              value={[dayjs(range.from), dayjs(range.to)]}
+              defaultOpen={!(searchParams.get('from') && searchParams.get('to'))}
+              allowClear={false}
+              disabledDate={(current) => current.isAfter(dayjs(), 'day')}
+              onChange={(_dates, strings) => {
+                if (strings[0] && strings[1]) setSearchParams({ range: 'custom', from: strings[0], to: strings[1] });
+              }}
+            />
           )}
           <Button icon={<ReloadOutlined />} onClick={() => void query.refetch()} loading={query.isFetching}>Actualizează</Button>
           <Button type="primary" icon={<DownloadOutlined />} onClick={() => void exportCsv()} disabled={!query.data}>Export CSV</Button>
@@ -193,7 +201,7 @@ export function AnalyticsScreen({ client }: { client: AdminClient }) {
             <Breakdown title="Sisteme de operare" items={query.data.operating_systems} />
           </section>
 
-          <GeographyCharts rows={query.data.geography} />
+          <GeographyCharts rows={query.data.geography} collection={query.data.collection} />
 
           <section id="analytics-content" className="analytics-grid analytics-grid--two" aria-label="Conținut și achiziție">
             <ContentTable title="Cele mai accesate pagini" items={query.data.top_pages} />

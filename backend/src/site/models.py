@@ -237,6 +237,27 @@ class CasFaq(WorkspaceRoot, Base):
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
+class SiteText(WorkspaceRoot, Base):
+    """Editable override for a public-site text.
+
+    The public frontend ships every string with a compiled-in fallback; a row here
+    overrides the fallback for its ``key``. Deleting the row restores the default,
+    so this table never needs seeding.
+    """
+    __tablename__ = "site_texts"
+    __table_args__ = (
+        Index(
+            "uq_site_texts_key_live",
+            "key",
+            unique=True,
+            postgresql_where=text("deleted_at IS NULL"),
+        ),
+    )
+
+    key: Mapped[str] = mapped_column(Text, nullable=False)
+    value: Mapped[str] = mapped_column(Text, nullable=False)
+
+
 class GalleryImage(WorkspaceRoot, Base):
     """An image in the homepage "Un spatiu clinic clar" clinic gallery carousel.
 

@@ -52,7 +52,9 @@ export function requestBrowserCoordinates(): Promise<BrowserCoordinates | null> 
         geo_accuracy_m: Math.min(100000, Math.max(0, Math.round(coords.accuracy))),
       }),
       () => resolve(null),
-      { enableHighAccuracy: true, timeout: 60000, maximumAge: 10 * 60 * 1000 },
+      // Network-level accuracy answers in seconds on phones; a high-accuracy GPS
+      // fix can outlive the visit and the coordinates never get sent.
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 10 * 60 * 1000 },
     );
   });
 }

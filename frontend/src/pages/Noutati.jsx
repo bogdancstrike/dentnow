@@ -7,8 +7,10 @@ import Seo from '../components/seo/Seo';
 import './Noutati.css';
 import { usePreviewDraft } from '../api/previewDraft';
 import { StatusPage } from '../shared/StatusPage';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function Noutati() {
+  const t = useSiteTexts();
   const { data: newsItems = [], isError } = useQuery({
     queryKey: publicQueryKeys.news,
     queryFn: fetchNews,
@@ -36,7 +38,7 @@ export default function Noutati() {
   return (
     <div ref={ref}>
       <Seo title="Noutati DentNow" description="Actualizari DentNow despre program, preturi si continut care trebuie aprobat de clinica." path="/noutati" />
-      <PageHero tag="Noutati DentNow" title='Actualizari <em class="ac">curente.</em>' subtitle="Noutatile clinicii DentNow." />
+      <PageHero tag={t('noutati.hero.tag')} title={t('noutati.hero.title')} subtitle={t('noutati.hero.subtitle')} />
       <div className="news-grid">
         {mainNews ? (
           <article className="news-main rv">

@@ -15,6 +15,7 @@ from src.integrations.outbox import enqueue_event
 from src.site.models import (
     CasFaq,
     CasStep,
+    SiteText,
     GalleryImage,
     HomepageService,
     NavigationItem,
@@ -28,6 +29,7 @@ from src.site.models import (
 from src.site.serializers import (
     serialize_cas_faq,
     serialize_cas_step,
+    serialize_site_text,
     serialize_gallery_image,
     serialize_homepage_service,
     serialize_link,
@@ -88,6 +90,27 @@ class HomepageServiceService(CrudService):
 
     def serialize(self, obj: Any) -> dict:
         return serialize_homepage_service(obj)
+
+
+class SiteTextService(CrudService):
+    model = SiteText
+    entity_type = "site_text"
+    event_prefix = "site_text"
+    default_sort = "key"
+    sortable = ("key", "created_at", "updated_at")
+    search_columns = ("key", "value")
+
+    def serialize(self, obj: Any) -> dict:
+        return serialize_site_text(obj)
+
+    def before_write(self, obj: Any, data: dict, *, creating: bool) -> None:
+        q = select(SiteText.id).where(
+            SiteText.key == obj.key, SiteText.deleted_at.is_(None)
+        )
+        if not creating:
+            q = q.where(SiteText.id != obj.id)
+        if self.session.scalar(q) is not None:
+            raise ConflictError("text key already overridden", details={"field": "key"})
 
 
 class CasStepService(CrudService):

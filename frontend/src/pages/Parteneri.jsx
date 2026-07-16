@@ -5,14 +5,16 @@ import Seo from '../components/seo/Seo';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { mediaUrl } from '../api/publicClient';
 import './Parteneri.css';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function Parteneri() {
+  const t = useSiteTexts();
   const { partners } = useSiteData();
   const ref = useRevealAll([]);
   return (
     <div ref={ref}>
       <Seo title="Parteneri si tehnologii DentNow" description="Parteneri, furnizori si tehnologii folosite sau mentionate de DentNow." path="/parteneri" />
-      <PageHero tag="Parteneri DentNow" title='Parteneri si <em class="ac">tehnologii.</em>' subtitle="Logourile oficiale se folosesc doar daca exista drept de utilizare. Pana atunci afisam etichete text." />
+      <PageHero tag={t('parteneri.hero.tag')} title={t('parteneri.hero.title')} subtitle={t('parteneri.hero.subtitle')} />
       <div className="partners-grid">
         {partners.map((p, i) => {
           const name = p.name || 'Partener nou';

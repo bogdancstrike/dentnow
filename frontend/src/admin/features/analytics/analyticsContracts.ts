@@ -22,6 +22,9 @@ export const AnalyticsOverviewSchema = z.object({
     enabled: z.boolean(), require_consent: z.boolean(),
     raw_retention_days: z.number(), aggregate_retention_days: z.number(),
     full_events: z.number(), limited_events: z.number(),
+    located_events: z.number().default(0),
+    unlocated_events: z.number().default(0),
+    browser_located_events: z.number().default(0),
   }),
   kpis: z.object({
     visitors: z.number(), sessions: z.number(), page_views: z.number(), cta_clicks: z.number(),

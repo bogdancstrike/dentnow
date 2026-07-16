@@ -24,6 +24,11 @@ export function useSiteData(): Bootstrap {
   return value;
 }
 
+/** Like {@link useSiteData} but returns null outside the provider (e.g. isolated tests). */
+export function useOptionalSiteData(): Bootstrap | null {
+  return useContext(SiteDataContext);
+}
+
 function LoadingScreen() {
   return (
     <div

@@ -193,6 +193,15 @@ def analytics_overview(
             func.count(AnalyticsEvent.id)
             .filter(AnalyticsEvent.consent_granted.is_(False))
             .label("limited_events"),
+            func.count(AnalyticsEvent.id)
+            .filter(
+                AnalyticsEvent.latitude.is_not(None),
+                AnalyticsEvent.longitude.is_not(None),
+            )
+            .label("located_events"),
+            func.count(AnalyticsEvent.id)
+            .filter(AnalyticsEvent.geo_accuracy_m.is_not(None))
+            .label("browser_located_events"),
         ).where(*_range_filter(start, end))
     ).one()
 
@@ -304,6 +313,11 @@ def analytics_overview(
             "aggregate_retention_days": Config.ANALYTICS_AGGREGATE_RETENTION_DAYS,
             "full_events": int(collection_row.full_events or 0),
             "limited_events": int(collection_row.limited_events or 0),
+            "located_events": int(collection_row.located_events or 0),
+            "unlocated_events": int(collection_row.full_events or 0)
+            + int(collection_row.limited_events or 0)
+            - int(collection_row.located_events or 0),
+            "browser_located_events": int(collection_row.browser_located_events or 0),
         },
         "kpis": {**current, "deltas": deltas},
         "trend": trend,

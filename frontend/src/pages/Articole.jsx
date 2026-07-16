@@ -10,12 +10,10 @@ import './Articole.css';
 import { ApiError } from '../api/http';
 import NotFound from './NotFound';
 import { StatusPage } from '../shared/StatusPage';
-
-function slugify(value) {
-  return value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function Articole() {
+  const t = useSiteTexts();
   const { slug } = useParams();
   const openPicker = useClinicPicker();
 
@@ -59,7 +57,7 @@ export default function Articole() {
   return (
     <div ref={ref}>
       <Seo title="Articole stomatologice DentNow" description="Ghiduri practice DentNow despre preventie, implanturi, copii, urgente si estetica dentara." path="/articole" />
-      <PageHero tag="Articole utile" title='Informeaza-te,<br><em class="ac">ingrijeste-te.</em>' subtitle="Ghiduri practice si sfaturi pentru pacienti." />
+      <PageHero tag={t('articole.hero.tag')} title={t('articole.hero.title')} subtitle={t('articole.hero.subtitle')} />
       <div className="articles-grid">
         {loadingList ? <div style={{ padding: '2rem', textAlign: 'center' }}>Incarcare...</div> : null}
         {articles.map((a, i) => (
