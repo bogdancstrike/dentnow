@@ -62,6 +62,14 @@ function BootstrapGate({ children }: { children: ReactNode }) {
   const technologyDraft = usePreviewDraft<Record<string, unknown>>('technology');
   const ebookDraft = usePreviewDraft<Record<string, unknown>>('ebook');
   const siteTextDraft = usePreviewDraft<{ key?: string; value?: string }>('site-text');
+  const pageSeoDraft = usePreviewDraft<{
+    path?: string;
+    seo?: Bootstrap['pages'][string]['seo'];
+  }>('page-seo');
+  const pageSectionDraft = usePreviewDraft<{
+    path?: string;
+    section?: Record<string, unknown> & { __preview_position?: number };
+  }>('page-section');
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: publicQueryKeys.bootstrap,
     queryFn: fetchBootstrap,
@@ -112,6 +120,40 @@ function BootstrapGate({ children }: { children: ReactNode }) {
     return [publicDraft as T, ...items];
   };
 
+  const pagesWithSectionDraft: Bootstrap['pages'] = (() => {
+    const path = pageSectionDraft?.path;
+    const page = path ? data.pages[path] : undefined;
+    if (!path || !pageSectionDraft?.section || !page) return data.pages;
+    const { __preview_position: originalPosition, ...section } = pageSectionDraft.section;
+    const sections = [...page.sections];
+    const index = typeof originalPosition === 'number'
+      ? sections.findIndex((item) => item.position === originalPosition)
+      : -1;
+    if (index >= 0) sections[index] = section as typeof sections[number];
+    else sections.push(section as typeof sections[number]);
+    sections.sort((left, right) => left.position - right.position);
+    return {
+      ...data.pages,
+      [path]: { ...page, sections },
+    };
+  })();
+
+  const pagesWithPreviewDrafts: Bootstrap['pages'] = (() => {
+    const path = pageSeoDraft?.path;
+    const page = path ? pagesWithSectionDraft[path] : undefined;
+    if (!path || !page) return pagesWithSectionDraft;
+    return {
+      ...pagesWithSectionDraft,
+      [path]: {
+        ...page,
+        seo: {
+          ...page.seo,
+          ...pageSeoDraft.seo,
+        },
+      },
+    };
+  })();
+
   const previewData: Bootstrap = {
     ...data,
     clinics: mergeItem(data.clinics as unknown as Record<string, unknown>[], clinicDraft) as Bootstrap['clinics'],
@@ -140,6 +182,7 @@ function BootstrapGate({ children }: { children: ReactNode }) {
     texts: siteTextDraft?.key
       ? { ...data.texts, [siteTextDraft.key]: siteTextDraft.value ?? '' }
       : data.texts,
+    pages: pagesWithPreviewDrafts,
   };
 
   return <SiteDataContext.Provider value={previewData}>{children}</SiteDataContext.Provider>;
