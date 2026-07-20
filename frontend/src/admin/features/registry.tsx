@@ -3,10 +3,10 @@
  */
 import { Form, Input, Rate, Select, Tag, Button } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { AdminClient } from '../api/adminClient';
 import { ClinicsScreen } from './clinics/ClinicsScreen';
-import { RemoteSelect } from '../components/RemoteSelect';
+import { RemoteSelect, type RemoteSelectOption } from '../components/RemoteSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { type ResourceConfig } from '../components/ResourceScreen';
 import type { ResourceRow } from '../components/ResourceTable';
@@ -50,6 +50,43 @@ function parseJsonObject(value: unknown, label: string): Record<string, unknown>
   return parsed as Record<string, unknown>;
 }
 
+function previewJsonObject(value: unknown): Record<string, unknown> | null {
+  try {
+    return parseJsonObject(value, 'Preview');
+  } catch {
+    return null;
+  }
+}
+
+function PageSelectWithPreviewPath({ client, editing }: { client: AdminClient; editing: boolean }) {
+  const form = Form.useFormInstance();
+  const pageId = Form.useWatch('page_id', form);
+  const previewPath = Form.useWatch('__preview_path', form);
+  const [options, setOptions] = useState<RemoteSelectOption[]>([]);
+
+  useEffect(() => {
+    const selected = options.find((option) => option.value === String(pageId ?? ''));
+    const nextPath = selected?.row.path ? String(selected.row.path) : undefined;
+    if (nextPath !== previewPath) form.setFieldValue('__preview_path', nextPath);
+  }, [form, options, pageId, previewPath]);
+
+  return (
+    <>
+      <Item name="page_id" label="Pagină" rules={[{ required: !editing }]}>
+        <RemoteSelect
+          client={client}
+          endpoint="/v1/admin/pages"
+          labelKey="title"
+          disabled={editing}
+          placeholder="Selectează pagina"
+          onOptionsLoaded={setOptions}
+        />
+      </Item>
+      <Item name="__preview_path" hidden><Input /></Item>
+    </>
+  );
+}
+
 // treatments has been moved to dedicated screen
 
 // offers has been moved to dedicated screen
@@ -79,7 +116,7 @@ const legal = makeConfig({
       values.body_markdown ?? (row as unknown as Record<string, unknown> | null)?.body_markdown ?? '',
     )),
   }),
-  previewHint: 'Salvează documentul pentru a-i vedea pagina publică.',
+  previewHint: 'Selectează tipul documentului pentru a-i vedea pagina publică.',
   form: ({ editing }) => (
     <>
       <Item name="doc_type" label="Tip" rules={[{ required: true }]}>
@@ -109,7 +146,7 @@ const quiz = makeConfig({
   defaults: { active: true },
   previewPath: () => '/scor-igiena',
   previewKind: 'quiz',
-  previewHint: 'Salvează quiz-ul pentru a-l vedea pe pagina /scor-igiena.',
+  previewHint: 'Completează câmpurile quiz-ului pentru a-l vedea pe pagina /scor-igiena.',
   form: () => (
     <>
       <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
@@ -148,7 +185,7 @@ const news = makeConfig({
       values.body_markdown ?? (row as unknown as Record<string, unknown> | null)?.body_markdown ?? '',
     )),
   }),
-  previewHint: 'Salvează noutatea cu status „Publicat” pentru a o vedea pe pagina /noutati.',
+  previewHint: 'Completează titlul și adresa pentru a previzualiza noutatea fără publicare.',
   sample: {
     title: 'Program special de sărbători',
     slug: 'program-special-sarbatori',
@@ -242,7 +279,7 @@ const homepageServices = makeConfig({
     ...values,
     __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
   }),
-  previewHint: 'Salvează serviciul pentru a-l vedea în secțiunea „Tratamente uzuale” de pe prima pagină.',
+  previewHint: 'Completează serviciul pentru a-l vedea în secțiunea „Tratamente uzuale” de pe prima pagină.',
   sample: {
     title: 'Fațete Dentare',
     description: 'Fațete ceramice pentru un zâmbet natural și luminos, planificate digital.',
@@ -354,7 +391,7 @@ const gallery = makeConfig({
     ...values,
     __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
   }),
-  previewHint: 'Salvează imaginea pentru a o vedea în caruselul „Un spatiu clinic clar” de pe prima pagină.',
+  previewHint: 'Completează imaginea pentru a o vedea în caruselul „Un spatiu clinic clar” de pe prima pagină.',
   sample: {
     title: 'Sala de așteptare',
     caption: 'Spațiu primitor și relaxant pentru pacienți.',
@@ -471,17 +508,28 @@ const pageSections = makeConfig({
     { title: 'Ordine', dataIndex: 'position' },
   ],
   defaults: { position: 0, payload_json: '{}' },
+  previewPath: (_row, values) => String(values?.__preview_path ?? '') || null,
+  previewKind: 'page-section',
+  previewAlwaysDraft: true,
+  previewHint: 'Se încarcă pagina publică selectată…',
   toValues: (row) => ({ ...row, payload_json: JSON.stringify(row.payload ?? {}, null, 2) }),
   toRequestValues: (values, row) => {
-    const { payload_json: rawPayload, ...request } = values;
+    const { payload_json: rawPayload, __preview_path: _previewPath, ...request } = values;
     if (row) delete request.page_id;
     return { ...request, payload: parseJsonObject(rawPayload, 'Conținutul secțiunii') ?? {} };
   },
+  toPreviewDraft: (values, row) => ({
+    path: String(values.__preview_path ?? ''),
+    section: {
+      block_type: values.block_type,
+      position: Number(values.position ?? 0),
+      payload: previewJsonObject(values.payload_json) ?? {},
+      ...(row ? { __preview_position: Number(row.position) } : {}),
+    },
+  }),
   form: ({ client, editing }) => (
     <>
-      <Item name="page_id" label="Pagină" rules={[{ required: !editing }]}>
-        <RemoteSelect client={client} endpoint="/v1/admin/pages" labelKey="title" disabled={Boolean(editing)} placeholder="Selectează pagina" />
-      </Item>
+      <PageSelectWithPreviewPath client={client} editing={Boolean(editing)} />
       <Item name="block_type" label="Tip bloc" rules={[{ required: true }]}><Input placeholder="page_hero" /></Item>
       <Item name="payload_json" label="Conținut JSON" rules={[{ required: true }]}>
         <Input.TextArea rows={14} spellCheck={false} />
@@ -501,6 +549,10 @@ const pageSeo = makeConfig({
     { title: 'Canonical', dataIndex: 'canonical_path' },
   ],
   defaults: { structured_data_json: '' },
+  previewPath: (_row, values) => String(values?.__preview_path ?? '') || null,
+  previewKind: 'page-seo',
+  previewAlwaysDraft: true,
+  previewHint: 'Se încarcă pagina publică selectată…',
   toValues: (row) => ({
     ...row,
     structured_data_json: row.structured_data
@@ -508,18 +560,30 @@ const pageSeo = makeConfig({
       : '',
   }),
   toRequestValues: (values, row) => {
-    const { structured_data_json: rawStructuredData, ...request } = values;
+    const {
+      structured_data_json: rawStructuredData,
+      __preview_path: _previewPath,
+      ...request
+    } = values;
     if (row) delete request.page_id;
     return {
       ...request,
       structured_data: parseJsonObject(rawStructuredData, 'Datele structurate'),
     };
   },
+  toPreviewDraft: (values) => {
+    const seo = Object.fromEntries(Object.entries({
+      title: values.title,
+      description: values.description,
+      canonical_path: values.canonical_path,
+      og_media_id: values.og_media_id,
+      structured_data: previewJsonObject(values.structured_data_json),
+    }).filter(([, value]) => value !== undefined));
+    return { path: String(values.__preview_path ?? ''), seo };
+  },
   form: ({ client, editing }) => (
     <>
-      <Item name="page_id" label="Pagină" rules={[{ required: !editing }]}>
-        <RemoteSelect client={client} endpoint="/v1/admin/pages" labelKey="title" disabled={Boolean(editing)} placeholder="Selectează pagina" />
-      </Item>
+      <PageSelectWithPreviewPath client={client} editing={Boolean(editing)} />
       <Item name="title" label="Titlu SEO"><Input maxLength={160} showCount /></Item>
       <Item name="description" label="Descriere SEO"><Input.TextArea rows={4} maxLength={320} showCount /></Item>
       <Item name="canonical_path" label="Adresă canonical"><Input placeholder="/pagina" /></Item>

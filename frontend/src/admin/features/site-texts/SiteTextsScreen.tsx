@@ -3,12 +3,13 @@
  * lists every editable key and rendering hint; values live only in the backend.
  */
 import { useMemo, useState } from 'react';
-import { App, Button, Card, Drawer, Input, Skeleton, Space, Tag, Typography } from 'antd';
+import { App, Button, Card, Input, Skeleton, Space, Tag, Typography } from 'antd';
 import { CheckOutlined, EyeOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminClient } from '../../api/adminClient';
 import { SITE_TEXT_GROUPS } from '../../../data/siteTextRegistry';
 import { LivePreview } from '../../components/LivePreview';
+import '../editorial/articles.css';
 
 interface SiteTextRow {
   id: string;
@@ -57,11 +58,13 @@ function TextRow({
   item,
   override,
   onPreview,
+  previewing,
 }: {
   client: AdminClient;
   item: RegistryItem;
   override: SiteTextRow | undefined;
   onPreview: (item: RegistryItem, value: string, path: string) => void;
+  previewing: boolean;
 }) {
   const { message } = App.useApp();
   const qc = useQueryClient();
@@ -115,7 +118,11 @@ function TextRow({
         </Button>
       </Space.Compact>
       <Space size="small" style={{ marginTop: 8 }} wrap>
-        <Button icon={<PlayCircleOutlined />} onClick={() => onPreview(item, value, previewPath)}>
+        <Button
+          type={previewing ? 'primary' : 'default'}
+          icon={<PlayCircleOutlined />}
+          onClick={() => onPreview(item, value, previewPath)}
+        >
           Preview
         </Button>
         <Button icon={<EyeOutlined />} onClick={() => window.open(previewPath, '_blank', 'noopener')}>
@@ -140,49 +147,50 @@ export function SiteTextsScreen({ client }: { client: AdminClient }) {
   );
 
   return (
-    <div style={{ maxWidth: 980 }}>
-      <Typography.Title level={2} style={{ marginTop: 0 }}>Texte site</Typography.Title>
-      <Typography.Paragraph type="secondary">
-        Textele publice care nu vin din alte module (clinici, tratamente, articole…). Valorile
-        sunt publicate direct din Admin; un câmp gol nu afișează text. Simbolurile precum{' '}
-        <code>{'{count}'}</code> și <code>{'{names}'}</code> se completează automat cu datele
-        clinicilor publicate.
-      </Typography.Paragraph>
-      {query.isLoading && <Card><Skeleton active paragraph={{ rows: 8 }} /></Card>}
-      {query.isError && (
-        <Card>
-          <Typography.Text type="danger">
-            Textele nu au putut fi încărcate: {(query.error as Error).message}
-          </Typography.Text>
-        </Card>
-      )}
-      {query.data && SITE_TEXT_GROUPS.map((group) => (
-        <Card key={group.page} title={group.page} style={{ marginBottom: 16 }}>
-          {group.items.map((item) => (
-            <TextRow
-              key={item.key}
-              client={client}
-              item={item as RegistryItem}
-              override={overrides.get(item.key)}
-              onPreview={(registryItem, value, path) => setPreview({ item: registryItem, value, path })}
-            />
-          ))}
-        </Card>
-      ))}
-      <Drawer
-        title={preview ? `Preview — ${preview.item.label}` : 'Preview text'}
-        open={Boolean(preview)}
-        onClose={() => setPreview(null)}
-        size="large"
-        destroyOnHidden
-        styles={{ body: { padding: 12 } }}
-      >
-        {preview && <LivePreview
-          path={preview.path}
-          urlLabel={`dentnow.ro${preview.path}`}
-          draft={{ kind: 'site-text', data: { key: preview.item.key, value: preview.value } }}
-        />}
-      </Drawer>
+    <div className="article-editor-grid">
+      <div className="article-editor-form-panel">
+        <Typography.Title level={2} style={{ marginTop: 0 }}>Texte site</Typography.Title>
+        <Typography.Paragraph type="secondary">
+          Textele publice care nu vin din alte module (clinici, tratamente, articole…). Valorile
+          sunt publicate direct din Admin; un câmp gol nu afișează text. Simbolurile precum{' '}
+          <code>{'{count}'}</code> și <code>{'{names}'}</code> se completează automat cu datele
+          clinicilor publicate.
+        </Typography.Paragraph>
+        {query.isLoading && <Card><Skeleton active paragraph={{ rows: 8 }} /></Card>}
+        {query.isError && (
+          <Card>
+            <Typography.Text type="danger">
+              Textele nu au putut fi încărcate: {(query.error as Error).message}
+            </Typography.Text>
+          </Card>
+        )}
+        {query.data && SITE_TEXT_GROUPS.map((group) => (
+          <Card key={group.page} title={group.page} style={{ marginBottom: 16 }}>
+            {group.items.map((item) => (
+              <TextRow
+                key={item.key}
+                client={client}
+                item={item as RegistryItem}
+                override={overrides.get(item.key)}
+                previewing={preview?.item.key === item.key}
+                onPreview={(registryItem, value, path) => setPreview({ item: registryItem, value, path })}
+              />
+            ))}
+          </Card>
+        ))}
+      </div>
+
+      <aside className="article-editor-preview-panel" aria-label="Previzualizare live text site">
+        <LivePreview
+          path={preview?.path ?? null}
+          ready={Boolean(preview)}
+          notReadyHint="Apasă Preview lângă un text pentru a vedea componenta sa în pagina publică."
+          urlLabel={preview ? `dentnow.ro${preview.path}` : undefined}
+          draft={preview
+            ? { kind: 'site-text', data: { key: preview.item.key, value: preview.value } }
+            : null}
+        />
+      </aside>
     </div>
   );
 }

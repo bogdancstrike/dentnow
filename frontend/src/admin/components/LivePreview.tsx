@@ -41,7 +41,7 @@ export interface LivePreviewProps {
 export function LivePreview({
   path,
   ready = true,
-  notReadyHint = 'Salvează întâi pentru a genera previzualizarea paginii publice.',
+  notReadyHint = 'Completează câmpurile necesare pentru a genera previzualizarea paginii publice.',
   reloadToken,
   urlLabel,
   draft = null,

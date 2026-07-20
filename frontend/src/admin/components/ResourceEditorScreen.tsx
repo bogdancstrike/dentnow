@@ -161,7 +161,7 @@ export function ResourceEditorScreen<T extends ResourceRow & { version: number }
         <LivePreview
           path={config.previewPath ? previewPath : null}
           ready={Boolean(config.previewPath) && Boolean(previewPath)}
-          notReadyHint={config.previewHint ?? 'Salvează pentru a genera previzualizarea paginii publice.'}
+          notReadyHint={config.previewHint ?? 'Completează câmpurile necesare pentru a genera previzualizarea paginii publice.'}
           reloadToken={`${query.data?.version ?? 0}.${previewToken}`}
           draft={config.previewAlwaysDraft || !editing || dirty ? previewDraft : null}
         />

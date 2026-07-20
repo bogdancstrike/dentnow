@@ -9,7 +9,7 @@ import { AdminClient } from '../../src/admin/api/adminClient';
 import { loadRuntimeConfig, __resetRuntimeConfigForTests } from '../../src/config/runtime';
 
 vi.mock('../../src/admin/components/LivePreview', () => ({
-  LivePreview: ({ path, draft }: { path: string; draft?: unknown }) => (
+  LivePreview: ({ path, draft }: { path: string | null; draft?: unknown }) => (
     <output data-testid="site-text-live-preview" data-path={path} data-draft={JSON.stringify(draft)} />
   ),
 }));
@@ -51,6 +51,8 @@ describe('SiteTextsScreen previews', () => {
 
     const preview = await screen.findByTestId('site-text-live-preview');
     await waitFor(() => expect(preview).toHaveAttribute('data-path', '/#contact'));
+    expect(preview.closest('.article-editor-preview-panel')).not.toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(JSON.parse(preview.getAttribute('data-draft') || '{}')).toEqual({
       kind: 'site-text',
       data: { key: 'home.contact.title', value: 'Titlu nesalvat' },
