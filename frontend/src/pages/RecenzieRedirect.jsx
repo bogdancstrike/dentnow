@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
-import config from '../config';
 import Seo from '../components/seo/Seo';
+import { useSiteData } from '../public-site/SiteDataProvider';
+import { siteLink, siteLinkHref } from '../lib/siteContent';
 
 export default function RecenzieRedirect() {
-  const targetUrl = config.verifiedReviewsUrl;
+  const { links } = useSiteData();
+  const targetUrl = siteLinkHref(siteLink(links, 'review'));
 
   useEffect(() => {
-    window.location.href = targetUrl;
+    if (targetUrl) window.location.href = targetUrl;
   }, [targetUrl]);
 
   return (
@@ -18,9 +20,9 @@ export default function RecenzieRedirect() {
       <p style={{ color: 'var(--gray)', marginBottom: '24px' }}>
         Dacă nu sunteți redirecționat automat în câteva secunde, apăsați pe butonul de mai jos:
       </p>
-      <a href={targetUrl} className="btn btn-dark" style={{ textDecoration: 'none' }}>
+      {targetUrl && <a href={targetUrl} className="btn btn-dark" style={{ textDecoration: 'none' }}>
         Lasă o recenzie pe Google Maps ➔
-      </a>
+      </a>}
     </div>
   );
 }

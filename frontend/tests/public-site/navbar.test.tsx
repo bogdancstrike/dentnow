@@ -3,19 +3,27 @@ import { render, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 
-vi.mock('../../src/api/publicClient', () => ({
-  publicQueryKeys: { treatments: ['public', 'treatments'] },
-  fetchTreatments: async () => [
-    { slug: 'implant', category_label: 'Implantologie', category_slug: 'implantologie' },
-    { slug: 'ortodontie', category_label: 'Ortodonție', category_slug: 'ortodontie' },
-  ],
-}));
 vi.mock('../../src/public-site/SiteDataProvider', () => ({
   useSiteData: () => ({
-    clinics: [
-      { slug: 'dristor', name: 'DentNow Dristor' },
-      { slug: 'victoriei', name: 'DentNow Victoriei' },
-    ],
+    site: { site_name: 'DentNow' },
+    navigation: {
+      desktop: [{
+        label: 'Tratamente', target_path: '/tratamente', children: [
+          { label: 'Toate tratamentele', target_path: '/tratamente', children: [] },
+          { label: 'Implantologie', target_path: '/implant-dentar-bucuresti', children: [] },
+          { label: 'Ortodonție', target_path: '/tratamente/ortodontie', children: [] },
+          { label: 'Urgențe Dentare', target_path: '/urgente-dentare-bucuresti', children: [] },
+        ],
+      }],
+      mobile: [
+        { label: 'Acasa', target_path: '/', children: [] },
+        { label: 'Tratamente si tarife', target_path: '/tratamente', children: [] },
+        { label: 'Implant Dentar București', target_path: '/implant-dentar-bucuresti', children: [] },
+        { label: 'Ortodonție', target_path: '/tratamente/ortodontie', children: [] },
+        { label: 'Urgențe Dentare București', target_path: '/urgente-dentare-bucuresti', children: [] },
+        { label: 'DentNow Victoriei', target_path: '/locatii/victoriei', children: [] },
+      ],
+    },
   }),
 }));
 vi.mock('../../src/hooks/useTheme', () => ({

@@ -1,9 +1,8 @@
 /**
  * Public site application.
  *
- * Task 2 keeps the existing route tree and page components intact (they still read
- * the compiled `src/config.js` fallbacks). Task 14 refactors these into pure
- * renderers driven only by the published backend snapshot and deletes the fallbacks.
+ * The route tree is rendered inside SiteDataProvider so public pages consume the
+ * published backend snapshot rather than compiled deployment or clinic values.
  *
  * The browser router lives in `App.tsx`; this component owns the public providers,
  * the shared `Layout`, and the route table. Existing `.jsx` pages are imported under

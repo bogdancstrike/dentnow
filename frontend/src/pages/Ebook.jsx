@@ -6,9 +6,13 @@ import PlaceholderCover from '../components/ui/PlaceholderCover';
 import Seo from '../components/seo/Seo';
 import './Ebook.css';
 import { useSiteTexts } from '../hooks/useSiteTexts';
+import { useSiteData } from '../public-site/SiteDataProvider';
+import { siteLink } from '../lib/siteContent';
 
 export default function Ebook() {
   const t = useSiteTexts();
+  const { links } = useSiteData();
+  const leadPhone = siteLink(links, 'phone')?.value || '';
   const ref = useRevealAll([]);
 
   return (
@@ -26,7 +30,7 @@ export default function Ebook() {
               <p className="ebook-desc">{eb.desc}</p>
               <a
                 className="ebook-dl"
-                href={buildWhatsAppLeadUrl({ source: 'ebook', ebook: eb.title })}
+                href={buildWhatsAppLeadUrl({ source: 'ebook', ebook: eb.title }, leadPhone)}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -1,5 +1,3 @@
-import config from '../config';
-
 /**
  * Presentation site — there is no backend to accept form submissions.
  * We only build a prefilled WhatsApp message so a request opens the chat
@@ -20,13 +18,13 @@ function buildMessage(payload) {
   return rows.join('\n');
 }
 
-export function buildWhatsAppLeadUrl(payload = {}) {
-  const phone = config.phone.replace(/[^0-9]/g, '');
-  return `https://wa.me/${phone}?text=${encodeURIComponent(buildMessage(payload))}`;
+export function buildWhatsAppLeadUrl(payload = {}, phoneNumber = '') {
+  const phone = String(phoneNumber).replace(/[^0-9]/g, '');
+  return phone ? `https://wa.me/${phone}?text=${encodeURIComponent(buildMessage(payload))}` : '';
 }
 
 // WhatsApp link for a specific clinic number.
 export function whatsappUrlFor(phone, text = 'Buna ziua, doresc o programare la DentNow.') {
   const digits = String(phone).replace(/[^0-9]/g, '');
-  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+  return digits ? `https://wa.me/${digits}?text=${encodeURIComponent(text)}` : '';
 }

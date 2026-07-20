@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import config from '../../config';
+import { useOptionalSiteData } from '../../public-site/SiteDataProvider';
+import { siteLink, siteLinkHref } from '../../lib/siteContent';
 
-const siteName = 'DentNow';
+const EMPTY_LINKS = [];
 
 function upsertMeta(selector, attrs) {
   let el = document.head.querySelector(selector);
@@ -45,11 +46,16 @@ function upsertJsonLd(data) {
   el.textContent = JSON.stringify(data);
 }
 
-export default function Seo({ title, description, path = '/', image = '/assets/dentnow/og-dentnow.png', jsonLd, noindex = false }) {
+export default function Seo({ title, description, path = '/', image = '/assets/dentnow/og-dentnow.png', jsonLd = null, noindex = false }) {
+  const siteData = useOptionalSiteData();
+  const siteName = siteData?.site?.site_name || '';
+  const links = siteData?.links || EMPTY_LINKS;
+  const websiteHref = siteLinkHref(siteLink(links, 'social', 'website')) || window.location.origin;
+
   useEffect(() => {
-    const absoluteUrl = new URL(path, config.social.website).toString();
-    const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
-    const fullImageUrl = new URL(image, config.social.website).toString();
+    const absoluteUrl = new URL(path, websiteHref).toString();
+    const fullTitle = siteName && !title.includes(siteName) ? `${title} | ${siteName}` : title;
+    const fullImageUrl = new URL(image, websiteHref).toString();
 
     document.title = fullTitle;
 
@@ -86,7 +92,7 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
         '@type': 'ListItem',
         position: 1,
         name: 'Acasă',
-        item: config.social.website
+        item: websiteHref
       }
     ];
 
@@ -102,7 +108,7 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
         '@type': 'ListItem',
         position: idx + 2,
         name: readableName,
-        item: new URL(currentAcc, config.social.website).toString()
+        item: new URL(currentAcc, websiteHref).toString()
       });
     });
 
@@ -121,49 +127,54 @@ export default function Seo({ title, description, path = '/', image = '/assets/d
           '@type': 'BreadcrumbList',
           itemListElement: breadcrumbItems
         },
-        ...config.locations.map((loc, i) => ({
-          '@type': 'Dentist',
-          '@id': `${config.social.website}#clinic-${i}`,
-          name: loc.name,
-          url: config.social.website,
-          telephone: loc.phone,
-          email: config.email,
-          image: fullImageUrl,
-          priceRange: '$$',
-          address: {
-            '@type': 'PostalAddress',
-            streetAddress: loc.address,
-            addressLocality: 'București',
-            addressRegion: 'București',
-            addressCountry: 'RO'
-          },
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: loc.area.includes('Dristor') ? 44.4136318 : loc.area.includes('Ghencea') ? 44.4055 : 44.4180,
-            longitude: loc.area.includes('Dristor') ? 26.1408659 : loc.area.includes('Ghencea') ? 26.0020 : 26.1450
-          },
-          hasMap: loc.mapsLink,
-          openingHoursSpecification: [
-            {
-              '@type': 'OpeningHoursSpecification',
-              dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-              opens: '09:00',
-              closes: '19:00'
+        ...(siteData?.clinics || []).map((clinic) => {
+          const phone = (clinic.contacts || []).find((contact) => contact.kind === 'phone');
+          const email = (clinic.contacts || []).find((contact) => contact.kind === 'email') || siteLink(links, 'email');
+          const schema = {
+            '@type': 'Dentist',
+            '@id': `${websiteHref}#clinic-${clinic.slug}`,
+            name: clinic.name,
+            url: new URL(`/locatii/${clinic.slug}`, websiteHref).toString(),
+            telephone: phone?.normalized_value || phone?.display_value,
+            email: email?.value || email?.display_value,
+            image: fullImageUrl,
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: clinic.address_full,
+              addressLocality: 'București',
+              addressRegion: 'București',
+              addressCountry: 'RO'
             },
-            {
-              '@type': 'OpeningHoursSpecification',
-              dayOfWeek: 'Saturday',
-              opens: '09:00',
-              closes: '15:00'
-            }
-          ],
-          sameAs: [config.social.facebook, config.social.instagram, config.social.linkedin].filter(Boolean)
-        }))
+            hasMap: clinic.map_link_url,
+            openingHoursSpecification: (clinic.hours || [])
+              .filter((hours) => !hours.closed && hours.opens_at && hours.closes_at)
+              .map((hours) => ({
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: WEEKDAYS[hours.weekday],
+                opens: hours.opens_at,
+                closes: hours.closes_at,
+              })),
+            sameAs: links
+              .filter((link) => link.kind === 'social' && link.label.toLowerCase() !== 'website')
+              .map(siteLinkHref)
+              .filter(Boolean),
+          };
+          if (clinic.latitude != null && clinic.longitude != null) {
+            schema.geo = {
+              '@type': 'GeoCoordinates',
+              latitude: clinic.latitude,
+              longitude: clinic.longitude,
+            };
+          }
+          return schema;
+        })
       ]
     };
 
     upsertJsonLd(fullSchema);
-  }, [title, description, path, image, jsonLd, noindex]);
+  }, [title, description, path, image, jsonLd, noindex, siteData, siteName, links, websiteHref]);
 
   return null;
 }
+
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

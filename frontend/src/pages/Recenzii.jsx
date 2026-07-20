@@ -1,5 +1,4 @@
 import { useRevealAll } from '../hooks/useReveal';
-import config from '../config';
 import { useReviews } from '../hooks/useReviews';
 import ReviewCard from '../components/ui/ReviewCard';
 import PageHero from '../components/ui/PageHero';
@@ -7,9 +6,13 @@ import Seo from '../components/seo/Seo';
 import { DarkCTA } from '../components/ui/SharedSections';
 import './Recenzii.css';
 import { useSiteTexts } from '../hooks/useSiteTexts';
+import { useOptionalSiteData } from '../public-site/SiteDataProvider';
+import { siteLink, siteLinkHref } from '../lib/siteContent';
 
 export default function Recenzii() {
   const t = useSiteTexts();
+  const links = useOptionalSiteData()?.links || [];
+  const reviewsUrl = siteLinkHref(siteLink(links, 'review'));
   const { data: reviews = [] } = useReviews();
   const ref = useRevealAll([reviews]);
   const average = reviews.length
@@ -28,9 +31,9 @@ export default function Recenzii() {
           {'★'.repeat(roundedAverage)}{'☆'.repeat(5 - roundedAverage)}
         </div>
         <div className="rating-count rv d2">Rating mediu din recenzii Google verificate</div>
-        <div className="rating-actions rv d3">
-          <a href={config.verifiedReviewsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-white">Verifica pe Google</a>
-        </div>
+        {reviewsUrl && <div className="rating-actions rv d3">
+          <a href={reviewsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-white">Verifica pe Google</a>
+        </div>}
       </div>
       <div className="reviews-grid">
         {reviews.map((r, i) => <ReviewCard key={r.id || r.author} review={r} className={`rv${i % 3 > 0 ? ` d${i % 3}` : ''}`} />)}

@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../src/public-site/SiteDataProvider', () => ({
+  useOptionalSiteData: () => null,
   useSiteData: () => ({
     doctors: [{
       slug: 'dr-test',
