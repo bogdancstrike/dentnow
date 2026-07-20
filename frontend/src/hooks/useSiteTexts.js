@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useOptionalSiteData } from '../public-site/SiteDataProvider';
-import { SITE_TEXT_FALLBACKS } from '../data/siteTextRegistry';
 
 function formatText(template, params) {
   if (!params) return template;
@@ -10,14 +9,13 @@ function formatText(template, params) {
 }
 
 /**
- * Returns `t(key, params?)`: the admin override for `key` when one exists,
- * otherwise the compiled-in fallback from the registry. `{token}` placeholders
- * are replaced from `params`.
+ * Returns `t(key, params?)` from the published Admin text collection.
+ * `{token}` placeholders are replaced from `params`.
  */
 export function useSiteTexts() {
   const texts = useOptionalSiteData()?.texts;
   return useCallback(
-    (key, params) => formatText((texts && texts[key]) ?? SITE_TEXT_FALLBACKS[key] ?? '', params),
+    (key, params) => formatText((texts && texts[key]) ?? '', params),
     [texts],
   );
 }

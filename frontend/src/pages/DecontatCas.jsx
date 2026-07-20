@@ -7,8 +7,6 @@ import { useSiteData } from '../public-site/SiteDataProvider';
 import { clinicPhone } from '../lib/clinicContact';
 import './DecontatCas.css';
 
-import { faqs as staticFaqs, steps as staticSteps } from '../data/cas';
-
 function BenefitItem({ text }) {
   const separator = text.indexOf(': ');
   if (separator < 0) return <li>{text}</li>;
@@ -23,8 +21,8 @@ export default function DecontatCas() {
   const openPicker = useClinicPicker();
   const t = useSiteTexts();
   const { decontat_cas: cas, clinics } = useSiteData();
-  const steps = cas?.steps?.length ? cas.steps.map((s) => ({ title: s.title, text: s.text || '' })) : staticSteps;
-  const faqs = cas?.faqs?.length ? cas.faqs : staticFaqs;
+  const steps = (cas?.steps || []).map((s) => ({ title: s.title, text: s.text || '' }));
+  const faqs = cas?.faqs || [];
   const clinicCount = clinics.length;
   const clinicNames = clinics.map((clinic) => clinic.area || clinic.name).join(' · ');
 

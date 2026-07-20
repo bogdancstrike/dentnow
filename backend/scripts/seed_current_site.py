@@ -30,7 +30,8 @@ from src.clinics.models import (  # noqa: E402
 from src.core.clock import utcnow, uuid7  # noqa: E402
 from src.core.db import session_scope  # noqa: E402
 from src.editorial.models import (  # noqa: E402
-    Article, CaseStudy, Ebook, LegalDocument, NewsItem, Quiz, QuizOption, QuizQuestion, Review,
+    Article, CaseStudy, Ebook, LegalDocument, NewsItem, Quiz, QuizOption, QuizQuestion,
+    QuizResultBand, Review,
 )
 from src.iam.capabilities import ROLE_ADMIN  # noqa: E402
 from src.iam.principal import Principal  # noqa: E402
@@ -38,7 +39,7 @@ from src.media.models import PublicationMedia  # noqa: E402
 from src.media.service import MediaService  # noqa: E402
 from src.site.models import (  # noqa: E402
     CasFaq, CasStep, GalleryImage, HomepageService, NavigationItem, NavigationMenu, Page,
-    PageSection, PageSeo, SiteLink, SiteState, SitePublication,
+    PageSection, PageSeo, SiteLink, SiteState, SitePublication, SiteText,
 )
 
 SEEDS = Path(__file__).resolve().parents[1] / "seeds"
@@ -163,6 +164,11 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
     state.default_locale = data["site"].get("locale", "ro-RO")
     state.default_timezone = data["site"].get("timezone", "Europe/Bucharest")
     session.merge(state)
+
+    # ── public copy ─────────────────────────────────────────────────────────
+    for key, value in data.get("siteTexts", {}).items():
+        session.add(SiteText(key=key, value=value))
+    counts["site_texts"] = len(data.get("siteTexts", {}))
 
     # ── clinics (+ contacts, hours) ──────────────────────────────────────────
     clinic_ids = []
@@ -394,6 +400,9 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
             ocount += 1
     counts["quiz_questions"] = qcount
     counts["quiz_options"] = ocount
+    for band in data.get("quizResultBands", []):
+        session.add(QuizResultBand(quiz_id=quiz.id, **band))
+    counts["quiz_result_bands"] = len(data.get("quizResultBands", []))
 
     # ── gallery + decontat CAS structured content ────────────────────────────
     for position, gallery_data in enumerate(data.get("gallery", [])):
@@ -581,6 +590,8 @@ def create_migration_baseline(session) -> str:
 
 def main() -> int:
     data = json.loads((SEEDS / "current-site.json").read_text())
+    data["siteTexts"] = json.loads((SEEDS / "site-texts.json").read_text())
+    data["quizResultBands"] = json.loads((SEEDS / "quiz-result-bands.json").read_text())
     with session_scope() as session:
         if already_seeded(session):
             print("seed: already seeded — no changes")

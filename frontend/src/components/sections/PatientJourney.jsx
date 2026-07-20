@@ -1,9 +1,19 @@
-import { patientJourney } from '../../data/clinicProof';
+import { useQuery } from '@tanstack/react-query';
 import './Sections.css';
 import { useSiteTexts } from '../../hooks/useSiteTexts';
+import { fetchPageByPath, publicQueryKeys } from '../../api/publicClient';
 
 export default function PatientJourney() {
   const t = useSiteTexts();
+  const { data: page } = useQuery({
+    queryKey: publicQueryKeys.page('/'),
+    queryFn: () => fetchPageByPath('/'),
+  });
+  const journeySection = page?.sections?.find((section) => section.block_type === 'patient_journey');
+  const patientJourney = Array.isArray(journeySection?.payload?.items)
+    ? journeySection.payload.items
+    : [];
+  if (!patientJourney.length) return null;
   return (
     <section className="section-wrap">
       <div className="section-inner">

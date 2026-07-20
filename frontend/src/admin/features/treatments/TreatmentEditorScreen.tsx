@@ -21,7 +21,7 @@ import { VersionConflictError } from '../../api/adminClient';
 import type { TreatmentRow } from './TreatmentsScreen';
 import { LivePreview } from '../../components/LivePreview';
 import { RichTextEditor } from '../../components/RichTextEditor';
-import { RemoteSelect } from '../../components/RemoteSelect';
+import { RemoteSelect, type RemoteSelectOption } from '../../components/RemoteSelect';
 import '../editorial/articles.css'; // Reuse article layout CSS
 import { previewMarkdown } from '../../../api/previewDraft';
 import { AdminRequestError } from '../../components/AdminRequestError';
@@ -37,6 +37,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
   const [form] = Form.useForm<TreatmentFormValues>();
   const values = (Form.useWatch([], form) ?? {}) as Partial<TreatmentFormValues>;
   const [dirty, setDirty] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState<RemoteSelectOption[]>([]);
 
   const treatmentQuery = useQuery({
     queryKey: ['admin', 'treatment', treatmentId],
@@ -112,6 +113,9 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
   if (editing && treatmentQuery.isError) return <AdminRequestError error={treatmentQuery.error} />;
+  const previewCategoryLabel = categoryOptions.find(
+    (option) => option.value === values.category_id,
+  )?.label;
 
   return (
     <div className="article-editor-grid">
@@ -141,7 +145,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
                   homepage_featured: true,
                   homepage_label: 'Implanturi',
                   homepage_icon: 'Smile',
-                  body_markdown: '## De ce să alegi implantul dentar?\n\nImplantul dentar este soluția permanentă pentru înlocuirea unui dinte pierdut.\n\n### Avantaje:\n- Aspect natural\n- Durabilitate pe viață\n- Nu afectează dinții vecini\n- Funcționalitate completă\n\n### Etapele tratamentului:\n1. Consultație și planificare\n2. Inserarea implantului\n3. Perioada de osteointegrare (3-6 luni)\n4. Montarea coroanei finale',
+                  detail_markdown: '## De ce să alegi implantul dentar?\n\nImplantul dentar este soluția permanentă pentru înlocuirea unui dinte pierdut.\n\n### Avantaje:\n- Aspect natural\n- Durabilitate pe viață\n- Nu afectează dinții vecini\n- Funcționalitate completă\n\n### Etapele tratamentului:\n1. Consultație și planificare\n2. Inserarea implantului\n3. Perioada de osteointegrare (3-6 luni)\n4. Montarea coroanei finale',
                 });
                 setDirty(true);
               }}
@@ -167,7 +171,13 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
               <Input placeholder="ex: implant-dentar" />
             </Form.Item>
             <Form.Item name="category_id" label="Categorie existentă">
-              <RemoteSelect client={client} endpoint="/v1/admin/treatment-categories" labelKey="label" placeholder="Selectează categoria" />
+              <RemoteSelect
+                client={client}
+                endpoint="/v1/admin/treatment-categories"
+                labelKey="label"
+                placeholder="Selectează categoria"
+                onOptionsLoaded={setCategoryOptions}
+              />
             </Form.Item>
             <Form.Item name="summary" label="Sumar / Scurtă descriere">
               <Input.TextArea rows={2} placeholder="Rezumatul care apare în liste..." />
@@ -193,7 +203,7 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
 
           <div className="article-form-section" style={{ marginTop: 24, marginBottom: 40 }}>
             <Typography.Title level={4}>Conținut Pagina Detaliată</Typography.Title>
-            <Form.Item name="body_markdown" label="Conținut (suportă Markdown)">
+            <Form.Item name="detail_markdown" label="Conținut (suportă Markdown)">
               <RichTextEditor />
             </Form.Item>
           </div>
@@ -202,17 +212,17 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
 
       <div className="article-editor-preview-panel">
         <LivePreview
-          path={treatmentQuery.data?.slug ? `/tratamente/${treatmentQuery.data.slug}` : '/tratamente/previzualizare'}
+          path={`/tratamente/${values.slug || treatmentQuery.data?.slug || 'previzualizare'}`}
           ready={Boolean(treatmentQuery.data?.slug)}
           reloadToken={treatmentQuery.data?.version}
           urlLabel={`dentnow.ro/tratamente/${values.slug || treatmentQuery.data?.slug || 'tratament-nou'}`}
-          draft={!editing || dirty ? {
+          draft={(!editing || dirty) && Boolean(values.name || treatmentQuery.data?.name) ? {
             kind: 'treatment',
             data: {
               ...treatmentQuery.data,
               ...values,
-              detail_html: previewMarkdown(String(values.body_markdown || treatmentQuery.data?.body_markdown || '')),
-              prices: treatmentQuery.data?.prices || [],
+              ...(previewCategoryLabel ? { category_label: previewCategoryLabel } : {}),
+              detail_html: previewMarkdown(String(values.detail_markdown || treatmentQuery.data?.detail_markdown || '')),
             },
           } : null}
         />

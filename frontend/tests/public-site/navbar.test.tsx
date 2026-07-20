@@ -32,6 +32,13 @@ vi.mock('../../src/hooks/useTheme', () => ({
 vi.mock('../../src/hooks/useClinicPicker', () => ({
   useClinicPicker: () => vi.fn(),
 }));
+vi.mock('../../src/api/publicClient', () => ({
+  publicQueryKeys: { treatments: ['public', 'treatments'] },
+  fetchTreatments: vi.fn().mockResolvedValue([
+    { slug: 'extractie-molar', category_slug: 'chirurgie', category_label: 'Chirurgie orală' },
+    { slug: 'igienizare-gbt', category_slug: 'preventie', category_label: 'Prevenție' },
+  ]),
+}));
 
 import Navbar from '../../src/components/layout/Navbar';
 
@@ -52,5 +59,10 @@ describe('mobile navigation', () => {
     expect(mobile).not.toHaveTextContent('Implantologie');
     expect(mobile).not.toHaveTextContent('Ortodonție');
     expect(mobile).not.toHaveTextContent('Implant Dentar București');
+
+    const desktop = document.querySelector('.nav-links') as HTMLElement;
+    expect(await within(desktop).findByRole('link', { name: 'Chirurgie orală' })).toHaveAttribute('href', '/tratamente#chirurgie');
+    expect(desktop).toHaveTextContent('Prevenție');
+    expect(desktop).not.toHaveTextContent('Implantologie');
   });
 });

@@ -1,0 +1,30 @@
+[
+  {
+    "min_score": 30,
+    "max_score": 35,
+    "title": "Excelent!",
+    "description": "Ai o igienă orală remarcabilă. Continuă rutina actuală.",
+    "recommendations": "Continuă periajul de 2-3 ori/zi + ață dentară zilnic\nIgienizare GBT la 6-12 luni ca mentenanță\nAtenție la alimentele care colorează dinții"
+  },
+  {
+    "min_score": 23,
+    "max_score": 29,
+    "title": "Bine, dar poți mai mult!",
+    "description": "Igienă bună cu aspecte de îmbunătățit.",
+    "recommendations": "Adaugă ața dentară sau irigatorul oral zilnic\nFă o igienizare profesională GBT\nPrelungește periajul la minimum 2 minute"
+  },
+  {
+    "min_score": 14,
+    "max_score": 22,
+    "title": "Necesită îmbunătățiri",
+    "description": "Rezultatul indică aspecte ale rutinei care merită discutate cu echipa medicală.",
+    "recommendations": "Programează o evaluare\nDiscută rutina de igienă cu medicul\nStabilește următorii pași împreună cu echipa"
+  },
+  {
+    "min_score": 0,
+    "max_score": 13,
+    "title": "Programează o evaluare",
+    "description": "Echipa medicală poate interpreta corect răspunsurile în contextul sănătății tale orale.",
+    "recommendations": "Contactează echipa pentru o evaluare\nDiscută opțiunile potrivite situației tale\nStabilește împreună cu medicul următorii pași"
+  }
+]

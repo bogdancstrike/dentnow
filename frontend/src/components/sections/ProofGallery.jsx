@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { clinicGallery } from '../../data/clinicProof';
 import { useSiteData } from '../../public-site/SiteDataProvider';
 import { useSiteTexts } from '../../hooks/useSiteTexts';
 import { mediaUrl } from '../../api/publicClient';
@@ -8,18 +7,18 @@ import './Sections.css';
 export default function ProofGallery({ items: itemsProp }) {
   const t = useSiteTexts();
   const { gallery } = useSiteData();
-  const items = itemsProp ?? (gallery && gallery.length > 0
-    ? gallery.map((g) => ({
-        src: g.media_id ? mediaUrl(g.media_id, 'hero') : (g.image_url || '/assets/dentnow/clinic-exterior.svg'),
+  const items = (itemsProp ?? gallery.map((g) => ({
+        src: g.media_id ? mediaUrl(g.media_id, 'hero') : g.image_url,
         alt: g.alt_text || g.title,
         title: g.title,
         caption: g.caption || '',
-      }))
-    : clinicGallery);
+      }))).filter((item) => item.src);
   const [index, setIndex] = useState(0);
-  const current = items[index];
+  const safeIndex = Math.min(index, Math.max(items.length - 1, 0));
+  const current = items[safeIndex];
   const prev = () => setIndex((i) => (i === 0 ? items.length - 1 : i - 1));
   const next = () => setIndex((i) => (i + 1) % items.length);
+  if (!current) return null;
 
   return (
     <section className="section-wrap alt" id="clinica">
@@ -43,7 +42,7 @@ export default function ProofGallery({ items: itemsProp }) {
           </div>
           <div className="gallery-list">
             {items.map((item, i) => (
-              <button className={`gallery-thumb${i === index ? ' active' : ''}`} type="button" onClick={() => setIndex(i)} key={item.src}>
+              <button className={`gallery-thumb${i === safeIndex ? ' active' : ''}`} type="button" onClick={() => setIndex(i)} key={item.src}>
                 <img src={item.src} alt="" />
                 <span><strong>{item.title}</strong><span>{item.caption}</span></span>
               </button>

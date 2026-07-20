@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../hooks/useTheme';
 import { useClinicPicker } from '../../hooks/useClinicPicker';
 import { useSiteData } from '../../public-site/SiteDataProvider';
 import { isExternalHref, navigationHref } from '../../lib/siteContent';
 import { IconSun, IconMoon, IconPhone } from '../ui/Icons';
+import { fetchTreatments, publicQueryKeys } from '../../api/publicClient';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -14,22 +16,58 @@ export default function Navbar() {
   const location = useLocation();
   const { dark, toggle } = useTheme();
   const openPicker = useClinicPicker();
+  const { data: treatments = [] } = useQuery({
+    queryKey: publicQueryKeys.treatments,
+    queryFn: fetchTreatments,
+  });
 
   const siteData = useSiteData();
   const siteName = siteData.site.site_name;
-  const desktopNavLinks = useMemo(() => siteData.navigation.desktop || [], [siteData.navigation]);
+  const configuredDesktopNavLinks = useMemo(
+    () => siteData.navigation.desktop || [],
+    [siteData.navigation],
+  );
+  const treatmentCategories = useMemo(() => {
+    const seen = new Set();
+    return treatments.flatMap((treatment) => {
+      if (!treatment.category_slug || !treatment.category_label || seen.has(treatment.category_slug)) return [];
+      seen.add(treatment.category_slug);
+      return [{
+        label: treatment.category_label,
+        target_path: `/tratamente#${treatment.category_slug}`,
+        children: [],
+      }];
+    });
+  }, [treatments]);
+  const desktopNavLinks = useMemo(() => configuredDesktopNavLinks.map((item) => {
+    if (navigationHref(item) !== '/tratamente') return item;
+    const fixedChildren = (item.children || []).filter((child) => {
+      const href = navigationHref(child);
+      return href === '/tratamente' || href === '/urgente-dentare-bucuresti';
+    });
+    const indexItem = fixedChildren.filter((child) => navigationHref(child) === '/tratamente');
+    const emergencyItem = fixedChildren.filter((child) => navigationHref(child) === '/urgente-dentare-bucuresti');
+    return { ...item, children: [...indexItem, ...treatmentCategories, ...emergencyItem] };
+  }), [configuredDesktopNavLinks, treatmentCategories]);
 
   const mobileNavLinks = useMemo(() => {
-    const treatmentMenu = desktopNavLinks.find((item) => navigationHref(item) === '/tratamente');
+    const treatmentMenu = configuredDesktopNavLinks.find((item) => navigationHref(item) === '/tratamente');
     const hiddenTreatmentPaths = new Set(
       (treatmentMenu?.children || [])
         .map(navigationHref)
         .filter((href) => href && href !== '/tratamente' && href !== '/urgente-dentare-bucuresti'),
     );
+    treatments.forEach((treatment) => {
+      if (treatment.slug) {
+        hiddenTreatmentPaths.add(`/tratamente/${treatment.slug}`);
+        hiddenTreatmentPaths.add(`/${treatment.slug}`);
+      }
+      if (treatment.category_slug) hiddenTreatmentPaths.add(`/tratamente#${treatment.category_slug}`);
+    });
     return (siteData.navigation.mobile || []).filter(
       (item) => !hiddenTreatmentPaths.has(navigationHref(item)),
     );
-  }, [desktopNavLinks, siteData.navigation]);
+  }, [configuredDesktopNavLinks, siteData.navigation, treatments]);
 
   const closeMenus = () => { setMobileOpen(false); setOpenMenu(''); };
 
