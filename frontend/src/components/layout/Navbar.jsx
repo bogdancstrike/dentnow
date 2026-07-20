@@ -1,11 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { navLinks, mobileNavLinks } from '../../data/navigation';
-import { fetchTreatments, publicQueryKeys } from '../../api/publicClient';
 import { useTheme } from '../../hooks/useTheme';
 import { useClinicPicker } from '../../hooks/useClinicPicker';
 import { useSiteData } from '../../public-site/SiteDataProvider';
+import { isExternalHref, navigationHref } from '../../lib/siteContent';
 import { IconSun, IconMoon, IconPhone } from '../ui/Icons';
 import './Navbar.css';
 
@@ -17,77 +15,21 @@ export default function Navbar() {
   const { dark, toggle } = useTheme();
   const openPicker = useClinicPicker();
 
-  const { data: treatments = [] } = useQuery({
-    queryKey: publicQueryKeys.treatments,
-    queryFn: fetchTreatments,
-  });
-
   const siteData = useSiteData();
-  const clinics = siteData?.clinics || [];
+  const siteName = siteData.site.site_name;
+  const desktopNavLinks = useMemo(() => siteData.navigation.desktop || [], [siteData.navigation]);
 
-  const dynamicNavLinks = useMemo(() => {
-    const categories = [];
-    const catMap = new Map();
-    treatments.forEach((t) => {
-      const catName = t.category_label || 'Altele';
-      const catSlug = t.category_slug || 'altele';
-      if (!catMap.has(catName)) {
-        catMap.set(catName, { label: catName, to: `/tratamente#${catSlug}` });
-        categories.push(catMap.get(catName));
-      }
-    });
-
-    const clinicLinks = clinics.map(c => ({
-      label: c.name,
-      to: `/locatii/${c.slug}`
-    }));
-
-    return navLinks.map(link => {
-      if (link.label === 'Tratamente') {
-        return {
-          ...link,
-          children: [
-            { label: 'Toate tratamentele', to: '/tratamente' },
-            ...categories,
-            { label: 'Urgențe Dentare', to: '/urgente-dentare-bucuresti' }
-          ]
-        };
-      }
-      if (link.label === 'Locații') {
-        return {
-          ...link,
-          to: clinicLinks.length > 0 ? clinicLinks[0].to : '#',
-          children: clinicLinks
-        };
-      }
-      return link;
-    });
-  }, [treatments, clinics]);
-
-  const dynamicMobileNavLinks = useMemo(() => {
-    const clinicLinks = clinics.map(c => ({
-      label: c.name,
-      to: `/locatii/${c.slug}`
-    }));
-
-    // Keep 'Acasa', 'Decontare CAS', 'Tratamente si tarife' then insert treatments, then clinics, then the rest
-    const treatmentsIndex = mobileNavLinks.findIndex(l => l.label === 'Tratamente si tarife');
-    if (treatmentsIndex !== -1) {
-      // Find where 'Before & After' starts to remove hardcoded treatments and clinics
-      const beforeAfterIndex = mobileNavLinks.findIndex(l => l.label === 'Before & After');
-      
-      const before = mobileNavLinks.slice(0, treatmentsIndex + 1);
-      const dynamic = [
-        { label: 'Urgențe Dentare București', to: '/urgente-dentare-bucuresti' },
-        { label: 'Oferte', to: '/oferte' },
-        ...clinicLinks
-      ];
-      const after = beforeAfterIndex !== -1 ? mobileNavLinks.slice(beforeAfterIndex) : [];
-      
-      return [...before, ...dynamic, ...after];
-    }
-    return mobileNavLinks;
-  }, [clinics]);
+  const mobileNavLinks = useMemo(() => {
+    const treatmentMenu = desktopNavLinks.find((item) => navigationHref(item) === '/tratamente');
+    const hiddenTreatmentPaths = new Set(
+      (treatmentMenu?.children || [])
+        .map(navigationHref)
+        .filter((href) => href && href !== '/tratamente' && href !== '/urgente-dentare-bucuresti'),
+    );
+    return (siteData.navigation.mobile || []).filter(
+      (item) => !hiddenTreatmentPaths.has(navigationHref(item)),
+    );
+  }, [desktopNavLinks, siteData.navigation]);
 
   const closeMenus = () => { setMobileOpen(false); setOpenMenu(''); };
 
@@ -124,24 +66,27 @@ export default function Navbar() {
   return (
     <>
       <nav className={`nav${isDark ? ' dark' : ''}`}>
-        <Link to="/" className="nav-logo">Dent<span>Now</span></Link>
+        <Link to="/" className="nav-logo">{siteName.endsWith('Now') ? <>{siteName.slice(0, -3)}<span>Now</span></> : siteName}</Link>
         <ul className="nav-links">
-          {dynamicNavLinks.map((l) => (
+          {desktopNavLinks.map((l) => {
+            const href = navigationHref(l);
+            return (
             <li key={l.label} className="nav-item" onMouseLeave={() => setOpenMenu('')}>
-              {l.children ? (
+              {l.children?.length ? (
                 <>
                   <button className={`nav-link-btn${openMenu === l.label ? ' active' : ''}`} onClick={() => setOpenMenu(openMenu === l.label ? '' : l.label)} aria-expanded={openMenu === l.label} aria-haspopup="true">
                     {l.label}
                   </button>
                   <div className={`nav-dropdown${openMenu === l.label ? ' open' : ''}`}>
-                    {l.children.map((child) => <Link to={child.to} key={child.to} onClick={closeMenus}>{child.label}</Link>)}
+                    {l.children.map((child) => <MenuLink item={child} key={`${child.label}-${navigationHref(child)}`} onClick={closeMenus} />)}
                   </div>
                 </>
               ) : (
-                <Link to={l.to} onClick={closeMenus} className={location.pathname === l.to ? 'active' : ''}>{l.label}</Link>
+                <MenuLink item={l} onClick={closeMenus} className={location.pathname === href ? 'active' : ''} />
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
         <div className="nav-right">
           <button className="theme-toggle" onClick={toggle} aria-label={dark ? 'Activeaza modul luminos' : 'Activeaza modul intunecat'} title={dark ? 'Mod luminos' : 'Mod intunecat'}>
@@ -157,9 +102,18 @@ export default function Navbar() {
       </nav>
       {mobileOpen && <button className="nav-backdrop" aria-label="Inchide meniul" onClick={() => setMobileOpen(false)} />}
       <nav id="mobile-navigation" className={`nav-mobile${mobileOpen ? ' open' : ''}`} aria-label="Navigatie mobila">
-        {dynamicMobileNavLinks.map((l) => <Link key={l.to} to={l.to} onClick={closeMenus}>{l.label}</Link>)}
+        {mobileNavLinks.map((l) => <MenuLink key={`${l.label}-${navigationHref(l)}`} item={l} onClick={closeMenus} />)}
         <button type="button" className="nav-cta-mobile" onClick={() => { closeMenus(); openPicker('both'); }}><IconPhone size={16} /> Programează-te</button>
       </nav>
     </>
   );
+}
+
+function MenuLink({ item, onClick, className = '' }) {
+  const href = navigationHref(item);
+  if (!href) return null;
+  if (isExternalHref(href)) {
+    return <a href={href} onClick={onClick} className={className}>{item.label}</a>;
+  }
+  return <Link to={href} onClick={onClick} className={className}>{item.label}</Link>;
 }

@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import config from '../config';
 import { quizQuestions } from '../data/content';
 import { buildWhatsAppLeadUrl } from '../lib/leadCapture';
 import { useClinicPicker } from '../hooks/useClinicPicker';
@@ -7,12 +6,14 @@ import Seo from '../components/seo/Seo';
 import './ScorIgiena.css';
 import { usePreviewDraft } from '../api/previewDraft';
 import { useSiteData } from '../public-site/SiteDataProvider';
+import { siteLink } from '../lib/siteContent';
 
 export default function ScorIgiena() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState([]);
   const quizDraft = usePreviewDraft('quiz');
-  const { quiz } = useSiteData();
+  const { quiz, links } = useSiteData();
+  const leadPhone = siteLink(links, 'phone')?.value || '';
   const questions = quiz?.questions?.length
     ? quiz.questions.map((question) => ({
         q: question.prompt,
@@ -80,14 +81,14 @@ export default function ScorIgiena() {
             </div>
           </div>
         ) : (
-          <QuizResult answers={answers} questions={questions} bands={quiz?.result_bands || []} onRestart={restart} />
+          <QuizResult answers={answers} questions={questions} bands={quiz?.result_bands || []} leadPhone={leadPhone} onRestart={restart} />
         )}
       </div>
     </div>
   );
 }
 
-function QuizResult({ answers, questions, bands, onRestart }) {
+function QuizResult({ answers, questions, bands, leadPhone, onRestart }) {
   const openPicker = useClinicPicker();
   const total = answers.reduce((sum, ai, qi) => sum + questions[qi].opts[ai][1], 0);
   const max = Math.max(1, questions.reduce((sum, question) => (
@@ -122,13 +123,13 @@ function QuizResult({ answers, questions, bands, onRestart }) {
   } else {
     emoji = '🚨'; title = 'Acționează urgent!'; color = 'var(--red)';
     desc = 'Necesită intervenție medicală imediată.';
-    tips = ['Sună ACUM la ' + config.phoneDisplay, 'Pachet consultație + igienizare: 350 lei', 'Periuță electrică + irigator oral — esențiale'];
+    tips = ['Contactează echipa pentru o evaluare', 'Discută opțiunile potrivite situației tale', 'Stabilește împreună cu medicul următorii pași'];
   }
 
   const circumference = 2 * Math.PI * 54;
   const dash = (pct / 100) * circumference;
 
-  const waUrl = buildWhatsAppLeadUrl({ source: 'scor igiena', service: 'Igienizare GBT', score: `${pct}% - ${title}`, message: tips.join('; ') });
+  const waUrl = buildWhatsAppLeadUrl({ source: 'scor igiena', service: 'Igienizare GBT', score: `${pct}% - ${title}`, message: tips.join('; ') }, leadPhone);
 
   return (
     <div className="quiz-result">
@@ -158,7 +159,7 @@ function QuizResult({ answers, questions, bands, onRestart }) {
 
       <div className="qr-actions">
         <button type="button" onClick={() => openPicker('call')} className="btn btn-dark">Suna acum</button>
-        <a className="btn btn-outline" href={waUrl} target="_blank" rel="noopener noreferrer">Trimite scorul pe WhatsApp</a>
+        {waUrl && <a className="btn btn-outline" href={waUrl} target="_blank" rel="noopener noreferrer">Trimite scorul pe WhatsApp</a>}
         <button className="btn btn-outline" onClick={onRestart}>Reia testul</button>
       </div>
     </div>

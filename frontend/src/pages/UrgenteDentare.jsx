@@ -2,38 +2,37 @@ import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { IconPhone, IconClock, IconAlert, IconWhatsApp } from '../components/ui/Icons';
-import config from '../config';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { clinicPhone } from '../lib/clinicContact';
 import './UrgenteDentare.css';
 import { useSiteTexts } from '../hooks/useSiteTexts';
+import { siteLink, siteLinkHref } from '../lib/siteContent';
 
 export default function UrgenteDentare() {
   const t = useSiteTexts();
   const openPicker = useClinicPicker();
-  const { clinics } = useSiteData();
+  const { clinics, links, site } = useSiteData();
+  const primaryClinic = clinics[0];
+  const primaryLine = clinicPhone(primaryClinic);
+  const websiteHref = siteLinkHref(siteLink(links, 'social', 'website')) || window.location.origin;
+  const emergencyHours = primaryClinic?.hours || [];
+  const schemaWeekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'EmergencyService',
-    name: 'DentNow Urgențe Dentare București',
-    description: 'Asistență stomatologică rapidă pentru urgențe dentare în București (Dristor, Baba Novac, Prelungirea Ghencea). Tratamente dureri acute și traume.',
-    telephone: config.phone,
-    url: `${config.social.website}/urgente-dentare-bucuresti`,
+    name: `${site.site_name} Urgențe Dentare București`,
+    description: t('urgente.hero.subtitle'),
+    telephone: primaryLine?.tel,
+    url: new URL('/urgente-dentare-bucuresti', websiteHref).toString(),
     areaServed: 'București',
-    openingHoursSpecification: [
-      {
+    openingHoursSpecification: emergencyHours
+      .filter((hours) => !hours.closed && hours.opens_at && hours.closes_at)
+      .map((hours) => ({
         '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-        opens: '09:00',
-        closes: '19:00'
-      },
-      {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: 'Saturday',
-        opens: '09:00',
-        closes: '15:00'
-      }
-    ]
+        dayOfWeek: schemaWeekdays[hours.weekday],
+        opens: hours.opens_at,
+        closes: hours.closes_at,
+      })),
   };
 
   return (

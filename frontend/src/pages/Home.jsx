@@ -4,9 +4,9 @@ import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { useSiteTexts } from '../hooks/useSiteTexts';
 import { whatsappUrlFor } from '../lib/leadCapture';
-import config from '../config';
 import { services } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
+import { siteLinkHref } from '../lib/siteContent';
 import { useReviews } from '../hooks/useReviews';
 import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
@@ -40,7 +40,7 @@ function LocationCard({ loc }) {
           <IconClock size={16} />
           <span>
             {loc.hours.map((h) => {
-              const dayNames = ['Duminica', 'Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata'];
+              const dayNames = ['Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata', 'Duminica'];
               const dayName = dayNames[h.weekday] || 'Zi';
               const hoursStr = h.closed ? '(Inchis)' : `${h.opens_at?.substring(0, 5) || ''} - ${h.closes_at?.substring(0, 5) || ''}`;
               return <span key={h.weekday} className="loc-hour">{dayName}: {hoursStr}</span>;
@@ -106,6 +106,8 @@ export default function Home() {
   const openPicker = useClinicPicker();
   const t = useSiteTexts();
   const siteData = useSiteData();
+  const email = siteData.links.find((link) => link.kind === 'email');
+  const socialLinks = siteData.links.filter((link) => link.kind === 'social');
   const { data: reviews = [] } = useReviews();
   const trustItems = [1, 2, 3].map((i) => ({
     value: t(`home.trust.${i}.title`),
@@ -147,10 +149,13 @@ export default function Home() {
       <section className="contact-section" id="contact">
       <ContactClinics clinics={siteData.clinics} openPicker={openPicker} />
         <div className="contact-social rv">
-          <a href={`mailto:${config.email}`} className="social-btn"><IconMail size={16} /> {config.email}</a>
-          <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="social-btn"><IconFacebook size={16} /> Facebook</a>
-          <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="social-btn"><IconInstagram size={16} /> Instagram</a>
-          <a href={config.social.linkedin} target="_blank" rel="noopener noreferrer" className="social-btn"><IconLinkedIn size={16} /> LinkedIn</a>
+          {email && <a href={siteLinkHref(email)} className="social-btn"><IconMail size={16} /> {email.display_value || email.value}</a>}
+          {socialLinks.map((social) => {
+            const label = social.label.toLowerCase();
+            const Icon = label === 'facebook' ? IconFacebook : label === 'instagram' ? IconInstagram : label === 'linkedin' ? IconLinkedIn : null;
+            if (!Icon || !siteLinkHref(social)) return null;
+            return <a key={social.label} href={siteLinkHref(social)} target="_blank" rel="noopener noreferrer" className="social-btn"><Icon size={16} /> {social.label}</a>;
+          })}
         </div>
       </section>
 

@@ -1,15 +1,16 @@
 import { useRevealAll } from '../hooks/useReveal';
-import config from '../config';
 import PageHero from '../components/ui/PageHero';
 import Seo from '../components/seo/Seo';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { mediaUrl } from '../api/publicClient';
 import './Parteneri.css';
 import { useSiteTexts } from '../hooks/useSiteTexts';
+import { siteLink, siteLinkHref } from '../lib/siteContent';
 
 export default function Parteneri() {
   const t = useSiteTexts();
-  const { partners } = useSiteData();
+  const { partners, links = [] } = useSiteData();
+  const email = siteLink(links, 'email');
   const ref = useRevealAll([]);
   return (
     <div ref={ref}>
@@ -39,10 +40,10 @@ export default function Parteneri() {
           );
         })}
       </div>
-      <div className="partners-contact">
+      {email && <div className="partners-contact">
         <p>Esti o companie interesata de un parteneriat cu DentNow?</p>
-        <a href={`mailto:${config.email}`} className="btn btn-dark">Contacteaza-ne pentru parteneriate</a>
-      </div>
+        <a href={siteLinkHref(email)} className="btn btn-dark">Contacteaza-ne pentru parteneriate</a>
+      </div>}
     </div>
   );
 }

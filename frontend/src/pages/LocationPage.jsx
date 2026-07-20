@@ -1,17 +1,18 @@
 import { useParams, useLocation } from 'react-router-dom';
 import { IconMapPin, IconPhone, IconClock, IconWhatsApp, IconAlert } from '../components/ui/Icons';
-import config from '../config';
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { isPreviewMode, usePreviewDraft } from '../api/previewDraft';
 import NotFound from './NotFound';
 import './LocationPage.css';
+import { siteLink, siteLinkHref } from '../lib/siteContent';
+import { clinicWhatsappHref } from '../lib/clinicContact';
 
 export default function LocationPage() {
   const { citySlug } = useParams();
   const location = useLocation();
-  const { clinics } = useSiteData();
+  const { clinics, links } = useSiteData();
   const clinicDraft = usePreviewDraft('clinic');
 
   let targetSlug = citySlug;
@@ -49,9 +50,9 @@ export default function LocationPage() {
     subTitle: `Clinică stomatologică în zona ${backendClinic.area}`,
     address: backendClinic.address_full,
     postalCode: backendClinic.postal_code || '',
-    phoneDisplay: phoneContact?.display_value || '0720 509 802',
-    phoneTel: phoneContact?.url?.replace('tel:', '') || '+40720509802',
-    whatsapp: whatsappContact?.url || `https://wa.me/40720509802?text=Buna%20ziua%2C%20doresc%20o%20programare%20la%20${backendClinic.name}`,
+    phoneDisplay: phoneContact?.display_value || phoneContact?.normalized_value || '',
+    phoneTel: phoneContact?.url?.replace('tel:', '') || phoneContact?.normalized_value || '',
+    whatsapp: whatsappContact?.url || clinicWhatsappHref(backendClinic, `Buna ziua, doresc o programare la ${backendClinic.name}.`) || '',
     mapsLink: backendClinic.map_link_url || '',
     embedUrl: backendClinic.map_embed_url || '',
     transit: backendClinic.transit || [],
@@ -59,16 +60,18 @@ export default function LocationPage() {
     hours: backendClinic.hours || [],
   };
 
-  const weekdayNames = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
+  const weekdayNames = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică'];
+  const schemaWeekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const websiteHref = siteLinkHref(siteLink(links, 'social', 'website')) || window.location.origin;
+  const email = siteLink(links, 'email');
 
   const jsonLd = [{
     '@type': 'Dentist',
     name: loc.name,
     description: loc.description,
-    url: `${config.social.website}/locatii/${loc.slug}`,
+    url: new URL(`/locatii/${loc.slug}`, websiteHref).toString(),
     telephone: loc.phoneTel,
-    email: config.email,
-    priceRange: '$$',
+    email: email?.value || email?.display_value,
     address: {
       '@type': 'PostalAddress',
       streetAddress: loc.address,
@@ -76,20 +79,14 @@ export default function LocationPage() {
       postalCode: loc.postalCode,
       addressCountry: 'RO'
     },
-    openingHoursSpecification: [
-      {
+    openingHoursSpecification: loc.hours
+      .filter((hours) => !hours.closed && hours.opens_at && hours.closes_at)
+      .map((hours) => ({
         '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-        opens: '09:00',
-        closes: '19:00'
-      },
-      {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: 'Saturday',
-        opens: '09:00',
-        closes: '15:00'
-      }
-    ],
+        dayOfWeek: schemaWeekdays[hours.weekday],
+        opens: hours.opens_at,
+        closes: hours.closes_at,
+      })),
     hasMap: loc.mapsLink
   },
   {
@@ -124,10 +121,10 @@ export default function LocationPage() {
 
             <div className="info-row">
               <IconPhone size={22} color="var(--accent)" />
-              <div>
+              {loc.phoneTel && <div>
                 <strong>Telefon Programări:</strong>
                 <p><a href={`tel:${loc.phoneTel}`} className="loc-phone-link">{loc.phoneDisplay}</a></p>
-              </div>
+              </div>}
             </div>
 
             <div className="info-row">
@@ -153,12 +150,12 @@ export default function LocationPage() {
             </div>
 
             <div className="loc-actions">
-              <a href={`tel:${loc.phoneTel}`} className="btn btn-dark">
+              {loc.phoneTel && <a href={`tel:${loc.phoneTel}`} className="btn btn-dark">
                 <IconPhone size={18} /> Sună acum ({loc.phoneDisplay})
-              </a>
-              <a href={loc.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+              </a>}
+              {loc.whatsapp && <a href={loc.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
                 <IconWhatsApp size={18} /> Scrie pe WhatsApp
-              </a>
+              </a>}
             </div>
 
             <div className="transit-box">
@@ -214,12 +211,12 @@ export default function LocationPage() {
           <h3>Ai nevoie de o consultație la {loc.name}?</h3>
           <p>Echipa noastră de medici dentiști te așteaptă într-un ambient modern și primitor.</p>
           <div className="loc-actions" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href={`tel:${loc.phoneTel}`} className="btn btn-dark btn-lg">
+            {loc.phoneTel && <a href={`tel:${loc.phoneTel}`} className="btn btn-dark btn-lg">
               <IconPhone size={18} /> Sună acum ({loc.phoneDisplay})
-            </a>
-            <a href={loc.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-lg">
+            </a>}
+            {loc.whatsapp && <a href={loc.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-lg">
               <IconWhatsApp size={18} /> Programează pe WhatsApp
-            </a>
+            </a>}
           </div>
         </div>
       </section>

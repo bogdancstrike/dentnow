@@ -1,6 +1,5 @@
 import Seo from '../components/seo/Seo';
 import PageHero from '../components/ui/PageHero';
-import config from '../config';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { useSiteTexts } from '../hooks/useSiteTexts';
 import { IconPhone, IconClock, IconAlert, IconWhatsApp, IconMapPin } from '../components/ui/Icons';
@@ -165,9 +164,9 @@ export default function DecontatCas() {
                 <IconPhone size={18} /> {t('cas.sidebar.callButton')}
               </button>
 
-              <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-whatsapp full-width cas-wa-btn">
+              <button type="button" onClick={() => openPicker('whatsapp')} className="btn-whatsapp full-width cas-wa-btn">
                 <IconWhatsApp size={18} /> {t('cas.sidebar.whatsappButton')}
-              </a>
+              </button>
 
               <div className="cas-phone-lines">
                 {clinics.map((clinic) => {
@@ -201,9 +200,9 @@ export default function DecontatCas() {
             <button type="button" className="btn btn-white btn-lg" onClick={() => openPicker('both')}>
               <IconPhone size={18} /> {t('cas.banner.callButton')}
             </button>
-            <a href={config.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline-white btn-lg">
+            <button type="button" onClick={() => openPicker('whatsapp')} className="btn btn-outline-white btn-lg">
               <IconWhatsApp size={18} /> {t('cas.banner.whatsappButton')}
-            </a>
+            </button>
           </div>
         </div>
       </section>
