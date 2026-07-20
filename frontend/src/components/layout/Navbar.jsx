@@ -65,17 +65,6 @@ export default function Navbar() {
   }, [treatments, clinics]);
 
   const dynamicMobileNavLinks = useMemo(() => {
-    const categories = [];
-    const catMap = new Map();
-    treatments.forEach((t) => {
-      const catName = t.category_label || 'Altele';
-      const catSlug = t.category_slug || 'altele';
-      if (!catMap.has(catName)) {
-        catMap.set(catName, { label: catName, to: `/tratamente#${catSlug}` });
-        categories.push(catMap.get(catName));
-      }
-    });
-
     const clinicLinks = clinics.map(c => ({
       label: c.name,
       to: `/locatii/${c.slug}`
@@ -89,9 +78,7 @@ export default function Navbar() {
       
       const before = mobileNavLinks.slice(0, treatmentsIndex + 1);
       const dynamic = [
-        ...categories,
         { label: 'Urgențe Dentare București', to: '/urgente-dentare-bucuresti' },
-        { label: 'Implant Dentar București', to: '/implant-dentar-bucuresti' },
         { label: 'Oferte', to: '/oferte' },
         ...clinicLinks
       ];
@@ -100,7 +87,7 @@ export default function Navbar() {
       return [...before, ...dynamic, ...after];
     }
     return mobileNavLinks;
-  }, [treatments, clinics]);
+  }, [clinics]);
 
   const closeMenus = () => { setMobileOpen(false); setOpenMenu(''); };
 
