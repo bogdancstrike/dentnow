@@ -308,6 +308,24 @@ class TechnologyService(CrudService):
 
     def serialize(self, obj): return serialize_technology(obj)
 
+    def to_create_kwargs(self, data):
+        data = dict(data)
+        if "media_id" in data:
+            data["media_id"] = uuid.UUID(str(data["media_id"])) if data["media_id"] else None
+        return data
+
+    def to_update_values(self, data, obj):
+        return self.to_create_kwargs(data)
+
+    def before_write(self, obj, data, *, creating):
+        if obj.media_id:
+            asset = self.session.get(MediaAsset, obj.media_id)
+            if asset is None or asset.deleted_at is not None:
+                raise ValidationError(
+                    "technology image does not exist",
+                    details={"field": "media_id"},
+                )
+
 
 class PartnerService(CrudService):
     model = Partner

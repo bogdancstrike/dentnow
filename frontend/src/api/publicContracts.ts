@@ -89,6 +89,23 @@ export const PartnerSchema = z.object({
   position: z.number().default(0),
 });
 
+export const TechnologySchema = z.object({
+  name: z.string(),
+  description: z.string().nullable().optional(),
+  media_id: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
+export const EbookSchema = z.object({
+  slug: z.string(),
+  title: z.string(),
+  category: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  cover_media_id: z.string().nullable().optional(),
+  download_media_id: z.string().nullable().optional(),
+  position: z.number().default(0),
+});
+
 export const QuizSchema = z.object({
   slug: z.string(),
   title: z.string(),
@@ -173,6 +190,8 @@ export const BootstrapSchema = z.object({
   clinics: z.array(ClinicSchema).default([]),
   doctors: z.array(DoctorSchema).default([]),
   partners: z.array(PartnerSchema).default([]),
+  technologies: z.array(TechnologySchema).default([]),
+  ebooks: z.array(EbookSchema).default([]),
   homepage_services: z.array(HomepageServiceSchema).default([]),
   gallery: z.array(GalleryImageSchema).default([]),
   decontat_cas: z
@@ -248,6 +267,8 @@ export type Bootstrap = z.infer<typeof BootstrapSchema>;
 export type Clinic = z.infer<typeof ClinicSchema>;
 export type Doctor = z.infer<typeof DoctorSchema>;
 export type Partner = z.infer<typeof PartnerSchema>;
+export type Technology = z.infer<typeof TechnologySchema>;
+export type Ebook = z.infer<typeof EbookSchema>;
 export type Page = z.infer<typeof PageSchema>;
 export type ArticleSummary = z.infer<typeof ArticleSummarySchema>;
 export type Treatment = z.infer<typeof TreatmentSchema>;

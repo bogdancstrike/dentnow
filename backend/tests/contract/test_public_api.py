@@ -295,6 +295,55 @@ def test_public_bootstrap_includes_active_quiz_children(client, admin):
             ).status_code in (200, 204)
 
 
+def test_public_bootstrap_includes_admin_technologies_and_ebooks(client, admin):
+    technology_id = None
+    ebook_id = None
+    ebook_slug = f"ghid-{uuid.uuid4().hex[:8]}"
+    try:
+        technology = client.post(
+            "/api/v1/admin/technologies",
+            json={
+                "name": "Scanner configurabil",
+                "description": "Descriere publicată din Admin.",
+                "position": -100,
+                "active": True,
+            },
+            headers=admin,
+        )
+        assert technology.status_code == 201, technology.get_data(as_text=True)
+        technology_id = technology.get_json()["id"]
+
+        ebook = client.post(
+            "/api/v1/admin/ebooks",
+            json={
+                "slug": ebook_slug,
+                "title": "Ghid configurabil",
+                "category": "Prevenție",
+                "description": "Descriere e-book publicată din Admin.",
+                "position": -100,
+                "active": True,
+            },
+            headers=admin,
+        )
+        assert ebook.status_code == 201, ebook.get_data(as_text=True)
+        ebook_id = ebook.get_json()["id"]
+
+        body = client.get("/api/v1/public/bootstrap").get_json()
+        assert body["technologies"][0]["name"] == "Scanner configurabil"
+        assert body["ebooks"][0]["slug"] == ebook_slug
+    finally:
+        if technology_id:
+            assert client.delete(
+                f"/api/v1/admin/technologies/{technology_id}",
+                headers={**admin, "If-Match": '"1"'},
+            ).status_code in (200, 204)
+        if ebook_id:
+            assert client.delete(
+                f"/api/v1/admin/ebooks/{ebook_id}",
+                headers={**admin, "If-Match": '"1"'},
+            ).status_code in (200, 204)
+
+
 def test_public_content_uses_admin_positions_and_exposes_rich_doctor_profile(client, admin):
     doctor_id = None
     try:

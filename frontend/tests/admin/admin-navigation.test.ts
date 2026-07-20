@@ -6,5 +6,6 @@ describe('admin navigation', () => {
     const slugs = ADMIN_NAV_ITEMS.map((item) => item.slug);
     expect(slugs).not.toContain('audit');
     expect(slugs).not.toContain('media');
+    expect(slugs).toEqual(expect.arrayContaining(['tehnologii', 'ebookuri']));
   });
 });

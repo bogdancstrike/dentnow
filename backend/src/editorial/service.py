@@ -33,6 +33,7 @@ from src.editorial.serializers import (
     serialize_quiz,
     serialize_review,
 )
+from src.media.models import MediaAsset
 
 
 class _Slug:
@@ -124,7 +125,28 @@ class EbookService(CrudService, _Slug):
     search_columns = ("title", "slug", "description")
 
     def serialize(self, obj): return serialize_ebook(obj)
-    def before_write(self, obj, data, *, creating): self._slug_unique(obj, creating)
+
+    def to_create_kwargs(self, data):
+        data = dict(data)
+        for field in ("cover_media_id", "download_media_id"):
+            if field in data:
+                data[field] = uuid.UUID(str(data[field])) if data[field] else None
+        return data
+
+    def to_update_values(self, data, obj):
+        return self.to_create_kwargs(data)
+
+    def before_write(self, obj, data, *, creating):
+        self._slug_unique(obj, creating)
+        for field in ("cover_media_id", "download_media_id"):
+            asset_id = getattr(obj, field)
+            if asset_id:
+                asset = self.session.get(MediaAsset, asset_id)
+                if asset is None or asset.deleted_at is not None:
+                    raise ValidationError(
+                        "ebook media does not exist",
+                        details={"field": field},
+                    )
 
 
 class LegalService(CrudService):

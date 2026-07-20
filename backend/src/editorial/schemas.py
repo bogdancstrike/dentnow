@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import uuid
 from datetime import date
 from typing import Optional
 
@@ -19,6 +20,15 @@ def _slug(v):
     if v is not None and not SLUG_RE.match(v):
         raise ValueError("slug must be kebab-case")
     return v
+
+
+def _optional_uuid(v):
+    if v in (None, ""):
+        return None
+    try:
+        return str(uuid.UUID(str(v)))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise ValueError("value must be a valid UUID") from exc
 
 
 class ArticleCreate(_Strict):
@@ -123,9 +133,13 @@ class EbookCreate(_Strict):
     title: str
     category: Optional[str] = None
     description: Optional[str] = None
+    cover_media_id: Optional[str] = None
+    download_media_id: Optional[str] = None
     active: bool = True
     position: int = 0
     _s = field_validator("slug")(classmethod(lambda c, v: _slug(v)))
+    _cover = field_validator("cover_media_id", mode="before")(classmethod(lambda c, v: _optional_uuid(v)))
+    _download = field_validator("download_media_id", mode="before")(classmethod(lambda c, v: _optional_uuid(v)))
 
 
 class EbookUpdate(_Strict):
@@ -133,8 +147,12 @@ class EbookUpdate(_Strict):
     title: Optional[str] = None
     category: Optional[str] = None
     description: Optional[str] = None
+    cover_media_id: Optional[str] = None
+    download_media_id: Optional[str] = None
     active: Optional[bool] = None
     position: Optional[int] = None
+    _cover = field_validator("cover_media_id", mode="before")(classmethod(lambda c, v: _optional_uuid(v)))
+    _download = field_validator("download_media_id", mode="before")(classmethod(lambda c, v: _optional_uuid(v)))
 
 
 class LegalCreate(_Strict):

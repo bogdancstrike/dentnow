@@ -249,6 +249,77 @@ const homepageServices = makeConfig({
   ),
 });
 
+const technologies = makeConfig({
+  title: 'Tehnologii',
+  singular: 'tehnologie',
+  endpoint: '/v1/admin/technologies',
+  reorderable: true,
+  columns: [
+    { title: 'Nume', dataIndex: 'name' },
+    { title: 'Descriere', dataIndex: 'description', ellipsis: true },
+    { title: 'Ordine', dataIndex: 'position' },
+    { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/#tehnologii" target="_blank" rel="noopener noreferrer">Vezi</Button> },
+  ],
+  defaults: { active: true, position: 0 },
+  previewPath: () => '/#tehnologii',
+  previewKind: 'technology',
+  previewAlwaysDraft: true,
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
+  }),
+  form: ({ client }) => (
+    <>
+      <Item name="media_id" label="Imagine">
+        <ImageUploadField client={client} altText="Tehnologie DentNow" variant="hero" width={220} height={140} />
+      </Item>
+      <Item name="name" label="Nume" rules={[{ required: true }]}><Input /></Item>
+      <Item name="description" label="Descriere"><Input.TextArea rows={3} /></Item>
+      <Item name="position" label="Ordine"><Input type="number" min={0} /></Item>
+      <Item name="active" label="Activ" valuePropName="checked"><input type="checkbox" /></Item>
+    </>
+  ),
+});
+
+const ebooks = makeConfig({
+  title: 'E-bookuri',
+  singular: 'e-book',
+  endpoint: '/v1/admin/ebooks',
+  reorderable: true,
+  columns: [
+    { title: 'Titlu', dataIndex: 'title' },
+    { title: 'Categorie', dataIndex: 'category' },
+    { title: 'Adresă', dataIndex: 'slug' },
+    { title: 'Ordine', dataIndex: 'position' },
+    { title: 'Activ', dataIndex: 'active', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/ebook" target="_blank" rel="noopener noreferrer">Vezi</Button> },
+  ],
+  defaults: { active: true, position: 0 },
+  previewPath: () => '/ebook',
+  previewKind: 'ebook',
+  previewAlwaysDraft: true,
+  toPreviewDraft: (values, row) => ({
+    ...row,
+    ...values,
+    __preview_position: row ? Number((row as unknown as Record<string, unknown>).position) : undefined,
+  }),
+  form: ({ client }) => (
+    <>
+      <Item name="cover_media_id" label="Copertă">
+        <ImageUploadField client={client} altText="Copertă e-book DentNow" variant="hero" width={180} height={230} />
+      </Item>
+      <Item name="title" label="Titlu" rules={[{ required: true }]}><Input /></Item>
+      <Item name="slug" label="Identificator" rules={[{ required: true }]}><Input placeholder="ghid-igiena-orala" /></Item>
+      <Item name="category" label="Categorie"><Input /></Item>
+      <Item name="description" label="Descriere"><Input.TextArea rows={3} /></Item>
+      <Item name="position" label="Ordine"><Input type="number" min={0} /></Item>
+      <Item name="active" label="Activ" valuePropName="checked"><input type="checkbox" /></Item>
+    </>
+  ),
+});
+
 const gallery = makeConfig({
   title: 'Galerie clinică',
   singular: 'imagine',
@@ -345,7 +416,8 @@ const beforeAfter = makeConfig({
 });
 
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
-  legal, quiz, news, reviews, 'homepage-services': homepageServices, gallery, 'before-after': beforeAfter,
+  legal, quiz, news, reviews, 'homepage-services': homepageServices, technologies, ebooks,
+  gallery, 'before-after': beforeAfter,
 };
 
 /** Generic list+editor config for a nav key, or null for bespoke/other screens. */
