@@ -46,7 +46,7 @@ function renderEditor() {
 }
 
 describe('TreatmentEditorScreen', () => {
-  it('waits for a name, previews the entered slug, and submits the API detail field', async () => {
+  it('waits for a name and previews the draft on the treatments index', async () => {
     let submitted: Record<string, unknown> | undefined;
     server.use(
       http.get('/api/v1/admin/treatment-categories', () => HttpResponse.json({ items: [], total: 0 })),
@@ -70,12 +70,11 @@ describe('TreatmentEditorScreen', () => {
     expect(preview).toHaveAttribute('data-draft', '');
 
     await user.click(screen.getByRole('button', { name: /Precompletează/ }));
-    await waitFor(() => expect(preview).toHaveAttribute('data-path', '/tratamente/implant-dentar-premium'));
-    expect(JSON.parse(preview.getAttribute('data-draft') || '{}').data.detail_html).toContain('De ce să alegi implantul dentar?');
+    await waitFor(() => expect(preview).toHaveAttribute('data-path', '/tratamente'));
+    expect(JSON.parse(preview.getAttribute('data-draft') || '{}').data.name).toBe('Implant Dentar Premium');
 
     fireEvent.click(screen.getByRole('button', { name: /Salvează/ }));
     await waitFor(() => expect(submitted).toBeDefined());
-    expect(submitted).toHaveProperty('detail_markdown');
-    expect(submitted).not.toHaveProperty('body_markdown');
+    expect(submitted?.name).toBe('Implant Dentar Premium');
   });
 });

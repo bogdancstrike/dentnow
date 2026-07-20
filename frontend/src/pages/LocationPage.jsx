@@ -12,7 +12,7 @@ import { clinicWhatsappHref } from '../lib/clinicContact';
 export default function LocationPage() {
   const { citySlug } = useParams();
   const location = useLocation();
-  const { clinics, links } = useSiteData();
+  const { clinics, links, site } = useSiteData();
   const clinicDraft = usePreviewDraft('clinic');
 
   let targetSlug = citySlug;
@@ -45,7 +45,7 @@ export default function LocationPage() {
   const loc = {
     slug: backendClinic.slug,
     title: `Clinică Stomatologică ${backendClinic.area} — ${backendClinic.name}`,
-    description: `DentNow ${backendClinic.area} — Cabinet stomatologic modern pe ${backendClinic.address_full}.`,
+    description: `${site.site_name} ${backendClinic.area || ''} — ${backendClinic.address_full || ''}.`,
     name: backendClinic.name,
     subTitle: `Clinică stomatologică în zona ${backendClinic.area}`,
     address: backendClinic.address_full,
@@ -75,7 +75,6 @@ export default function LocationPage() {
     address: {
       '@type': 'PostalAddress',
       streetAddress: loc.address,
-      addressLocality: 'București',
       postalCode: loc.postalCode,
       addressCountry: 'RO'
     },
@@ -108,14 +107,14 @@ export default function LocationPage() {
         <div className="location-grid">
           {/* Left info column */}
           <div className="location-info-card">
-            <div className="loc-badge">Clinică DentNow</div>
+            <div className="loc-badge">{site.site_name}</div>
             <h2>Informații & Contact Sediul {loc.name}</h2>
             
             <div className="info-row">
               <IconMapPin size={22} color="var(--accent)" />
               <div>
                 <strong>Adresă Clinică:</strong>
-                <p>{loc.address}, București</p>
+                <p>{loc.address}</p>
               </div>
             </div>
 

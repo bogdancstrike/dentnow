@@ -53,10 +53,14 @@ export function ResourceEditorScreen<T extends ResourceRow & { version: number }
   }, [editing, form, config]);
 
   const save = useMutation({
-    mutationFn: async (values: Record<string, unknown>) =>
-      query.data
-        ? (await client.patch<T>(`${config.endpoint}/${query.data.id}`, values, `"${query.data.version}"`)).data
-        : (await client.post<T>(config.endpoint, values)).data,
+    mutationFn: async (values: Record<string, unknown>) => {
+      const requestValues = config.toRequestValues
+        ? config.toRequestValues(values, query.data ?? null)
+        : values;
+      return query.data
+        ? (await client.patch<T>(`${config.endpoint}/${query.data.id}`, requestValues, `"${query.data.version}"`)).data
+        : (await client.post<T>(config.endpoint, requestValues)).data;
+    },
     onSuccess: (row) => {
       setDirty(false);
       message.success('Salvat');

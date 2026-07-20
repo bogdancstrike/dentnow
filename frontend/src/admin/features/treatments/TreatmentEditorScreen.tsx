@@ -20,10 +20,8 @@ import type { AdminClient } from '../../api/adminClient';
 import { VersionConflictError } from '../../api/adminClient';
 import type { TreatmentRow } from './TreatmentsScreen';
 import { LivePreview } from '../../components/LivePreview';
-import { RichTextEditor } from '../../components/RichTextEditor';
 import { RemoteSelect, type RemoteSelectOption } from '../../components/RemoteSelect';
 import '../editorial/articles.css'; // Reuse article layout CSS
-import { previewMarkdown } from '../../../api/previewDraft';
 import { AdminRequestError } from '../../components/AdminRequestError';
 
 interface TreatmentFormValues extends TreatmentRow {}
@@ -113,9 +111,9 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
   if (editing && treatmentQuery.isError) return <AdminRequestError error={treatmentQuery.error} />;
-  const previewCategoryLabel = categoryOptions.find(
+  const previewCategory = categoryOptions.find(
     (option) => option.value === values.category_id,
-  )?.label;
+  );
 
   return (
     <div className="article-editor-grid">
@@ -145,7 +143,6 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
                   homepage_featured: true,
                   homepage_label: 'Implanturi',
                   homepage_icon: 'Smile',
-                  detail_markdown: '## De ce să alegi implantul dentar?\n\nImplantul dentar este soluția permanentă pentru înlocuirea unui dinte pierdut.\n\n### Avantaje:\n- Aspect natural\n- Durabilitate pe viață\n- Nu afectează dinții vecini\n- Funcționalitate completă\n\n### Etapele tratamentului:\n1. Consultație și planificare\n2. Inserarea implantului\n3. Perioada de osteointegrare (3-6 luni)\n4. Montarea coroanei finale',
                 });
                 setDirty(true);
               }}
@@ -201,28 +198,24 @@ export function TreatmentEditorScreen({ client }: { client: AdminClient }) {
             </Form.Item>
           </div>
 
-          <div className="article-form-section" style={{ marginTop: 24, marginBottom: 40 }}>
-            <Typography.Title level={4}>Conținut Pagina Detaliată</Typography.Title>
-            <Form.Item name="detail_markdown" label="Conținut (suportă Markdown)">
-              <RichTextEditor />
-            </Form.Item>
-          </div>
         </Form>
       </div>
 
       <div className="article-editor-preview-panel">
         <LivePreview
-          path={`/tratamente/${values.slug || treatmentQuery.data?.slug || 'previzualizare'}`}
-          ready={Boolean(treatmentQuery.data?.slug)}
+          path="/tratamente"
+          ready
           reloadToken={treatmentQuery.data?.version}
-          urlLabel={`dentnow.ro/tratamente/${values.slug || treatmentQuery.data?.slug || 'tratament-nou'}`}
+          urlLabel="dentnow.ro/tratamente"
           draft={(!editing || dirty) && Boolean(values.name || treatmentQuery.data?.name) ? {
             kind: 'treatment',
             data: {
               ...treatmentQuery.data,
               ...values,
-              ...(previewCategoryLabel ? { category_label: previewCategoryLabel } : {}),
-              detail_html: previewMarkdown(String(values.detail_markdown || treatmentQuery.data?.detail_markdown || '')),
+              ...(previewCategory ? {
+                category_label: previewCategory.label,
+                category_slug: previewCategory.row.slug,
+              } : {}),
             },
           } : null}
         />

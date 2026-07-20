@@ -8,6 +8,7 @@ import Seo from '../components/seo/Seo';
 import ContactCTA from '../components/sections/ContactCTA';
 import './Tratamente.css';
 import { useSiteTexts } from '../hooks/useSiteTexts';
+import { usePreviewDraft } from '../api/previewDraft';
 
 export default function Tratamente() {
   const t = useSiteTexts();
@@ -18,8 +19,19 @@ export default function Tratamente() {
     queryKey: publicQueryKeys.treatments,
     queryFn: fetchTreatments,
   });
+  const treatmentDraft = usePreviewDraft('treatment');
+  const previewTreatments = treatmentDraft
+    ? (() => {
+        const index = treatments.findIndex((item) =>
+          (treatmentDraft.id && item.id === treatmentDraft.id)
+          || (treatmentDraft.slug && item.slug === treatmentDraft.slug),
+        );
+        if (index < 0) return [...treatments, { ...treatmentDraft, prices: treatmentDraft.prices || [] }];
+        return treatments.map((item, itemIndex) => itemIndex === index ? { ...item, ...treatmentDraft } : item);
+      })()
+    : treatments;
 
-  const revealRef = useRevealAll([treatments]);
+  const revealRef = useRevealAll([previewTreatments]);
 
   useEffect(() => {
     const sections = document.querySelectorAll('.tarife-cat');
@@ -31,12 +43,12 @@ export default function Tratamente() {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, [treatments]);
+  }, [previewTreatments]);
 
   const categories = [];
   const catMap = new Map();
 
-  treatments.forEach((t) => {
+  previewTreatments.forEach((t) => {
     const catName = t.category_label || 'Altele';
     const catSlug = t.category_slug || 'altele';
     if (!catMap.has(catName)) {
@@ -44,7 +56,8 @@ export default function Tratamente() {
       categories.push(catMap.get(catName));
     }
     const cat = catMap.get(catName);
-    t.prices.forEach((p) => {
+    const prices = t.prices?.length ? t.prices : [{ price_kind: 'on_request' }];
+    prices.forEach((p) => {
       cat.rows.push({
         name: t.name,
         slug: t.slug,
@@ -59,7 +72,7 @@ export default function Tratamente() {
 
   return (
     <div ref={revealRef}>
-      <Seo title="Tratamente si tarife DentNow" description="Lista de tratamente stomatologice DentNow, preturi de pornire, pachete si detalii pentru programare." path="/tratamente" />
+      <Seo path="/tratamente" />
       <PageHero tag={t('tratamente.hero.tag')} title={t('tratamente.hero.title')} subtitle={t('tratamente.hero.subtitle')} />
 
       <div className="jump-nav">
@@ -70,8 +83,8 @@ export default function Tratamente() {
         <div className="cas-banner rv">
           <span className="banner-mark">CAS</span>
           <div>
-            <div className="banner-title">Lucram cu CAS - Cardul de Sanatate</div>
-            <p>Acoperirea depinde de eligibilitate si de serviciile disponibile. Copiii pot beneficia de servicii decontate conform regulilor CAS.</p>
+            <div className="banner-title">{t('tratamente.cas.title')}</div>
+            <p>{t('tratamente.cas.text')}</p>
           </div>
         </div>
 
@@ -103,14 +116,14 @@ export default function Tratamente() {
         <div className="payment-box rv">
           <span className="banner-mark">Rate</span>
           <div>
-            <div className="banner-title">Plata in rate - de confirmat cu clinica</div>
-            <p>Conditiile de plata trebuie validate de clinica inainte de publicare.</p>
+            <div className="banner-title">{t('tratamente.payment.title')}</div>
+            <p>{t('tratamente.payment.text')}</p>
             <button type="button" onClick={() => openPicker('call')} className="btn btn-dark btn-sm">Suna acum</button>
           </div>
         </div>
 
         <div id="programare-tratamente" className="tarife-appointment rv">
-          <ContactCTA title="Programează-te pentru tratament" service="Consultatie" source="tratamente" />
+          <ContactCTA title={t('tratamente.cta.title')} service="Consultatie" source="tratamente" />
         </div>
       </div>
     </div>

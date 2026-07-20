@@ -37,12 +37,12 @@ export default function Noutati() {
 
   return (
     <div ref={ref}>
-      <Seo title="Noutati DentNow" description="Actualizari DentNow despre program, preturi si continut care trebuie aprobat de clinica." path="/noutati" />
+      <Seo path="/noutati" />
       <PageHero tag={t('noutati.hero.tag')} title={t('noutati.hero.title')} subtitle={t('noutati.hero.subtitle')} />
       <div className="news-grid">
         {mainNews ? (
           <article className="news-main rv">
-            <img className="news-main-img" src={mainNews.media_id ? mediaUrl(mainNews.media_id, 'hero') : "/assets/dentnow/clinic-exterior.svg"} alt={mainNews.title} />
+            {mainNews.media_id && <img className="news-main-img" src={mediaUrl(mainNews.media_id, 'hero')} alt={mainNews.title} />}
             <div className="news-main-body">
               <div className="news-cat">{mainNews.category || 'Noutate'}</div>
               <h2 className="news-main-title">{mainNews.title}</h2>
@@ -52,16 +52,7 @@ export default function Noutati() {
             </div>
           </article>
         ) : (
-          <article className="news-main rv">
-            <img className="news-main-img" src="/assets/dentnow/clinic-exterior.svg" alt="Placeholder pentru noutati DentNow" />
-            <div className="news-main-body">
-              <div className="news-cat">Lansare continut</div>
-              <h2 className="news-main-title">Noutatile DentNow sunt pregatite pentru informatii aprobate de clinica.</h2>
-              <div className="news-date">Iulie 2026</div>
-              <p className="news-text">Foloseste aceasta pagina pentru program, servicii noi, schimbari de preturi sau informatii utile. Evita promotiile fara data clara de valabilitate.</p>
-              <Link to="/tratamente" className="btn btn-dark">Vezi tarifele actualizate</Link>
-            </div>
-          </article>
+          <p className="news-empty">Nu există noutăți publicate.</p>
         )}
         <div className="news-side">
           {sideNews.map((n, i) => (

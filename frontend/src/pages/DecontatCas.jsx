@@ -20,7 +20,7 @@ function BenefitItem({ text }) {
 export default function DecontatCas() {
   const openPicker = useClinicPicker();
   const t = useSiteTexts();
-  const { decontat_cas: cas, clinics } = useSiteData();
+  const { decontat_cas: cas, clinics, site } = useSiteData();
   const steps = (cas?.steps || []).map((s) => ({ title: s.title, text: s.text || '' }));
   const faqs = cas?.faqs || [];
   const clinicCount = clinics.length;
@@ -29,10 +29,8 @@ export default function DecontatCas() {
   const jsonLd = [
     {
       '@type': 'MedicalProcedure',
-      name: 'Tratamente Dentare Decontate CAS DentNow',
-      description:
-        'Servicii stomatologice decontate prin Casa Națională de Asigurări de Sănătate (CAS) și stomatologie gratuită pentru copii la DentNow București.',
-      procedureType: 'Pedodonție & Prevenție CAS'
+      name: `${t('cas.hero.title')} — ${site.site_name}`,
+      description: t('cas.hero.subtitle'),
     },
     {
       '@type': 'FAQPage',
@@ -46,12 +44,7 @@ export default function DecontatCas() {
 
   return (
     <div>
-      <Seo
-        title="Tratamente Dentare Decontate CAS & Stomatologie Copii Gratuit | DentNow"
-        description="Beneficiază de servicii stomatologice GRATUITE pentru copii și tratamente decontate prin CAS la clinica DentNow din București. Află actele necesare!"
-        path="/decontat-cas"
-        jsonLd={jsonLd}
-      />
+      <Seo path="/decontat-cas" jsonLd={jsonLd} />
 
       <PageHero
         tag={t('cas.hero.tag')}

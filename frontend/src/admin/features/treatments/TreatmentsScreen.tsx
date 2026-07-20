@@ -83,7 +83,7 @@ export function TreatmentsScreen({ client }: { client: AdminClient }) {
         { title: 'Nume', dataIndex: 'name' },
         { title: 'Adresă', dataIndex: 'slug' },
         { title: 'Activ', dataIndex: 'active', render: (v) => v ? 'Da' : 'Nu' },
-        { title: 'View', render: (_, row) => <Button type="link" icon={<EyeOutlined />} href={`/tratamente/${row.slug}`} target="_blank" rel="noopener noreferrer">Vezi</Button> },
+        { title: 'View', render: () => <Button type="link" icon={<EyeOutlined />} href="/tratamente" target="_blank" rel="noopener noreferrer">Vezi</Button> },
         {
           title: 'Acțiuni',
           key: 'actions',

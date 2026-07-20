@@ -48,6 +48,9 @@ export const ADMIN_NAVIGATION: { group: string; items: AdminNavItem[] }[] = [
   {
     group: 'Guvernanță',
     items: [
+      { slug: 'pagini', key: 'pages', label: 'Pagini publice', capability: CAP.contentRead },
+      { slug: 'sectiuni-pagini', key: 'page-sections', label: 'Secțiuni pagini', capability: CAP.contentRead },
+      { slug: 'seo-pagini', key: 'page-seo', label: 'SEO pagini', capability: CAP.contentRead },
       { slug: 'legal', key: 'legal', label: 'Legal / GDPR', capability: CAP.contentRead },
     ],
   },

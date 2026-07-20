@@ -6,6 +6,25 @@ import { MemoryRouter } from 'react-router-dom';
 vi.mock('../../src/public-site/SiteDataProvider', () => ({
   useOptionalSiteData: () => null,
   useSiteData: () => ({
+    site: { site_name: 'Clinica Test' },
+    navigation: {
+      desktop: [
+        { label: 'Tratamente', target_path: '/tratamente', children: [
+          { label: 'Toate tratamentele', target_path: '/tratamente', children: [] },
+          { label: 'Urgențe dentare', target_path: '/urgente-dentare-bucuresti', children: [] },
+        ] },
+        { label: 'Decontare CAS', target_path: '/decontat-cas', children: [] },
+        { label: 'Resurse', target_path: '/articole', children: [
+          { label: 'Articole', target_path: '/articole', children: [] },
+          { label: 'Noutăți', target_path: '/noutati', children: [] },
+        ] },
+      ],
+    },
+    pages: {
+      '/gdpr': { title: 'GDPR' },
+      '/confidentialitate': { title: 'Confidențialitate' },
+      '/termeni': { title: 'Termeni' },
+    },
     links: [
       { kind: 'email', label: 'Email', value: 'contact@dentnow.test', url: 'mailto:contact@dentnow.test' },
       { kind: 'social', label: 'facebook', value: 'https://facebook.test/dentnow' },
@@ -31,14 +50,6 @@ vi.mock('../../src/public-site/SiteDataProvider', () => ({
     ],
   }),
 }));
-vi.mock('../../src/api/publicClient', () => ({
-  publicQueryKeys: { treatments: ['public', 'treatments'] },
-  fetchTreatments: async () => [
-    { slug: 'implant-dentar', name: 'Implant dentar' },
-    { slug: 'igienizare', name: 'Igienizare profesională' },
-  ],
-}));
-
 import Footer from '../../src/components/layout/Footer';
 
 describe('Footer', () => {
@@ -50,7 +61,8 @@ describe('Footer', () => {
       </QueryClientProvider>,
     );
 
-    expect(await screen.findByRole('link', { name: 'Implant dentar' })).toHaveAttribute('href', '/tratamente/implant-dentar');
+    expect(screen.getByRole('link', { name: 'Toate tratamentele' })).toHaveAttribute('href', '/tratamente');
+    expect(screen.queryByText('Implant dentar')).not.toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: /DentNow Victoriei/ })[0]).toHaveAttribute('href', '/locatii/victoriei');
     expect(screen.getByRole('link', { name: '0700 000 002' })).toHaveAttribute('href', 'tel:+40700000002');
     expect(screen.getAllByRole('link', { name: /WhatsApp/i }).some(
@@ -69,7 +81,6 @@ describe('Footer', () => {
       const href = link.getAttribute('href') || '';
       expect(
         fixedRoutes.has(href)
-        || href.startsWith('/tratamente/')
         || href.startsWith('/locatii/'),
       ).toBe(true);
     }

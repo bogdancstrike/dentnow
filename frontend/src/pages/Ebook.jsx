@@ -17,7 +17,7 @@ export default function Ebook() {
 
   return (
     <div ref={ref}>
-      <Seo title="E-bookuri DentNow" description="Resurse gratuite DentNow pentru igiena orala, implanturi, estetica si preventie." path="/ebook" />
+      <Seo path="/ebook" />
       <PageHero dark tag={t('ebook.hero.tag')} title={t('ebook.hero.title')} subtitle={t('ebook.hero.subtitle')} />
 
       <div className="ebook-grid">

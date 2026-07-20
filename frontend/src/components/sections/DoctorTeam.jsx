@@ -4,8 +4,6 @@ import { mediaUrl } from '../../api/publicClient';
 import './Sections.css';
 import { useSiteTexts } from '../../hooks/useSiteTexts';
 
-const FALLBACK_PORTRAIT = '/assets/dentnow/team.svg';
-
 export default function DoctorTeam() {
   const t = useSiteTexts();
   const { doctors } = useSiteData();
@@ -20,11 +18,11 @@ export default function DoctorTeam() {
       key={`${duplicate ? 'duplicate-' : ''}${doctor.slug || doctor.name}`}
       tabIndex={duplicate ? -1 : undefined}
     >
-      <img
-        src={doctor.portrait_media_id ? mediaUrl(doctor.portrait_media_id) : FALLBACK_PORTRAIT}
+      {doctor.portrait_media_id && <img
+        src={mediaUrl(doctor.portrait_media_id)}
         alt={`Portret ${doctor.name}`}
         loading="lazy"
-      />
+      />}
       <div>
         <h3>{doctor.name}</h3>
         {doctor.role && <p className="doctor-role">{doctor.role}</p>}

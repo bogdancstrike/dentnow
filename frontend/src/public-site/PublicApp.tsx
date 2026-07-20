@@ -17,7 +17,6 @@ import Layout from '../components/layout/Layout';
 
 import Home from '../pages/Home';
 import Tratamente from '../pages/Tratamente';
-import TreatmentDetail from '../pages/TreatmentDetail';
 import Oferte from '../pages/Oferte';
 import Articole from '../pages/Articole';
 import Recenzii from '../pages/Recenzii';
@@ -72,13 +71,6 @@ export default function PublicApp() {
                 path="stomatologie-prelungirea-ghencea"
                 element={<LocationPage />}
               />
-
-              {/* Dedicated treatment pages */}
-              <Route path="tratamente/:slug" element={<TreatmentDetail />} />
-              <Route path="implant-dentar-bucuresti" element={<TreatmentDetail />} />
-              <Route path="aparat-dentar-dristor" element={<TreatmentDetail />} />
-              <Route path="albire-dentara-laser" element={<TreatmentDetail />} />
-              <Route path="protetica-zirconiu" element={<TreatmentDetail />} />
 
               {/* Emergency & CAS pages */}
               <Route path="urgente-dentare-bucuresti" element={<UrgenteDentare />} />

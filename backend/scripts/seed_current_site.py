@@ -50,6 +50,7 @@ ROUTES = [
     ("/oferte", "offers", "offers-index", "Oferte"),
     ("/articole", "articles", "article-index", "Articole"),
     ("/recenzii", "reviews", "generic", "Recenzii"),
+    ("/recenzie", "review-redirect", "generic", "Lasă o recenzie"),
     ("/before-after", "before-after", "generic", "Before & After"),
     ("/noutati", "news", "article-index", "Noutăți"),
     ("/scor-igiena", "quiz", "quiz", "Scor Igienă Orală"),
@@ -63,10 +64,6 @@ ROUTES = [
     ("/stomatologie-dristor", "clinic-dristor", "clinic-detail", "Stomatologie Dristor"),
     ("/stomatologie-baba-novac", "clinic-baba-novac", "clinic-detail", "Stomatologie Baba Novac"),
     ("/stomatologie-prelungirea-ghencea", "clinic-prelungirea-ghencea", "clinic-detail", "Stomatologie Prelungirea Ghencea"),
-    ("/implant-dentar-bucuresti", "treatment-implant", "treatment-detail", "Implant Dentar București"),
-    ("/aparat-dentar-dristor", "treatment-ortodontie", "treatment-detail", "Aparat Dentar Dristor"),
-    ("/albire-dentara-laser", "treatment-albire", "treatment-detail", "Albire Dentară Laser"),
-    ("/protetica-zirconiu", "treatment-protetica", "treatment-detail", "Protetică Zirconiu"),
 ]
 
 
@@ -464,7 +461,8 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
     page_content = data.get("pageContent", {})
     for path_, key, template, title in ROUTES:
         page = Page(path=path_, route_key=key, template_key=template, title=title,
-                    enabled=True, indexable=not path_.startswith(("/gdpr", "/confid", "/termeni")))
+                    enabled=True,
+                    indexable=path_ != "/recenzie" and not path_.startswith(("/gdpr", "/confid", "/termeni")))
         session.add(page)
         session.flush()
         pages_by_path[path_] = page
@@ -475,10 +473,10 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
         if path_.startswith("/stomatologie-"):
             clinic_data = clinic_data_by_slug.get(path_.removeprefix("/stomatologie-"))
 
-        seo_data = None
+        seo_data = data.get("pageSeo", {}).get(path_)
         sections: list[dict] = []
         if authored:
-            seo_data = authored.get("seo")
+            seo_data = authored.get("seo") or seo_data
             sections.extend(authored.get("sections", []))
             if path_ == "/":
                 sections.extend([
@@ -489,14 +487,14 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
                     }},
                 ])
         elif treatment_detail:
-            seo_data = treatment_detail.get("seo")
+            seo_data = treatment_detail.get("seo") or seo_data
             sections.extend([
                 {"block_type": "treatment_hero", "payload": treatment_detail.get("hero", {})},
                 {"block_type": "treatment_overview", "payload": {"text": treatment_detail.get("overview", "")}},
                 {"block_type": "treatment_benefits", "payload": {"items": treatment_detail.get("benefits", [])}},
             ])
         elif clinic_data:
-            seo_data = clinic_data.get("seo")
+            seo_data = clinic_data.get("seo") or seo_data
             sections.append({
                 "block_type": "clinic_intro",
                 "payload": {"subtitle": clinic_data.get("subtitle", "")},
@@ -523,11 +521,13 @@ def seed(session, data: dict, placeholder_media_id: uuid.UUID) -> dict:
         if path_ in page_content
         or path_ in treatment_details
         or path_.startswith("/stomatologie-")
+        or path_ in data.get("pageSeo", {})
     )
+    route_paths = {path_ for path_, *_rest in ROUTES}
     counts["page_sections"] = sum(
         len(content.get("sections", [])) + (3 if path_ == "/" else 0)
         for path_, content in page_content.items()
-    ) + (3 * len(treatment_details)) + len(clinic_data_by_slug)
+    ) + (3 * sum(path_ in route_paths for path_ in treatment_details)) + len(clinic_data_by_slug)
 
     # ── public navigation comes from the seed/database, including nested items ─
     navigation_count = 0
@@ -592,6 +592,7 @@ def main() -> int:
     data = json.loads((SEEDS / "current-site.json").read_text())
     data["siteTexts"] = json.loads((SEEDS / "site-texts.json").read_text())
     data["quizResultBands"] = json.loads((SEEDS / "quiz-result-bands.json").read_text())
+    data["pageSeo"] = json.loads((SEEDS / "page-seo.json").read_text())
     with session_scope() as session:
         if already_seeded(session):
             print("seed: already seeded — no changes")

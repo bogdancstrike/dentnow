@@ -22,6 +22,8 @@ export interface ResourceConfig<T extends ResourceRow> {
   form: (ctx: { editing: T | null; client: AdminClient }) => ReactNode;
   defaults?: Record<string, unknown>;
   toValues?: (row: T) => Record<string, unknown>;
+  /** Convert display-friendly form values into the API request body. */
+  toRequestValues?: (values: Record<string, unknown>, row: T | null) => Record<string, unknown>;
   canWrite?: boolean;
   /** Public path to show in the dedicated editor's live preview. */
   previewPath?: (row: T | null, values?: Record<string, unknown>) => string | null;

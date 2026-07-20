@@ -47,7 +47,7 @@ EXPECTED = {
     "clinic_transit_items": 9, "clinic_faqs": 7,
     "homepage_services": 6, "gallery_images": 6, "cas_steps": 3, "cas_faqs": 5,
     "detailed_treatments": 4, "treatment_faqs": 8,
-    "pages": 22, "page_seo": 10, "page_sections": 34, "legal_documents": 3,
+    "pages": 19, "page_seo": 19, "page_sections": 22, "legal_documents": 3,
 }
 
 

@@ -1,21 +1,10 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { fetchTreatments, publicQueryKeys } from '../../api/publicClient';
 import { useSiteData } from '../../public-site/SiteDataProvider';
 import { useSiteTexts } from '../../hooks/useSiteTexts';
 import { whatsappUrlFor } from '../../lib/leadCapture';
+import { navigationHref } from '../../lib/siteContent';
 import { IconFacebook, IconInstagram, IconWhatsApp, IconLinkedIn } from '../ui/Icons';
 import './Footer.css';
-
-const RESOURCE_LINKS = [
-  { label: 'Oferte', to: '/oferte' },
-  { label: 'Articole', to: '/articole' },
-  { label: 'Noutăți', to: '/noutati' },
-  { label: 'Before & After', to: '/before-after' },
-  { label: 'Scor igienă orală', to: '/scor-igiena' },
-  { label: 'E-bookuri', to: '/ebook' },
-  { label: 'Parteneri', to: '/parteneri' },
-];
 
 function SocialIcon({ label }) {
   const normalized = label.toLowerCase();
@@ -28,25 +17,28 @@ function SocialIcon({ label }) {
 export default function Footer() {
   const siteData = useSiteData();
   const t = useSiteTexts();
-  const { data: treatments = [] } = useQuery({
-    queryKey: publicQueryKeys.treatments,
-    queryFn: fetchTreatments,
-    staleTime: 60_000,
-  });
   const email = siteData.links.find((link) => link.kind === 'email');
+  const siteName = siteData.site?.site_name || '';
   const socialLinks = siteData.links.filter(
     (link) => link.kind === 'social' && ['facebook', 'instagram', 'linkedin'].includes(link.label.toLowerCase()),
   );
-  const serviceLinks = treatments.slice(0, 6).map((treatment) => ({
-    label: treatment.name,
-    to: `/tratamente/${treatment.slug}`,
-  }));
+  const desktopNavigation = siteData.navigation.desktop || [];
+  const treatmentNavigation = desktopNavigation.find((item) => navigationHref(item) === '/tratamente');
+  const resourceNavigation = desktopNavigation.find((item) => navigationHref(item) === '/articole');
+  const fixedServiceLinks = [
+    ...(treatmentNavigation?.children || []).filter((item) => {
+      const href = navigationHref(item);
+      return href === '/tratamente' || href === '/urgente-dentare-bucuresti';
+    }),
+    ...desktopNavigation.filter((item) => navigationHref(item) === '/decontat-cas'),
+  ];
+  const resourceLinks = resourceNavigation?.children || [];
 
   return (
-    <footer className="footer" data-nav-dark>
+    <footer className="footer" id="site-footer" data-nav-dark>
       <div className="footer-top">
         <div>
-          <Link to="/" className="footer-logo">Dent<span>Now</span></Link>
+          <Link to="/" className="footer-logo">{siteName}</Link>
           <p className="footer-desc">{t('footer.description')}</p>
           <div className="footer-social">
             {socialLinks.map((social) => (
@@ -67,10 +59,8 @@ export default function Footer() {
         <div>
           <p className="footer-col-title">Servicii</p>
           <ul className="footer-links">
-            <li><Link to="/tratamente">Toate tratamentele și tarifele</Link></li>
-            {serviceLinks.map((service) => <li key={service.to}><Link to={service.to}>{service.label}</Link></li>)}
-            <li><Link to="/urgente-dentare-bucuresti">Urgențe dentare</Link></li>
-            <li><Link to="/decontat-cas">Decontare CAS</Link></li>
+            {fixedServiceLinks.slice(0, 1).map((item) => <li key={navigationHref(item)}><Link to={navigationHref(item)}>{item.label}</Link></li>)}
+            {fixedServiceLinks.slice(1).map((item) => <li key={navigationHref(item)}><Link to={navigationHref(item)}>{item.label}</Link></li>)}
           </ul>
         </div>
 
@@ -91,7 +81,7 @@ export default function Footer() {
         <div>
           <p className="footer-col-title">Resurse</p>
           <ul className="footer-links">
-            {RESOURCE_LINKS.map((resource) => <li key={resource.to}><Link to={resource.to}>{resource.label}</Link></li>)}
+            {resourceLinks.map((resource) => <li key={navigationHref(resource)}><Link to={navigationHref(resource)}>{resource.label}</Link></li>)}
           </ul>
         </div>
 
@@ -129,11 +119,11 @@ export default function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <p className="footer-copy">© {new Date().getFullYear()} DentNow. Toate drepturile rezervate.</p>
+        <p className="footer-copy">© {new Date().getFullYear()} {siteName}. Toate drepturile rezervate.</p>
         <div className="footer-legal">
-          <Link to="/gdpr">GDPR</Link>
-          <Link to="/confidentialitate">Confidențialitate</Link>
-          <Link to="/termeni">Termeni</Link>
+          {['/gdpr', '/confidentialitate', '/termeni'].map((path) => (
+            siteData.pages?.[path] ? <Link key={path} to={path}>{siteData.pages[path].title}</Link> : null
+          ))}
         </div>
       </div>
     </footer>

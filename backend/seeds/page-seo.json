@@ -1,0 +1,66 @@
+{
+  "/": {
+    "title": "DentNow - Clinica stomatologică în București",
+    "description": "DentNow este o clinică stomatologică în București pentru consultații, urgențe, implanturi, igienizare GBT, albire, ortodonție și tratamente pentru copii."
+  },
+  "/tratamente": {
+    "title": "Tratamente și tarife DentNow",
+    "description": "Lista de tratamente stomatologice DentNow, prețuri de pornire, pachete și detalii pentru programare."
+  },
+  "/oferte": {
+    "title": "Oferte stomatologice DentNow",
+    "description": "Oferte DentNow pentru consultații, igienizare, implanturi și albire. Prețurile se confirmă înainte de tratament."
+  },
+  "/articole": {
+    "title": "Articole stomatologice DentNow",
+    "description": "Ghiduri practice DentNow despre prevenție, implanturi, copii, urgențe și estetică dentară."
+  },
+  "/recenzii": {
+    "title": "Recenzii pacienți DentNow",
+    "description": "Recenzii ale pacienților DentNow și legătura către profilul Google pentru verificare."
+  },
+  "/before-after": {
+    "title": "Before & After DentNow",
+    "description": "Exemple vizuale DentNow publicate numai cu acordul pacienților."
+  },
+  "/noutati": {
+    "title": "Noutăți DentNow",
+    "description": "Actualizări DentNow despre program, servicii și informații aprobate de clinică."
+  },
+  "/scor-igiena": {
+    "title": "Scor igienă orală DentNow",
+    "description": "Test rapid DentNow pentru evaluarea obiceiurilor de igienă orală și recomandări configurate de clinică."
+  },
+  "/parteneri": {
+    "title": "Parteneri și tehnologii DentNow",
+    "description": "Parteneri, furnizori și tehnologii folosite sau menționate de DentNow."
+  },
+  "/ebook": {
+    "title": "E-bookuri DentNow",
+    "description": "Resurse DentNow pentru igienă orală, implanturi, estetică și prevenție."
+  },
+  "/decontat-cas": {
+    "title": "Tratamente dentare decontate CAS și stomatologie pentru copii | DentNow",
+    "description": "Servicii stomatologice pentru copii și tratamente eligibile pentru decontare CAS la clinicile DentNow din București."
+  },
+  "/urgente-dentare-bucuresti": {
+    "title": "Urgențe dentare București — programări rapide | DentNow",
+    "description": "Pentru durere acută, abces sau traumă dentară, contactează clinicile DentNow din București pentru evaluarea disponibilității."
+  },
+  "/gdpr": {
+    "title": "GDPR DentNow",
+    "description": "Informații despre prelucrarea datelor personale prin website-ul și canalele de contact DentNow."
+  },
+  "/confidentialitate": {
+    "title": "Politica de confidențialitate DentNow",
+    "description": "Politica de confidențialitate pentru website-ul DentNow, programări și canalele de contact."
+  },
+  "/termeni": {
+    "title": "Termeni și condiții DentNow",
+    "description": "Termeni și condiții pentru utilizarea website-ului DentNow, programări, informații medicale și oferte."
+  },
+  "/recenzie": {
+    "title": "Lasă o recenzie DentNow",
+    "description": "Redirecționare către pagina oficială de recenzii DentNow pe Google Maps."
+  }
+}

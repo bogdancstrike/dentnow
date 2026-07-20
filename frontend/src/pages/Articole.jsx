@@ -56,7 +56,7 @@ export default function Articole() {
 
   return (
     <div ref={ref}>
-      <Seo title="Articole stomatologice DentNow" description="Ghiduri practice DentNow despre preventie, implanturi, copii, urgente si estetica dentara." path="/articole" />
+      <Seo path="/articole" />
       <PageHero tag={t('articole.hero.tag')} title={t('articole.hero.title')} subtitle={t('articole.hero.subtitle')} />
       <div className="articles-grid">
         {loadingList ? <div style={{ padding: '2rem', textAlign: 'center' }}>Incarcare...</div> : null}

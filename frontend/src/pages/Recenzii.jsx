@@ -23,22 +23,22 @@ export default function Recenzii() {
 
   return (
     <div ref={ref}>
-      <Seo title="Recenzii pacienti DentNow" description="Recenzii pacienti DentNow si link catre profilul Google pentru verificare." path="/recenzii" />
+      <Seo path="/recenzii" />
       <PageHero tag={t('recenzii.hero.tag')} title={t('recenzii.hero.title')} subtitle={t('recenzii.hero.subtitle')} />
       <div className="rating-hero" data-nav-dark>
         <div className="big-rating rv">{displayAverage}</div>
         <div className="rating-stars rv d1" aria-label={`${displayAverage} din 5 stele`}>
           {'★'.repeat(roundedAverage)}{'☆'.repeat(5 - roundedAverage)}
         </div>
-        <div className="rating-count rv d2">Rating mediu din recenzii Google verificate</div>
+        <div className="rating-count rv d2">{t('recenzii.rating.label')}</div>
         {reviewsUrl && <div className="rating-actions rv d3">
-          <a href={reviewsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-white">Verifica pe Google</a>
+          <a href={reviewsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-white">{t('recenzii.googleButton')}</a>
         </div>}
       </div>
       <div className="reviews-grid">
         {reviews.map((r, i) => <ReviewCard key={r.id || r.author} review={r} className={`rv${i % 3 > 0 ? ` d${i % 3}` : ''}`} />)}
       </div>
-      <DarkCTA title='Ai o experienta de impartasit?' subtitle="Recenziile verificate ajuta pacientii noi sa aleaga informat." />
+      <DarkCTA title={t('recenzii.cta.title')} subtitle={t('recenzii.cta.subtitle')} />
     </div>
   );
 }

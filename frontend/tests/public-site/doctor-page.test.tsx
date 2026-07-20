@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('../../src/public-site/SiteDataProvider', () => ({
   useOptionalSiteData: () => null,
   useSiteData: () => ({
+    site: { site_name: 'Clinica Test' },
     doctors: [{
       slug: 'dr-test',
       name: 'Dr. Ana Test',
