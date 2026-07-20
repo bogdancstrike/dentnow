@@ -7,6 +7,7 @@ import { usePreviewDraft } from '../api/previewDraft';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { siteLink } from '../lib/siteContent';
 import { StatusPage } from '../shared/StatusPage';
+import { useSiteTexts } from '../hooks/useSiteTexts';
 
 export default function ScorIgiena() {
   const [step, setStep] = useState(0);
@@ -37,7 +38,7 @@ export default function ScorIgiena() {
 
   return (
     <div className="quiz-page">
-      <Seo title="Scor Igiena Orala DentNow" description="Test rapid DentNow pentru igiena orala si recomandari personalizate." path="/scor-igiena" />
+      <Seo path="/scor-igiena" />
       {/* Compact inline header */}
       <div className="quiz-hero">
         <div className="quiz-hero-inner">
@@ -90,6 +91,7 @@ export default function ScorIgiena() {
 }
 
 function QuizResult({ answers, questions, bands, leadPhone, onRestart }) {
+  const t = useSiteTexts();
   const openPicker = useClinicPicker();
   const total = answers.reduce((sum, ai, qi) => sum + questions[qi].opts[ai][1], 0);
   const max = Math.max(1, questions.reduce((sum, question) => (
@@ -139,13 +141,13 @@ function QuizResult({ answers, questions, bands, leadPhone, onRestart }) {
       </div>
 
       {tips.length > 0 && <div className="qr-tips">
-        <h3 className="qr-tips-title">Recomandări DentNow</h3>
+        <h3 className="qr-tips-title">{t('scor.result.recommendations')}</h3>
         {tips.map((t, i) => <div key={i} className="qr-tip">→ {t}</div>)}
       </div>}
 
       <div className="qr-actions">
         <button type="button" onClick={() => openPicker('call')} className="btn btn-dark">Suna acum</button>
-        {waUrl && <a className="btn btn-outline" href={waUrl} target="_blank" rel="noopener noreferrer">Trimite scorul pe WhatsApp</a>}
+        {waUrl && <a className="btn btn-outline" href={waUrl} target="_blank" rel="noopener noreferrer">{t('scor.result.shareButton')}</a>}
         <button className="btn btn-outline" onClick={onRestart}>Reia testul</button>
       </div>
     </div>

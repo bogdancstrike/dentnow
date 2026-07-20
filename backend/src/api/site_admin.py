@@ -284,6 +284,11 @@ def sections_list(app, operation, request, principal=None, **kw):
     return do_list(SectionService, principal)
 
 
+@require_capability(CAP_CONTENT_READ)
+def sections_get(app, operation, request, principal=None, section_id=None, **kw):
+    return do_get(SectionService, principal, section_id)
+
+
 @require_capability(CAP_CONTENT_WRITE)
 def sections_create(app, operation, request, principal=None, **kw):
     return do_create(SectionService, SectionCreate, principal)
@@ -302,6 +307,11 @@ def sections_delete(app, operation, request, principal=None, section_id=None, **
 @require_capability(CAP_CONTENT_READ)
 def seo_list(app, operation, request, principal=None, **kw):
     return do_list(SeoService, principal)
+
+
+@require_capability(CAP_CONTENT_READ)
+def seo_get(app, operation, request, principal=None, seo_id=None, **kw):
+    return do_get(SeoService, principal, seo_id)
 
 
 @require_capability(CAP_CONTENT_WRITE)

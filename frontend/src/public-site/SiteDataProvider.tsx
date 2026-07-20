@@ -61,6 +61,7 @@ function BootstrapGate({ children }: { children: ReactNode }) {
   const partnerDraft = usePreviewDraft<Record<string, unknown>>('partner');
   const technologyDraft = usePreviewDraft<Record<string, unknown>>('technology');
   const ebookDraft = usePreviewDraft<Record<string, unknown>>('ebook');
+  const siteTextDraft = usePreviewDraft<{ key?: string; value?: string }>('site-text');
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: publicQueryKeys.bootstrap,
     queryFn: fetchBootstrap,
@@ -136,6 +137,9 @@ function BootstrapGate({ children }: { children: ReactNode }) {
       ebookDraft,
     ) as Bootstrap['ebooks'],
     quiz: quizDraft ? { ...data.quiz, ...quizDraft } as Bootstrap['quiz'] : data.quiz,
+    texts: siteTextDraft?.key
+      ? { ...data.texts, [siteTextDraft.key]: siteTextDraft.value ?? '' }
+      : data.texts,
   };
 
   return <SiteDataContext.Provider value={previewData}>{children}</SiteDataContext.Provider>;

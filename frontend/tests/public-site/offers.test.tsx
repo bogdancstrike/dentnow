@@ -37,7 +37,7 @@ describe('public offers', () => {
     );
 
     expect(await screen.findByRole('link', { name: 'Implant dentar' }))
-      .toHaveAttribute('href', '/tratamente/implant-dentar');
+      .toHaveAttribute('href', '/tratamente');
     expect(screen.getByRole('link', { name: 'DentNow Victoriei' }))
       .toHaveAttribute('href', '/locatii/dentnow-victoriei');
   });

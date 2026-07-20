@@ -203,6 +203,7 @@ export const BootstrapSchema = z.object({
   homepage_treatments: z.array(TreatmentSchema).default([]),
   quiz: QuizSchema.nullable().default(null),
   texts: z.record(z.string(), z.string()).default({}),
+  pages: z.record(z.string(), z.lazy(() => PageSchema)).default({}),
 });
 
 export const SectionSchema = z.object({
@@ -224,6 +225,7 @@ export const PageSchema = z.object({
       description: z.string().nullable().optional(),
       canonical_path: z.string().nullable().optional(),
       og_media_id: z.string().nullable().optional(),
+      structured_data: z.record(z.string(), z.unknown()).nullable().optional(),
     })
     .nullable()
     .optional(),

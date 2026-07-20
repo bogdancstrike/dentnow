@@ -14,7 +14,7 @@ export default function Parteneri() {
   const ref = useRevealAll([]);
   return (
     <div ref={ref}>
-      <Seo title="Parteneri si tehnologii DentNow" description="Parteneri, furnizori si tehnologii folosite sau mentionate de DentNow." path="/parteneri" />
+      <Seo path="/parteneri" />
       <PageHero tag={t('parteneri.hero.tag')} title={t('parteneri.hero.title')} subtitle={t('parteneri.hero.subtitle')} />
       <div className="partners-grid">
         {partners.map((p, i) => {
@@ -41,8 +41,8 @@ export default function Parteneri() {
         })}
       </div>
       {email && <div className="partners-contact">
-        <p>Esti o companie interesata de un parteneriat cu DentNow?</p>
-        <a href={siteLinkHref(email)} className="btn btn-dark">Contacteaza-ne pentru parteneriate</a>
+        <p>{t('parteneri.contact.text')}</p>
+        <a href={siteLinkHref(email)} className="btn btn-dark">{t('parteneri.contact.button')}</a>
       </div>}
     </div>
   );

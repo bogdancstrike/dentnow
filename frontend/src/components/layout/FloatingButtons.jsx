@@ -5,7 +5,7 @@ import './FloatingButtons.css';
 export default function FloatingButtons() {
   const openPicker = useClinicPicker();
   return (
-    <div className="fab" aria-label="Actiuni rapide DentNow">
+    <div className="fab" aria-label="Acțiuni rapide">
       <button type="button" onClick={() => openPicker('whatsapp')} className="fab-btn fab-wa" title="WhatsApp">
         <IconWhatsApp size={20} /><span className="fab-label">WhatsApp</span>
       </button>

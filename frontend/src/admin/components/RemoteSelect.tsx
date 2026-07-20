@@ -21,6 +21,7 @@ interface RemoteSelectProps {
   multiple?: boolean;
   placeholder?: string;
   allowClear?: boolean;
+  disabled?: boolean;
   onOptionsLoaded?: (options: RemoteSelectOption[]) => void;
 }
 
@@ -51,6 +52,7 @@ export function RemoteSelect({
   multiple,
   placeholder = 'Selectează…',
   allowClear = true,
+  disabled = false,
   onOptionsLoaded,
 }: RemoteSelectProps) {
   const query = useQuery({
@@ -80,6 +82,7 @@ export function RemoteSelect({
       onChange={onChange}
       placeholder={placeholder}
       allowClear={allowClear}
+      disabled={disabled}
       style={{ width: '100%' }}
     />
   );

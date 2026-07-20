@@ -24,6 +24,7 @@ const makeDoctors = (count: number) => Array.from({ length: count }, (_, index) 
   name: `Medic ${index + 1}`,
   role: 'Medic dentist',
   focus: 'Prevenție și tratament',
+  portrait_media_id: `portrait-${index + 1}`,
 }));
 
 describe('DoctorTeam', () => {
@@ -37,7 +38,7 @@ describe('DoctorTeam', () => {
     expect(container.querySelectorAll('.doctor-carousel-group')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Medicul următor' })).not.toBeInTheDocument();
     expect(scrollIntoView).not.toHaveBeenCalled();
-    expect(screen.getAllByRole('img').every((image) => image.getAttribute('src')?.endsWith('/team.svg'))).toBe(true);
+    expect(screen.getAllByRole('img').every((image) => image.getAttribute('src')?.startsWith('/media/portrait-'))).toBe(true);
   });
 
   it('keeps the static grid for three doctors', () => {

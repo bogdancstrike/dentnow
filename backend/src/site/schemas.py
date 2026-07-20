@@ -210,6 +210,7 @@ class SeoCreate(_Strict):
     title: Optional[str] = None
     description: Optional[str] = None
     canonical_path: Optional[str] = None
+    og_media_id: Optional[str] = None
     structured_data: Optional[dict[str, Any]] = None
 
 
@@ -217,4 +218,5 @@ class SeoUpdate(_Strict):
     title: Optional[str] = None
     description: Optional[str] = None
     canonical_path: Optional[str] = None
+    og_media_id: Optional[str] = None
     structured_data: Optional[dict[str, Any]] = None

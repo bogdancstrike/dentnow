@@ -4,15 +4,6 @@ import path from 'path';
 const domain = 'https://www.dentnow.ro';
 const currentDate = new Date().toISOString().split('T')[0];
 
-function slugify(value) {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
 // 1. Static core routes & landing pages
 const routes = [
   { url: '/', priority: '1.0', changefreq: 'daily' },
@@ -25,24 +16,11 @@ const routes = [
   { url: '/parteneri', priority: '0.6', changefreq: 'monthly' },
   { url: '/ebook', priority: '0.6', changefreq: 'monthly' },
   { url: '/articole', priority: '0.8', changefreq: 'weekly' },
-  
-  // Dedicated Location Pages
-  { url: '/locatii/dristor', priority: '0.9', changefreq: 'weekly' },
-  { url: '/locatii/baba-novac', priority: '0.9', changefreq: 'weekly' },
-  { url: '/locatii/prelungirea-ghencea', priority: '0.9', changefreq: 'weekly' },
 
-  // Neighborhood Target Pages (Item 10)
-  { url: '/stomatologie-dristor', priority: '0.9', changefreq: 'weekly' },
-  { url: '/stomatologie-baba-novac', priority: '0.9', changefreq: 'weekly' },
-  { url: '/stomatologie-prelungirea-ghencea', priority: '0.9', changefreq: 'weekly' },
+  // Clinic-specific URLs are supplied by the published backend data, never compiled
+  // into this static list. Individual treatments intentionally live on /tratamente.
 
-  // Individual Treatment Pages (Item 1)
-  { url: '/implant-dentar-bucuresti', priority: '0.9', changefreq: 'weekly' },
-  { url: '/aparat-dentar-dristor', priority: '0.9', changefreq: 'weekly' },
-  { url: '/albire-dentara-laser', priority: '0.9', changefreq: 'weekly' },
-  { url: '/protetica-zirconiu', priority: '0.9', changefreq: 'weekly' },
-
-  // Emergency & CAS Hub Pages (Item 12 & 14)
+  // Emergency & CAS hub pages
   { url: '/urgente-dentare-bucuresti', priority: '0.9', changefreq: 'weekly' },
   { url: '/decontat-cas', priority: '0.8', changefreq: 'weekly' },
 

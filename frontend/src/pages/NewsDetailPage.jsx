@@ -8,8 +8,10 @@ import Seo from '../components/seo/Seo';
 import { StatusPage } from '../shared/StatusPage';
 import NotFound from './NotFound';
 import './Noutati.css';
+import { useOptionalSiteData } from '../public-site/SiteDataProvider';
 
 export default function NewsDetailPage() {
+  const siteName = useOptionalSiteData()?.site?.site_name || '';
   const { slug = '' } = useParams();
   const draft = usePreviewDraft('news');
   const draftMatches = Boolean(
@@ -45,7 +47,7 @@ export default function NewsDetailPage() {
         path={`/noutati/${slug}`}
       />
       <PageHero
-        tag={newsItem.category || 'Noutate DentNow'}
+        tag={newsItem.category || siteName}
         title={newsItem.title}
         subtitle={newsItem.summary || ''}
       />

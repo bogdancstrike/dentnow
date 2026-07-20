@@ -6,6 +6,7 @@ import { useSiteTexts } from '../hooks/useSiteTexts';
 import { whatsappUrlFor } from '../lib/leadCapture';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { siteLinkHref } from '../lib/siteContent';
+import { mediaUrl } from '../api/publicClient';
 import { useReviews } from '../hooks/useReviews';
 import Seo from '../components/seo/Seo';
 import ReviewCard from '../components/ui/ReviewCard';
@@ -109,6 +110,10 @@ export default function Home() {
   const socialLinks = siteData.links.filter((link) => link.kind === 'social');
   const { data: reviews = [] } = useReviews();
   const homepageServices = siteData.homepage_services || [];
+  const hero = siteData.pages?.['/']?.sections?.find((section) => section.block_type === 'home_hero')?.payload || {};
+  const heroImage = hero.media_id
+    ? mediaUrl(String(hero.media_id), 'hero')
+    : typeof hero.media === 'string' ? hero.media : null;
   const trustItems = [1, 2, 3].map((i) => ({
     value: t(`home.trust.${i}.title`),
     accent: '',
@@ -119,13 +124,13 @@ export default function Home() {
 
   return (
     <div ref={revealRef}>
-      <Seo title="DentNow - Clinica stomatologica in Bucuresti" description="DentNow este o clinica stomatologica in Bucuresti pentru consultatii, urgente, implanturi, igienizare GBT, albire, ortodontie si tratamente pentru copii." path="/" />
+      <Seo path="/" />
 
       <section className="hero clinical-hero">
         <div className="hero-grid">
           <div className="hero-copy">
             <p className="hero-clinic-label">{t('home.hero.label')}</p>
-            <h1 className="hero-clinic-name">Dent<span>Now</span></h1>
+            <h1 className="hero-clinic-name">{siteData.site.site_name}</h1>
             <p className="hero-tagline">{t('home.hero.tagline')}</p>
             <div className="hero-cta-row left">
               <button type="button" onClick={() => openPicker('call')} className="cta-phone-big"><IconPhone size={18} /> {t('home.hero.callButton')}</button>
@@ -134,15 +139,9 @@ export default function Home() {
             </div>
             <TrustStrip items={trustItems} />
           </div>
-          <div className="hero-media-panel">
-            <img src="/assets/dentnow/treatment-room.svg" alt="Ilustrație cabinet stomatologic DentNow" />
-            {import.meta.env.DEV && (
-              <div className="hero-media-note">
-                <strong>Fotografie temporara</strong>
-                <span>Inlocuieste cu fotografia reala a cabinetului in `public/assets/dentnow`.</span>
-              </div>
-            )}
-          </div>
+          {heroImage && <div className="hero-media-panel">
+            <img src={heroImage} alt={typeof hero.alt_text === 'string' ? hero.alt_text : ''} />
+          </div>}
         </div>
       </section>
 
@@ -185,7 +184,7 @@ export default function Home() {
       <TechnologySection />
       <PatientJourney />
 
-      <section className="testi-section">
+      <section className="testi-section" id="recenzii">
         <div className="testi-header">
           <div className="stag rv">{t('home.reviews.tag')}</div>
           <h2 className="h2d rv d1">{t('home.reviews.title')}</h2>

@@ -66,3 +66,18 @@ def test_health_liveness_readiness_present(endpoint_map):
     for op in ("health", "liveness", "readiness"):
         assert op in ops, f"missing '{op}' endpoint"
         assert ops[op]["api_url"] == f"/{op}"
+
+
+def test_generic_admin_editors_have_detail_get_endpoints(endpoint_map):
+    detail_get_urls = {
+        ep["api_url"]
+        for ep in endpoint_map["endpoints"]
+        if "GET" in ep["request_method"] and "<" in ep["api_url"]
+    }
+    for url in (
+        "/v1/admin/technologies/<technology_id>",
+        "/v1/admin/ebooks/<ebook_id>",
+        "/v1/admin/page-sections/<section_id>",
+        "/v1/admin/page-seo/<seo_id>",
+    ):
+        assert url in detail_get_urls, f"generic editor cannot load {url}"

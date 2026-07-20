@@ -7,11 +7,9 @@ import './DoctorPage.css';
 import { isPreviewMode, usePreviewDraft } from '../api/previewDraft';
 import NotFound from './NotFound';
 
-const FALLBACK_PORTRAIT = '/assets/dentnow/team.svg';
-
 export default function DoctorPage() {
   const { slug } = useParams();
-  const { doctors } = useSiteData();
+  const { doctors, site } = useSiteData();
   const doctorDraft = usePreviewDraft('doctor');
 
   const index = doctors.findIndex((d) => d.slug === slug);
@@ -19,10 +17,9 @@ export default function DoctorPage() {
     : (doctorDraft?.id ? doctors.find((doctor) => doctor.id === doctorDraft.id) : null);
   const doctor = doctorDraft ? { ...(savedDoctor || {}), ...doctorDraft } : savedDoctor;
   if (!doctor) return isPreviewMode() ? null : <NotFound />;
+  const siteName = site?.site_name || '';
 
-  const image = doctor.portrait_media_id
-    ? mediaUrl(doctor.portrait_media_id, 'hero')
-    : FALLBACK_PORTRAIT;
+  const image = doctor.portrait_media_id ? mediaUrl(doctor.portrait_media_id, 'hero') : null;
   const supportingPhotos = [doctor.workspace_media_id, doctor.secondary_media_id]
     .filter(Boolean)
     .map((mediaId) => mediaUrl(mediaId, 'hero'));
@@ -34,18 +31,18 @@ export default function DoctorPage() {
   return (
     <div>
       <Seo
-        title={`${doctor.name} — Echipa DentNow`}
-        description={doctor.focus || `Medic DentNow: ${doctor.name}`}
+        title={`${doctor.name} — ${siteName}`}
+        description={doctor.focus || `${doctor.name}, ${siteName}`}
         path={`/echipa/${doctor.slug}`}
       />
       <PageHero tag="Echipa medicală" title={doctor.name} subtitle={doctor.role || ''} />
 
       <main className="doctor-profile-sec">
         <section className="doctor-profile-intro" aria-labelledby="doctor-profile-name">
-          <div className="doctor-profile-photo">
+          {image && <div className="doctor-profile-photo">
             <img src={image} alt={`Portret ${doctor.name}`} />
-            <span>Medic DentNow</span>
-          </div>
+            <span>{siteName}</span>
+          </div>}
           <div className="doctor-profile-body">
             {doctor.role && <div className="doctor-profile-role">{doctor.role}</div>}
             <h2 id="doctor-profile-name">{doctor.name}</h2>

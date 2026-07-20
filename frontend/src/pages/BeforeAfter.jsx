@@ -32,7 +32,7 @@ export default function BeforeAfter() {
   if (isError) return <StatusPage code={503} />;
   return (
     <div ref={ref}>
-      <Seo title="Before & After DentNow" description="Exemple vizuale DentNow pregatite pentru fotografii reale cu acordul pacientilor." path="/before-after" />
+      <Seo path="/before-after" />
       <PageHero dark tag={t('beforeafter.hero.tag')} title={t('beforeafter.hero.title')} subtitle={t('beforeafter.hero.subtitle')} />
       <div className="case-grid">
         {cases.map((c, i) => {
@@ -46,7 +46,7 @@ export default function BeforeAfter() {
               <div className="case-shot"><img src={afterImage} alt={`${c.title} după`} /><div className="case-label">DUPĂ</div></div>
             </div>
             <div className="case-body">
-              <small>{c.treatment || 'Caz DentNow'}</small>
+              <small>{c.treatment || t('beforeafter.case.fallback')}</small>
               <h3>{c.title}</h3>
               {c.description && <p>{c.description}</p>}
               {c.disclaimer && c.disclaimer !== c.description ? <p className="case-disclaimer">{c.disclaimer}</p> : null}
@@ -55,7 +55,7 @@ export default function BeforeAfter() {
           );
         })}
       </div>
-      <DarkCTA title="Vrei o evaluare pentru cazul tau?" subtitle="Trimite-ne detalii sau suna clinica pentru o programare." />
+      <DarkCTA title={t('beforeafter.cta.title')} subtitle={t('beforeafter.cta.subtitle')} />
     </div>
   );
 }

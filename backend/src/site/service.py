@@ -287,6 +287,11 @@ class SectionService(CrudService):
         data["page_id"] = uuid.UUID(str(data["page_id"]))
         return data
 
+    def to_update_values(self, data: dict, obj: Any) -> dict:
+        data = dict(data)
+        data.pop("page_id", None)
+        return data
+
 
 class SeoService(CrudService):
     model = PageSeo
@@ -300,6 +305,15 @@ class SeoService(CrudService):
     def to_create_kwargs(self, data: dict) -> dict:
         data = dict(data)
         data["page_id"] = uuid.UUID(str(data["page_id"]))
+        if data.get("og_media_id"):
+            data["og_media_id"] = uuid.UUID(str(data["og_media_id"]))
+        return data
+
+    def to_update_values(self, data: dict, obj: Any) -> dict:
+        data = dict(data)
+        data.pop("page_id", None)
+        if "og_media_id" in data:
+            data["og_media_id"] = uuid.UUID(str(data["og_media_id"])) if data["og_media_id"] else None
         return data
 
     def before_write(self, obj: Any, data: dict, *, creating: bool) -> None:

@@ -19,13 +19,13 @@ function pick(seed = '') {
   return palettes[h % palettes.length];
 }
 
-export default function PlaceholderCover({ label = '', tag, brand = 'DentNow', className = '' }) {
+export default function PlaceholderCover({ label = '', tag, brand = '', className = '' }) {
   const [c1, c2] = pick(label || tag || brand);
   return (
     <div
       className={`ph-cover ${className}`}
       role="img"
-      aria-label={`Imagine DentNow${tag ? ` — ${tag}` : ''}${label ? `: ${label}` : ''}`}
+      aria-label={`Imagine${tag ? ` — ${tag}` : ''}${label ? `: ${label}` : ''}`}
       style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
     >
       <span className="ph-watermark" aria-hidden="true">Dn</span>

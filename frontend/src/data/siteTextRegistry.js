@@ -483,5 +483,43 @@ export const SITE_TEXT_GROUPS = [
         "multiline": true
       }
     ]
+  },
+  {
+    "page": "Conținut pagini secundare",
+    "items": [
+      { "key": "tratamente.cas.title", "label": "Tratamente — banner CAS, titlu" },
+      { "key": "tratamente.cas.text", "label": "Tratamente — banner CAS, text", "multiline": true },
+      { "key": "tratamente.payment.title", "label": "Tratamente — plată, titlu" },
+      { "key": "tratamente.payment.text", "label": "Tratamente — plată, text", "multiline": true },
+      { "key": "tratamente.cta.title", "label": "Tratamente — programare, titlu" },
+      { "key": "oferte.cta.title", "label": "Oferte — contact, titlu" },
+      { "key": "oferte.cta.subtitle", "label": "Oferte — contact, text", "multiline": true },
+      { "key": "oferte.note", "label": "Oferte — notă finală", "multiline": true },
+      { "key": "parteneri.contact.text", "label": "Parteneri — invitație" },
+      { "key": "parteneri.contact.button", "label": "Parteneri — buton contact" },
+      { "key": "beforeafter.case.fallback", "label": "Before & After — etichetă caz fără tratament" },
+      { "key": "beforeafter.cta.title", "label": "Before & After — CTA, titlu" },
+      { "key": "beforeafter.cta.subtitle", "label": "Before & After — CTA, text" },
+      { "key": "recenzii.rating.label", "label": "Recenzii — etichetă rating" },
+      { "key": "recenzii.googleButton", "label": "Recenzii — buton Google" },
+      { "key": "recenzii.cta.title", "label": "Recenzii — CTA, titlu" },
+      { "key": "recenzii.cta.subtitle", "label": "Recenzii — CTA, text" },
+      { "key": "scor.result.recommendations", "label": "Scor igienă — titlu recomandări" },
+      { "key": "scor.result.shareButton", "label": "Scor igienă — buton WhatsApp" },
+      { "key": "urgente.callButton", "label": "Urgențe — buton telefon" },
+      { "key": "urgente.whatsappButton", "label": "Urgențe — buton WhatsApp" },
+      { "key": "recenzie.redirect.title", "label": "Redirecționare recenzie — titlu" },
+      { "key": "recenzie.redirect.text", "label": "Redirecționare recenzie — text" },
+      { "key": "recenzie.redirect.button", "label": "Redirecționare recenzie — buton" }
+    ]
+  },
+  {
+    "page": "Contact comun",
+    "items": [
+      { "key": "common.contact.title", "label": "Card contact — titlu implicit" },
+      { "key": "common.contact.subtitle", "label": "Card contact — text implicit", "multiline": true },
+      { "key": "common.contact.callButton", "label": "Card contact — buton telefon" },
+      { "key": "common.contact.whatsappButton", "label": "Card contact — buton WhatsApp" }
+    ]
   }
 ];

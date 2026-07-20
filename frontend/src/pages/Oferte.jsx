@@ -33,7 +33,7 @@ export default function Oferte() {
 
   return (
     <div ref={ref}>
-      <Seo title="Oferte stomatologice DentNow" description="Oferte DentNow pentru consultatii, igienizare, implanturi si albire. Preturile se confirma inainte de tratament." path="/oferte" />
+      <Seo path="/oferte" />
       <PageHero dark tag={t('oferte.hero.tag')} title={t('oferte.hero.title')} subtitle={t('oferte.hero.subtitle')} />
       <div className="offers-grid">
         {isLoading && <div style={{ color: 'white', padding: '2rem' }}>Se incarcă ofertele...</div>}
@@ -65,7 +65,7 @@ export default function Oferte() {
                       <span className="offer-relations-label">Tratamente</span>
                       <div className="offer-relation-links">
                         {o.treatments.map((treatment) => (
-                          <a key={treatment.slug} href={`/tratamente/${treatment.slug}`}>{treatment.name}</a>
+                          <a key={treatment.slug} href="/tratamente">{treatment.name}</a>
                         ))}
                       </div>
                     </div>
@@ -93,8 +93,8 @@ export default function Oferte() {
         })}
       </div>
       <section id="oferta-programare" className="offer-appointment">
-        <ContactCTA title="Cere detalii despre ofertă" subtitle="Sună-ne sau scrie-ne pe WhatsApp și îți spunem exact ce include oferta și cum te poți programa. Nu folosim formular online." source="oferte" />
-        <p className="offer-note">Ultima actualizare continut: Iulie 2026. Valabilitatea ofertelor trebuie confirmata de clinica inainte de publicare.</p>
+        <ContactCTA title={t('oferte.cta.title')} subtitle={t('oferte.cta.subtitle')} source="oferte" />
+        {t('oferte.note') && <p className="offer-note">{t('oferte.note')}</p>}
       </section>
     </div>
   );

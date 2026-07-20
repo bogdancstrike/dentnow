@@ -6,8 +6,10 @@ import { LegalPage } from '../components/ui/SharedSections';
 import Seo from '../components/seo/Seo';
 import NotFound from './NotFound';
 import { StatusPage } from '../shared/StatusPage';
+import { useOptionalSiteData } from '../public-site/SiteDataProvider';
 
-export default function LegalDocumentPage({ docType, title, seoTitle, description, path }) {
+export default function LegalDocumentPage({ docType, path }) {
+  const pages = useOptionalSiteData()?.pages;
   const draft = usePreviewDraft('legal-document');
   const draftMatches = draft?.doc_type === docType;
   const query = useQuery({
@@ -33,8 +35,8 @@ export default function LegalDocumentPage({ docType, title, seoTitle, descriptio
 
   return (
     <>
-      <Seo title={seoTitle} description={description} path={path} />
-      <LegalPage title={title} date={effectiveDate}>
+      <Seo path={path} />
+      <LegalPage title={pages?.[path]?.title || ''} date={effectiveDate}>
         <section className="legal-section" dangerouslySetInnerHTML={{ __html: document.body_html || '' }} />
       </LegalPage>
     </>

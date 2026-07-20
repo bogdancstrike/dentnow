@@ -156,6 +156,38 @@ def _query_homepage_services(session):
     return services
 
 
+def _query_pages(session):
+    pages = {}
+    for page in session.scalars(_live(Page).where(Page.enabled.is_(True))).all():
+        sections = [
+            {"block_type": section.block_type, "payload": section.payload, "position": section.position}
+            for section in session.scalars(
+                _live(PageSection).where(PageSection.page_id == page.id)
+            ).all()
+        ]
+        sections.sort(key=lambda section: section["position"])
+        seo_row = session.scalar(_live(PageSeo).where(PageSeo.page_id == page.id))
+        seo = None
+        if seo_row is not None:
+            seo = {
+                "title": seo_row.title,
+                "description": seo_row.description,
+                "canonical_path": seo_row.canonical_path,
+                "og_media_id": str(seo_row.og_media_id) if seo_row.og_media_id else None,
+                "structured_data": seo_row.structured_data,
+            }
+        pages[page.path] = {
+            "path": page.path,
+            "route_key": page.route_key,
+            "template_key": page.template_key,
+            "title": page.title,
+            "indexable": page.indexable,
+            "sections": sections,
+            "seo": seo,
+        }
+    return pages
+
+
 def _query_doctors(session):
     doctors = []
     for d in session.scalars(_live(Doctor).where(Doctor.active.is_(True))).all():
@@ -489,6 +521,7 @@ def bootstrap(app, operation, request, **kw):
         decontat_cas = _query_decontat_cas(session)
         quiz = _query_quiz(session)
         texts = _query_site_texts(session)
+        pages = _query_pages(session)
 
     homepage_treatments = [t for t in treatments_data if t.get("homepage_featured")]
     return _json_response({
@@ -507,6 +540,7 @@ def bootstrap(app, operation, request, **kw):
         "homepage_treatments": homepage_treatments,
         "quiz": quiz,
         "texts": texts,
+        "pages": pages,
     })
 
 

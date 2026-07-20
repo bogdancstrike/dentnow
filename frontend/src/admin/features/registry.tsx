@@ -36,6 +36,20 @@ function legalPublicPath(docType: unknown): string | null {
   return `/${type}`;
 }
 
+function parseJsonObject(value: unknown, label: string): Record<string, unknown> | null {
+  if (value == null || String(value).trim() === '') return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(String(value));
+  } catch {
+    throw new Error(`${label} trebuie să conțină JSON valid.`);
+  }
+  if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+    throw new Error(`${label} trebuie să fie un obiect JSON.`);
+  }
+  return parsed as Record<string, unknown>;
+}
+
 // treatments has been moved to dedicated screen
 
 // offers has been moved to dedicated screen
@@ -415,9 +429,113 @@ const beforeAfter = makeConfig({
   editExtraHint: 'Salvează cazul, apoi confirmă acordul pacientului înainte de publicare.',
 });
 
+const pages = makeConfig({
+  title: 'Pagini publice',
+  singular: 'pagină',
+  endpoint: '/v1/admin/pages',
+  columns: [
+    { title: 'Titlu', dataIndex: 'title' },
+    { title: 'Adresă', dataIndex: 'path' },
+    { title: 'Șablon', dataIndex: 'template_key' },
+    { title: 'Activă', dataIndex: 'enabled', render: (v) => (v ? 'Da' : 'Nu') },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={String(record.path)} target="_blank" rel="noopener noreferrer">Vezi</Button> },
+  ],
+  defaults: { enabled: true, indexable: true, template_key: 'generic' },
+  previewPath: (row, values) => String(values?.path ?? (row as { path?: string } | null)?.path ?? '') || null,
+  previewHint: 'Completează adresa URL pentru a vedea pagina publică.',
+  form: () => (
+    <>
+      <Item name="title" label="Titlu administrativ" rules={[{ required: true }]}><Input /></Item>
+      <Item name="path" label="Adresă URL" rules={[{ required: true }]}><Input placeholder="/pagina" /></Item>
+      <Item name="route_key" label="Cheie rută" rules={[{ required: true }]}><Input placeholder="pagina" /></Item>
+      <Item name="template_key" label="Șablon" rules={[{ required: true }]}>
+        <Select options={[
+          'home', 'treatment-index', 'treatment-detail', 'clinic-detail', 'article-index',
+          'article-detail', 'quiz', 'legal', 'offers-index', 'generic',
+        ].map((value) => ({ value, label: value }))} />
+      </Item>
+      <Item name="enabled" label="Activă" valuePropName="checked"><input type="checkbox" /></Item>
+      <Item name="indexable" label="Indexabilă de motoarele de căutare" valuePropName="checked"><input type="checkbox" /></Item>
+    </>
+  ),
+});
+
+const pageSections = makeConfig({
+  title: 'Secțiuni de pagină',
+  singular: 'secțiune',
+  endpoint: '/v1/admin/page-sections',
+  reorderable: true,
+  columns: [
+    { title: 'Tip bloc', dataIndex: 'block_type' },
+    { title: 'Pagină', dataIndex: 'page_id', ellipsis: true },
+    { title: 'Ordine', dataIndex: 'position' },
+  ],
+  defaults: { position: 0, payload_json: '{}' },
+  toValues: (row) => ({ ...row, payload_json: JSON.stringify(row.payload ?? {}, null, 2) }),
+  toRequestValues: (values, row) => {
+    const { payload_json: rawPayload, ...request } = values;
+    if (row) delete request.page_id;
+    return { ...request, payload: parseJsonObject(rawPayload, 'Conținutul secțiunii') ?? {} };
+  },
+  form: ({ client, editing }) => (
+    <>
+      <Item name="page_id" label="Pagină" rules={[{ required: !editing }]}>
+        <RemoteSelect client={client} endpoint="/v1/admin/pages" labelKey="title" disabled={Boolean(editing)} placeholder="Selectează pagina" />
+      </Item>
+      <Item name="block_type" label="Tip bloc" rules={[{ required: true }]}><Input placeholder="page_hero" /></Item>
+      <Item name="payload_json" label="Conținut JSON" rules={[{ required: true }]}>
+        <Input.TextArea rows={14} spellCheck={false} />
+      </Item>
+      <Item name="position" label="Ordine"><Input type="number" min={0} /></Item>
+    </>
+  ),
+});
+
+const pageSeo = makeConfig({
+  title: 'SEO pagini',
+  singular: 'configurație SEO',
+  endpoint: '/v1/admin/page-seo',
+  columns: [
+    { title: 'Titlu SEO', dataIndex: 'title', ellipsis: true },
+    { title: 'Pagină', dataIndex: 'page_id', ellipsis: true },
+    { title: 'Canonical', dataIndex: 'canonical_path' },
+  ],
+  defaults: { structured_data_json: '' },
+  toValues: (row) => ({
+    ...row,
+    structured_data_json: row.structured_data
+      ? JSON.stringify(row.structured_data, null, 2)
+      : '',
+  }),
+  toRequestValues: (values, row) => {
+    const { structured_data_json: rawStructuredData, ...request } = values;
+    if (row) delete request.page_id;
+    return {
+      ...request,
+      structured_data: parseJsonObject(rawStructuredData, 'Datele structurate'),
+    };
+  },
+  form: ({ client, editing }) => (
+    <>
+      <Item name="page_id" label="Pagină" rules={[{ required: !editing }]}>
+        <RemoteSelect client={client} endpoint="/v1/admin/pages" labelKey="title" disabled={Boolean(editing)} placeholder="Selectează pagina" />
+      </Item>
+      <Item name="title" label="Titlu SEO"><Input maxLength={160} showCount /></Item>
+      <Item name="description" label="Descriere SEO"><Input.TextArea rows={4} maxLength={320} showCount /></Item>
+      <Item name="canonical_path" label="Adresă canonical"><Input placeholder="/pagina" /></Item>
+      <Item name="og_media_id" label="Imagine social media">
+        <ImageUploadField client={client} altText="Imagine social media" variant="hero" width={220} height={120} />
+      </Item>
+      <Item name="structured_data_json" label="Date structurate JSON (opțional)">
+        <Input.TextArea rows={10} spellCheck={false} />
+      </Item>
+    </>
+  ),
+});
+
 const CONFIGS: Record<string, ResourceConfig<Row>> = {
   legal, quiz, news, reviews, 'homepage-services': homepageServices, technologies, ebooks,
-  gallery, 'before-after': beforeAfter,
+  gallery, 'before-after': beforeAfter, pages, 'page-sections': pageSections, 'page-seo': pageSeo,
 };
 
 /** Generic list+editor config for a nav key, or null for bespoke/other screens. */

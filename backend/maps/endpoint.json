@@ -336,6 +336,19 @@
     },
     {
       "namespace": "api",
+      "operation_name": "sections_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/page-sections/<section_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "sections_get"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "sections_update",
       "model_name": "Empty",
       "request_method": [
@@ -384,6 +397,19 @@
       "exec_method": {
         "module_name": "src.api.site_admin",
         "method_name": "seo_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "seo_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/page-seo/<seo_id>",
+      "exec_method": {
+        "module_name": "src.api.site_admin",
+        "method_name": "seo_get"
       }
     },
     {
@@ -1142,6 +1168,19 @@
     },
     {
       "namespace": "api",
+      "operation_name": "technologies_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/technologies/<technology_id>",
+      "exec_method": {
+        "module_name": "src.api.catalog_admin",
+        "method_name": "technologies_get"
+      }
+    },
+    {
+      "namespace": "api",
       "operation_name": "technologies_update",
       "model_name": "Empty",
       "request_method": [
@@ -1580,6 +1619,19 @@
       "exec_method": {
         "module_name": "src.api.editorial_admin",
         "method_name": "ebooks_create"
+      }
+    },
+    {
+      "namespace": "api",
+      "operation_name": "ebooks_get",
+      "model_name": "Empty",
+      "request_method": [
+        "GET"
+      ],
+      "api_url": "/v1/admin/ebooks/<ebook_id>",
+      "exec_method": {
+        "module_name": "src.api.editorial_admin",
+        "method_name": "ebooks_get"
       }
     },
     {
