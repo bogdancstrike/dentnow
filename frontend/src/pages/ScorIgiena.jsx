@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { quizQuestions } from '../data/content';
 import { buildWhatsAppLeadUrl } from '../lib/leadCapture';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import Seo from '../components/seo/Seo';
@@ -7,6 +6,7 @@ import './ScorIgiena.css';
 import { usePreviewDraft } from '../api/previewDraft';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { siteLink } from '../lib/siteContent';
+import { StatusPage } from '../shared/StatusPage';
 
 export default function ScorIgiena() {
   const [step, setStep] = useState(0);
@@ -17,15 +17,17 @@ export default function ScorIgiena() {
   const questions = quiz?.questions?.length
     ? quiz.questions.map((question) => ({
         q: question.prompt,
-        opts: question.options.map((option) => [option.label, option.score, '🦷']),
-      }))
-    : quizQuestions;
+        opts: question.options.map((option) => [option.label, option.score]),
+      })).filter((question) => question.opts.length > 0)
+    : [];
 
   const select = useCallback((idx) => {
     const next = [...answers];
     next[step] = idx;
     setAnswers(next);
   }, [step, answers]);
+
+  if (!quiz || questions.length === 0) return <StatusPage code={503} />;
 
   const goNext = () => { setStep(step + 1); };
   const goBack = () => setStep(step - 1);
@@ -42,8 +44,8 @@ export default function ScorIgiena() {
           <div className="quiz-hero-left">
             <span className="quiz-hero-icon">🦷</span>
             <div>
-              <h1 className="quiz-hero-title">{quizDraft?.title || quiz?.title || 'Scor Igienă Orală'}</h1>
-              <p className="quiz-hero-sub">{quizDraft?.intro || quiz?.intro || `${questions.length} întrebări rapide · rezultat personalizat`}</p>
+              <h1 className="quiz-hero-title">{quizDraft?.title || quiz.title}</h1>
+              {(quizDraft?.intro || quiz.intro) && <p className="quiz-hero-sub">{quizDraft?.intro || quiz.intro}</p>}
             </div>
           </div>
           {isQuiz && (
@@ -66,7 +68,6 @@ export default function ScorIgiena() {
               <div className="qc-options">
                 {questions[step].opts.map((o, i) => (
                   <button key={i} className={`qc-opt${answers[step] === i ? ' selected' : ''}`} onClick={() => select(i)}>
-                    <span className="qc-opt-emoji">{o[2]}</span>
                     <span className="qc-opt-text">{o[0]}</span>
                     {answers[step] === i && <span className="qc-opt-check">✓</span>}
                   </button>
@@ -96,35 +97,21 @@ function QuizResult({ answers, questions, bands, leadPhone, onRestart }) {
   ), 0));
   const pct = Math.round((total / max) * 100);
 
-  let emoji, title, desc, color, tips;
+  let title, desc, tips;
   const configuredBand = bands.find((band) => total >= band.min_score && total <= band.max_score);
   if (configuredBand) {
-    emoji = pct >= 85 ? '🏆' : pct >= 65 ? '👍' : pct >= 40 ? '⚠️' : '🦷';
     title = configuredBand.title;
-    desc = configuredBand.description || 'Rezultatul tău a fost calculat pe baza răspunsurilor.';
-    color = pct >= 65 ? 'var(--accent)' : 'var(--orange)';
+    desc = configuredBand.description || '';
     tips = (configuredBand.recommendations || '')
       .split(/\r?\n|;/)
       .map((tip) => tip.trim())
       .filter(Boolean);
-    if (tips.length === 0) tips = ['Discută rezultatul cu echipa DentNow.'];
-  } else if (pct >= 85) {
-    emoji = '🏆'; title = 'Excelent!'; color = '#1a7a3a';
-    desc = 'Ai o igienă orală remarcabilă. Continuă rutina actuală.';
-    tips = ['Continuă periajul de 2-3 ori/zi + ață dentară zilnic', 'Igienizare GBT la 6-12 luni ca mentenanță', 'Atenție la alimentele care colorează dinții'];
-  } else if (pct >= 65) {
-    emoji = '👍'; title = 'Bine, dar poți mai mult!'; color = 'var(--accent)';
-    desc = 'Igienă bună cu aspecte de îmbunătățit.';
-    tips = ['Adaugă ața dentară sau irigatorul oral zilnic', 'Fă o igienizare profesională GBT — 320 lei', 'Prelungește periajul la minimum 2 minute'];
-  } else if (pct >= 40) {
-    emoji = '⚠️'; title = 'Necesită îmbunătățiri'; color = 'var(--orange)';
-    desc = 'Riscuri crescute de carii și gingivită.';
-    tips = ['Programează urgent o igienizare GBT (320 lei)', 'Investește într-o periuță electrică', 'Începe ața dentară zilnic — 2 minute seara'];
   } else {
-    emoji = '🚨'; title = 'Acționează urgent!'; color = 'var(--red)';
-    desc = 'Necesită intervenție medicală imediată.';
-    tips = ['Contactează echipa pentru o evaluare', 'Discută opțiunile potrivite situației tale', 'Stabilește împreună cu medicul următorii pași'];
+    title = 'Rezultat neconfigurat';
+    desc = 'Nu există încă un mesaj configurat în Admin pentru acest interval de punctaj.';
+    tips = [];
   }
+  const color = 'var(--accent)';
 
   const circumference = 2 * Math.PI * 54;
   const dash = (pct / 100) * circumference;
@@ -146,16 +133,15 @@ function QuizResult({ answers, questions, bands, leadPhone, onRestart }) {
           </div>
         </div>
         <div className="qr-summary">
-          <span className="qr-emoji">{emoji}</span>
           <h2 className="qr-title">{title}</h2>
-          <p className="qr-desc">{desc}</p>
+          {desc && <p className="qr-desc">{desc}</p>}
         </div>
       </div>
 
-      <div className="qr-tips">
+      {tips.length > 0 && <div className="qr-tips">
         <h3 className="qr-tips-title">Recomandări DentNow</h3>
         {tips.map((t, i) => <div key={i} className="qr-tip">→ {t}</div>)}
-      </div>
+      </div>}
 
       <div className="qr-actions">
         <button type="button" onClick={() => openPicker('call')} className="btn btn-dark">Suna acum</button>

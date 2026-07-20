@@ -1,5 +1,4 @@
 import { useRevealAll } from '../hooks/useReveal';
-import { beforeAfterCases } from '../data/content';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCaseStudies, mediaUrl, publicQueryKeys } from '../api/publicClient';
 import { usePreviewDraft } from '../api/previewDraft';
@@ -28,7 +27,7 @@ export default function BeforeAfter() {
         return savedCases.map((item, itemIndex) => itemIndex === index ? { ...item, ...publicDraft } : item);
       })()
     : savedCases;
-  const cases = casesWithDraft.length > 0 ? casesWithDraft : beforeAfterCases;
+  const cases = casesWithDraft;
   const ref = useRevealAll([cases]);
   if (isError) return <StatusPage code={503} />;
   return (
@@ -37,9 +36,9 @@ export default function BeforeAfter() {
       <PageHero dark tag={t('beforeafter.hero.tag')} title={t('beforeafter.hero.title')} subtitle={t('beforeafter.hero.subtitle')} />
       <div className="case-grid">
         {cases.map((c, i) => {
-          const fallback = beforeAfterCases[i % beforeAfterCases.length];
-          const beforeImage = c.before_media_id ? mediaUrl(c.before_media_id, 'hero') : c.beforeImage || fallback.beforeImage;
-          const afterImage = c.after_media_id ? mediaUrl(c.after_media_id, 'hero') : c.afterImage || fallback.afterImage;
+          const beforeImage = c.before_media_id ? mediaUrl(c.before_media_id, 'hero') : null;
+          const afterImage = c.after_media_id ? mediaUrl(c.after_media_id, 'hero') : null;
+          if (!beforeImage || !afterImage) return null;
           return (
           <article key={c.id || c.title} className={`case-card rv${i % 2 ? ' d1' : ''}`}>
             <div className="case-pair">
@@ -49,8 +48,8 @@ export default function BeforeAfter() {
             <div className="case-body">
               <small>{c.treatment || 'Caz DentNow'}</small>
               <h3>{c.title}</h3>
-              <p>{c.description || c.desc}</p>
-              {c.disclaimer && c.disclaimer !== (c.description || c.desc) ? <p className="case-disclaimer">{c.disclaimer}</p> : null}
+              {c.description && <p>{c.description}</p>}
+              {c.disclaimer && c.disclaimer !== c.description ? <p className="case-disclaimer">{c.disclaimer}</p> : null}
             </div>
           </article>
           );

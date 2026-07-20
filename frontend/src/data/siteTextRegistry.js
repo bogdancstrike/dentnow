@@ -1,146 +1,487 @@
 /**
- * Registry of admin-editable public-site texts.
+ * Metadata for Admin-managed public-site text fields.
  *
- * Every entry ships with a compiled-in `fallback` (the previous hardcoded copy).
- * The backend `site_texts` table stores ONLY overrides, keyed by `key`; the public
- * bootstrap exposes them as `texts: { key: value }`. Deleting an override in
- * /admin restores the fallback below — nothing here requires seeding.
- *
- * Placeholders like `{count}` and `{names}` are replaced at render time by the
- * page that owns the key (see `useSiteTexts`); keep them in translated copy.
- * Keys marked `html: true` are rendered with `dangerouslySetInnerHTML`
- * (PageHero titles support `<em class="ac">`, `<br>`).
+ * Values live exclusively in the backend site_texts table and are returned by the
+ * public bootstrap. This registry contains labels and rendering hints only.
  */
 
 export const SITE_TEXT_GROUPS = [
   {
-    page: 'Global',
-    items: [
-      { key: 'footer.description', label: 'Footer — descriere clinică', multiline: true, fallback: 'Clinică stomatologică în București, cu tratamente explicate clar, deviz înainte de intervenție și acces rapid la echipa fiecărei locații.' },
-    ],
+    "page": "Global",
+    "items": [
+      {
+        "key": "footer.description",
+        "label": "Footer — descriere clinică",
+        "multiline": true
+      }
+    ]
   },
   {
-    page: 'Acasă (/)',
-    items: [
-      { key: 'home.hero.label', label: 'Hero — etichetă mică', fallback: 'Clinica stomatologica · Bucuresti' },
-      { key: 'home.hero.tagline', label: 'Hero — subtitlu', multiline: true, fallback: 'Tratament explicat clar, deviz inainte de interventie si programari rapide pentru urgente.' },
-      { key: 'home.hero.callButton', label: 'Hero — buton telefon', fallback: 'Suna acum' },
-      { key: 'home.hero.whatsappButton', label: 'Hero — buton WhatsApp', fallback: 'WhatsApp' },
-      { key: 'home.hero.contactButton', label: 'Hero — buton program/locație', fallback: 'Program si locatie' },
-      { key: 'home.trust.1.title', label: 'Hero statistică 1 — titlu', fallback: 'Urgente' },
-      { key: 'home.trust.1.text', label: 'Hero statistică 1 — text', fallback: 'Preluare prioritara in functie de program' },
-      { key: 'home.trust.2.title', label: 'Hero statistică 2 — titlu', fallback: 'CAS' },
-      { key: 'home.trust.2.text', label: 'Hero statistică 2 — text', fallback: 'Suport pentru servicii eligibile si copii' },
-      { key: 'home.trust.3.title', label: 'Hero statistică 3 — titlu', fallback: 'Deviz clar' },
-      { key: 'home.trust.3.text', label: 'Hero statistică 3 — text', fallback: 'Costuri explicate inainte de tratament' },
-      { key: 'home.contact.tag', label: 'Secțiune contact — etichetă', fallback: 'Contact, locatii si program' },
-      { key: 'home.contact.title', label: 'Secțiune contact — titlu ({count} = nr. clinici)', fallback: 'Cele {count} clinici DentNow din Bucuresti.' },
-      { key: 'home.services.tag', label: 'Secțiune servicii — etichetă', fallback: 'Servicii DentNow' },
-      { key: 'home.services.title', label: 'Secțiune servicii — titlu', fallback: 'Tratamente uzuale, explicate pe intelesul pacientului.' },
-      { key: 'home.services.lead', label: 'Secțiune servicii — descriere', multiline: true, fallback: 'Am redus promisiunile vagi si am pastrat lucrurile care ajuta pacientul sa decida: serviciu, pret de pornire, pas urmator.' },
-      { key: 'home.services.cta', label: 'Secțiune servicii — buton', fallback: 'Vezi tratamente si tarife' },
-      { key: 'home.reviews.tag', label: 'Secțiune recenzii — etichetă', fallback: 'Recenzii pacienti' },
-      { key: 'home.reviews.title', label: 'Secțiune recenzii — titlu', fallback: 'Experiente recente, de verificat inainte de lansare.' },
-      { key: 'home.reviews.lead', label: 'Secțiune recenzii — descriere', multiline: true, fallback: 'Pastreaza doar recenzii verificate si actualizeaza ratingul cu sursa reala.' },
-      { key: 'home.reviews.cta', label: 'Secțiune recenzii — buton', fallback: 'Vezi recenziile' },
-      { key: 'home.gallery.tag', label: 'Secțiune clinică — etichetă', fallback: 'Clinica' },
-      { key: 'home.gallery.title', label: 'Secțiune clinică — titlu', fallback: 'Un spatiu clinic clar, curat si usor de recunoscut.' },
-      { key: 'home.gallery.lead', label: 'Secțiune clinică — descriere', multiline: true, fallback: 'Aceste imagini sunt placeholders puse in acelasi director. Cand ai fotografiile reale, le inlocuiesti pastrand aceleasi nume sau actualizezi `clinicProof.js`.' },
-      { key: 'home.team.tag', label: 'Secțiune echipă — etichetă', fallback: 'Echipa' },
-      { key: 'home.team.title', label: 'Secțiune echipă — titlu', fallback: 'Medici prezentati clar, fara mister.' },
-      { key: 'home.team.lead', label: 'Secțiune echipă — descriere', multiline: true, fallback: 'Profiluri scurte si verificabile — medicii care iti explica fiecare pas al tratamentului, inainte sa incepi.' },
-      { key: 'home.tech.tag', label: 'Secțiune tehnologie — etichetă', fallback: 'Tehnologie si siguranta' },
-      { key: 'home.tech.title', label: 'Secțiune tehnologie — titlu', fallback: 'Explicam pacientului cu ce lucram si de ce conteaza.' },
-      { key: 'home.tech.lead', label: 'Secțiune tehnologie — descriere', multiline: true, fallback: 'Tehnologia trebuie prezentata ca beneficiu clinic concret: confort, precizie, diagnostic si siguranta.' },
-      { key: 'home.journey.tag', label: 'Secțiune traseu pacient — etichetă', fallback: 'Cum decurge vizita' },
-      { key: 'home.journey.title', label: 'Secțiune traseu pacient — titlu', fallback: 'Un traseu simplu, de la programare la aftercare.' },
-    ],
+    "page": "Acasă (/)",
+    "items": [
+      {
+        "key": "home.hero.label",
+        "label": "Hero — etichetă mică"
+      },
+      {
+        "key": "home.hero.tagline",
+        "label": "Hero — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "home.hero.callButton",
+        "label": "Hero — buton telefon"
+      },
+      {
+        "key": "home.hero.whatsappButton",
+        "label": "Hero — buton WhatsApp"
+      },
+      {
+        "key": "home.hero.contactButton",
+        "label": "Hero — buton program/locație"
+      },
+      {
+        "key": "home.trust.1.title",
+        "label": "Hero statistică 1 — titlu"
+      },
+      {
+        "key": "home.trust.1.text",
+        "label": "Hero statistică 1 — text"
+      },
+      {
+        "key": "home.trust.2.title",
+        "label": "Hero statistică 2 — titlu"
+      },
+      {
+        "key": "home.trust.2.text",
+        "label": "Hero statistică 2 — text"
+      },
+      {
+        "key": "home.trust.3.title",
+        "label": "Hero statistică 3 — titlu"
+      },
+      {
+        "key": "home.trust.3.text",
+        "label": "Hero statistică 3 — text"
+      },
+      {
+        "key": "home.contact.tag",
+        "label": "Secțiune contact — etichetă"
+      },
+      {
+        "key": "home.contact.title",
+        "label": "Secțiune contact — titlu ({count} = nr. clinici)"
+      },
+      {
+        "key": "home.services.tag",
+        "label": "Secțiune servicii — etichetă"
+      },
+      {
+        "key": "home.services.title",
+        "label": "Secțiune servicii — titlu"
+      },
+      {
+        "key": "home.services.lead",
+        "label": "Secțiune servicii — descriere",
+        "multiline": true
+      },
+      {
+        "key": "home.services.cta",
+        "label": "Secțiune servicii — buton"
+      },
+      {
+        "key": "home.reviews.tag",
+        "label": "Secțiune recenzii — etichetă"
+      },
+      {
+        "key": "home.reviews.title",
+        "label": "Secțiune recenzii — titlu"
+      },
+      {
+        "key": "home.reviews.lead",
+        "label": "Secțiune recenzii — descriere",
+        "multiline": true
+      },
+      {
+        "key": "home.reviews.cta",
+        "label": "Secțiune recenzii — buton"
+      },
+      {
+        "key": "home.gallery.tag",
+        "label": "Secțiune clinică — etichetă"
+      },
+      {
+        "key": "home.gallery.title",
+        "label": "Secțiune clinică — titlu"
+      },
+      {
+        "key": "home.gallery.lead",
+        "label": "Secțiune clinică — descriere",
+        "multiline": true
+      },
+      {
+        "key": "home.team.tag",
+        "label": "Secțiune echipă — etichetă"
+      },
+      {
+        "key": "home.team.title",
+        "label": "Secțiune echipă — titlu"
+      },
+      {
+        "key": "home.team.lead",
+        "label": "Secțiune echipă — descriere",
+        "multiline": true
+      },
+      {
+        "key": "home.tech.tag",
+        "label": "Secțiune tehnologie — etichetă"
+      },
+      {
+        "key": "home.tech.title",
+        "label": "Secțiune tehnologie — titlu"
+      },
+      {
+        "key": "home.tech.lead",
+        "label": "Secțiune tehnologie — descriere",
+        "multiline": true
+      },
+      {
+        "key": "home.journey.tag",
+        "label": "Secțiune traseu pacient — etichetă"
+      },
+      {
+        "key": "home.journey.title",
+        "label": "Secțiune traseu pacient — titlu"
+      }
+    ]
   },
   {
-    page: 'Decontare CAS (/decontat-cas)',
-    items: [
-      { key: 'cas.hero.tag', label: 'Hero — etichetă', fallback: 'SERVICII DECONTATE CAS & GRATUITĂȚI PEDIATRIE' },
-      { key: 'cas.hero.title', label: 'Hero — titlu', fallback: 'Tratamente Dentare Decontate prin CAS & Stomatologie Gratuită pentru Copii' },
-      { key: 'cas.hero.subtitle', label: 'Hero — subtitlu', multiline: true, fallback: 'DentNow este în contract cu Casa de Asigurări de Sănătate (CAS), oferind gratuități pentru copii și decontări la servicii stomatologice uzuale.' },
-      { key: 'cas.ai.badge', label: 'Casetă rezumat — insignă', fallback: '✨ Decontare CAS DentNow' },
-      { key: 'cas.ai.tag', label: 'Casetă rezumat — etichetă', fallback: 'Ghid Asigurați CAS' },
-      { key: 'cas.ai.text', label: 'Casetă rezumat — text', multiline: true, fallback: 'Persoanele asigurate în sistemul public de sănătate din România și copiii cu vârsta de până la 18 ani beneficiază de tratamente stomatologice decontate integral (100% gratuit) sau parțial prin CAS la clinica DentNow. Serviciile gratuite pentru copii includ consultații, obturații (plombe), sigilări și extracții de dinți temporari.' },
-      { key: 'cas.stats.free.title', label: 'Statistică 1 — titlu', fallback: '100% Gratuit' },
-      { key: 'cas.stats.free.text', label: 'Statistică 1 — text', fallback: 'Stomatologie pentru copii 0 – 18 ani' },
-      { key: 'cas.stats.clinics.title', label: 'Statistică 2 — titlu ({count} = nr. clinici)', fallback: '{count} Clinici' },
-      { key: 'cas.stats.clinics.text', label: 'Statistică 2 — text ({names} = zonele clinicilor)', fallback: '{names}' },
-      { key: 'cas.stats.direct.title', label: 'Statistică 3 — titlu', fallback: 'Fără Dosare' },
-      { key: 'cas.stats.direct.text', label: 'Statistică 3 — text', fallback: 'Decontarea se face direct de clinică' },
-      { key: 'cas.children.title', label: 'Copii — titlu secțiune', fallback: 'Stomatologie Gratuită pentru Copii (0 – 18 Ani)' },
-      { key: 'cas.children.intro', label: 'Copii — introducere', multiline: true, fallback: 'Sănătatea dentară a copiilor este o prioritate la DentNow. Prin contractul cu CAS, copiii primesc îngrijire pediatrică de specialitate fără niciun cost pentru părinți:' },
-      { key: 'cas.children.item1', label: 'Copii — beneficiu 1', fallback: 'Consultație de specialitate pedodonție: Gratuită 100%' },
-      { key: 'cas.children.item2', label: 'Copii — beneficiu 2', fallback: 'Obturații (plombe) dinți de lapte și definitivi: Decontate integral' },
-      { key: 'cas.children.item3', label: 'Copii — beneficiu 3', fallback: 'Sigilarea șanțurilor și fosetelor (prevenirea cariilor): Decontată CAS' },
-      { key: 'cas.children.item4', label: 'Copii — beneficiu 4', fallback: 'Extracții dinți temporari: Gratuit prin CAS' },
-      { key: 'cas.children.item5', label: 'Copii — beneficiu 5', fallback: 'Igienizare & Fluorizare: Inclusă în abonamentul preventiv' },
-      { key: 'cas.adults.title', label: 'Adulți — titlu secțiune', fallback: 'Tratamente Decontate pentru Adulți Asigurați' },
-      { key: 'cas.adults.intro', label: 'Adulți — introducere', multiline: true, fallback: 'Pachetul de servicii decontate prin Casa de Asigurări de Sănătate acoperă o gamă largă de tratamente de bază:' },
-      { key: 'cas.adults.card1.title', label: 'Adulți card 1 — titlu', fallback: 'Consultație & Diagnostic' },
-      { key: 'cas.adults.card1.text', label: 'Adulți card 1 — text', multiline: true, fallback: 'Evaluare parodontală și stabilirea planului de tratament decontată 100%.' },
-      { key: 'cas.adults.card2.title', label: 'Adulți card 2 — titlu', fallback: 'Obturații Fizionomice' },
-      { key: 'cas.adults.card2.text', label: 'Adulți card 2 — text', multiline: true, fallback: 'Tratamentul cariilor simple decontat conform plafonului CAS lunar.' },
-      { key: 'cas.adults.card3.title', label: 'Adulți card 3 — titlu', fallback: 'Extracții Dentare' },
-      { key: 'cas.adults.card3.text', label: 'Adulți card 3 — text', multiline: true, fallback: 'Extracții dinți monoradiculari și pluriradiculari decontate parțial sau integral.' },
-      { key: 'cas.steps.title', label: 'Pași — titlu secțiune', fallback: 'Cum funcționează decontarea, în 3 pași' },
-      { key: 'cas.docs.title', label: 'Acte — titlu secțiune', fallback: 'Acte necesare pentru programarea CAS' },
-      { key: 'cas.docs.children.title', label: 'Acte copii — titlu', fallback: 'Pentru Copii' },
-      { key: 'cas.docs.children.text', label: 'Acte copii — text', multiline: true, fallback: 'Certificat de naștere (sau Carte de Identitate dacă are peste 14 ani) și buletinul unuia dintre părinți.' },
-      { key: 'cas.docs.adults.title', label: 'Acte adulți — titlu', fallback: 'Pentru Adulți Asigurați' },
-      { key: 'cas.docs.adults.text', label: 'Acte adulți — text', multiline: true, fallback: 'Carte de Identitate (CI) și dovadă de asigurat: adeverință de salariat, talon de pensie sau Card de Sănătate.' },
-      { key: 'cas.note.label', label: 'Notă plafon — etichetă bold', fallback: 'Bine de știut:' },
-      { key: 'cas.note.text', label: 'Notă plafon — text', multiline: true, fallback: 'plafonul lunar decontat de CAS este limitat per clinică. Dacă plafonul lunii curente s-a epuizat, te programăm cu prioritate imediat ce se deblochează fondurile lunii următoare.' },
-      { key: 'cas.faq.title', label: 'FAQ — titlu secțiune', fallback: 'Întrebări frecvente despre decontarea CAS' },
-      { key: 'cas.sidebar.title', label: 'Card programare — titlu', fallback: 'Programează-te cu Decontare CAS' },
-      { key: 'cas.sidebar.text', label: 'Card programare — text', multiline: true, fallback: 'Plafoanele lunare decontate de CAS sunt limitate! Vă recomandăm să vă programați din timp, la începutul lunii.' },
-      { key: 'cas.sidebar.callButton', label: 'Card programare — buton telefon', fallback: 'Programează-te la DentNow' },
-      { key: 'cas.sidebar.whatsappButton', label: 'Card programare — buton WhatsApp', fallback: 'Întreabă-ne pe WhatsApp' },
-      { key: 'cas.sidebar.hours', label: 'Card programare — program', fallback: 'Luni – Vineri: 09:00 – 19:00 · Sâmbătă: 09:00 – 15:00' },
-      { key: 'cas.sidebar.note', label: 'Card programare — notă verde', fallback: 'Decontare 100% pentru copii sub 18 ani' },
-      { key: 'cas.banner.title', label: 'Banner final — titlu', fallback: 'Programează un consult decontat CAS' },
-      { key: 'cas.banner.text', label: 'Banner final — text ({count} = nr. clinici)', multiline: true, fallback: 'Verificăm plafonul disponibil și îți confirmăm programarea în aceeași zi, în oricare dintre cele {count} clinici DentNow din București.' },
-      { key: 'cas.banner.callButton', label: 'Banner final — buton telefon', fallback: 'Sună pentru programare' },
-      { key: 'cas.banner.whatsappButton', label: 'Banner final — buton WhatsApp', fallback: 'Scrie-ne pe WhatsApp' },
-    ],
+    "page": "Decontare CAS (/decontat-cas)",
+    "items": [
+      {
+        "key": "cas.hero.tag",
+        "label": "Hero — etichetă"
+      },
+      {
+        "key": "cas.hero.title",
+        "label": "Hero — titlu"
+      },
+      {
+        "key": "cas.hero.subtitle",
+        "label": "Hero — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "cas.ai.badge",
+        "label": "Casetă rezumat — insignă"
+      },
+      {
+        "key": "cas.ai.tag",
+        "label": "Casetă rezumat — etichetă"
+      },
+      {
+        "key": "cas.ai.text",
+        "label": "Casetă rezumat — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.stats.free.title",
+        "label": "Statistică 1 — titlu"
+      },
+      {
+        "key": "cas.stats.free.text",
+        "label": "Statistică 1 — text"
+      },
+      {
+        "key": "cas.stats.clinics.title",
+        "label": "Statistică 2 — titlu ({count} = nr. clinici)"
+      },
+      {
+        "key": "cas.stats.clinics.text",
+        "label": "Statistică 2 — text ({names} = zonele clinicilor)"
+      },
+      {
+        "key": "cas.stats.direct.title",
+        "label": "Statistică 3 — titlu"
+      },
+      {
+        "key": "cas.stats.direct.text",
+        "label": "Statistică 3 — text"
+      },
+      {
+        "key": "cas.children.title",
+        "label": "Copii — titlu secțiune"
+      },
+      {
+        "key": "cas.children.intro",
+        "label": "Copii — introducere",
+        "multiline": true
+      },
+      {
+        "key": "cas.children.item1",
+        "label": "Copii — beneficiu 1"
+      },
+      {
+        "key": "cas.children.item2",
+        "label": "Copii — beneficiu 2"
+      },
+      {
+        "key": "cas.children.item3",
+        "label": "Copii — beneficiu 3"
+      },
+      {
+        "key": "cas.children.item4",
+        "label": "Copii — beneficiu 4"
+      },
+      {
+        "key": "cas.children.item5",
+        "label": "Copii — beneficiu 5"
+      },
+      {
+        "key": "cas.adults.title",
+        "label": "Adulți — titlu secțiune"
+      },
+      {
+        "key": "cas.adults.intro",
+        "label": "Adulți — introducere",
+        "multiline": true
+      },
+      {
+        "key": "cas.adults.card1.title",
+        "label": "Adulți card 1 — titlu"
+      },
+      {
+        "key": "cas.adults.card1.text",
+        "label": "Adulți card 1 — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.adults.card2.title",
+        "label": "Adulți card 2 — titlu"
+      },
+      {
+        "key": "cas.adults.card2.text",
+        "label": "Adulți card 2 — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.adults.card3.title",
+        "label": "Adulți card 3 — titlu"
+      },
+      {
+        "key": "cas.adults.card3.text",
+        "label": "Adulți card 3 — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.steps.title",
+        "label": "Pași — titlu secțiune"
+      },
+      {
+        "key": "cas.docs.title",
+        "label": "Acte — titlu secțiune"
+      },
+      {
+        "key": "cas.docs.children.title",
+        "label": "Acte copii — titlu"
+      },
+      {
+        "key": "cas.docs.children.text",
+        "label": "Acte copii — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.docs.adults.title",
+        "label": "Acte adulți — titlu"
+      },
+      {
+        "key": "cas.docs.adults.text",
+        "label": "Acte adulți — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.note.label",
+        "label": "Notă plafon — etichetă bold"
+      },
+      {
+        "key": "cas.note.text",
+        "label": "Notă plafon — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.faq.title",
+        "label": "FAQ — titlu secțiune"
+      },
+      {
+        "key": "cas.sidebar.title",
+        "label": "Card programare — titlu"
+      },
+      {
+        "key": "cas.sidebar.text",
+        "label": "Card programare — text",
+        "multiline": true
+      },
+      {
+        "key": "cas.sidebar.callButton",
+        "label": "Card programare — buton telefon"
+      },
+      {
+        "key": "cas.sidebar.whatsappButton",
+        "label": "Card programare — buton WhatsApp"
+      },
+      {
+        "key": "cas.sidebar.hours",
+        "label": "Card programare — program"
+      },
+      {
+        "key": "cas.sidebar.note",
+        "label": "Card programare — notă verde"
+      },
+      {
+        "key": "cas.banner.title",
+        "label": "Banner final — titlu"
+      },
+      {
+        "key": "cas.banner.text",
+        "label": "Banner final — text ({count} = nr. clinici)",
+        "multiline": true
+      },
+      {
+        "key": "cas.banner.callButton",
+        "label": "Banner final — buton telefon"
+      },
+      {
+        "key": "cas.banner.whatsappButton",
+        "label": "Banner final — buton WhatsApp"
+      }
+    ]
   },
   {
-    page: 'Hero-uri pagini secundare',
-    items: [
-      { key: 'tratamente.hero.tag', label: 'Tratamente — etichetă', fallback: 'Tratamente & Tarife' },
-      { key: 'tratamente.hero.title', label: 'Tratamente — titlu', html: true, fallback: 'Preturi clare, <em class="ac">explicate inainte.</em>' },
-      { key: 'tratamente.hero.subtitle', label: 'Tratamente — subtitlu', multiline: true, fallback: 'Preturile sunt orientative si se confirma prin deviz dupa consult.' },
-      { key: 'oferte.hero.tag', label: 'Oferte — etichetă', fallback: 'Oferte DentNow' },
-      { key: 'oferte.hero.title', label: 'Oferte — titlu', html: true, fallback: 'Pachete clare,<br><em class="ac">fara presiune falsa.</em>' },
-      { key: 'oferte.hero.subtitle', label: 'Oferte — subtitlu', multiline: true, fallback: 'Ofertele sunt afisate cu pret de pornire si trebuie confirmate de clinica inainte de lansare.' },
-      { key: 'noutati.hero.tag', label: 'Noutăți — etichetă', fallback: 'Noutati DentNow' },
-      { key: 'noutati.hero.title', label: 'Noutăți — titlu', html: true, fallback: 'Actualizari <em class="ac">curente.</em>' },
-      { key: 'noutati.hero.subtitle', label: 'Noutăți — subtitlu', fallback: 'Noutatile clinicii DentNow.' },
-      { key: 'articole.hero.tag', label: 'Articole — etichetă', fallback: 'Articole utile' },
-      { key: 'articole.hero.title', label: 'Articole — titlu', html: true, fallback: 'Informeaza-te,<br><em class="ac">ingrijeste-te.</em>' },
-      { key: 'articole.hero.subtitle', label: 'Articole — subtitlu', fallback: 'Ghiduri practice si sfaturi pentru pacienti.' },
-      { key: 'beforeafter.hero.tag', label: 'Before & After — etichetă', fallback: 'Exemple vizuale DentNow' },
-      { key: 'beforeafter.hero.title', label: 'Before & After — titlu', html: true, fallback: 'Before & <em class="ac">After.</em>' },
-      { key: 'beforeafter.hero.subtitle', label: 'Before & After — subtitlu', multiline: true, fallback: 'Exemple vizuale ilustrative — fotografiile de caz reale se publica doar cu acordul scris al pacientilor.' },
-      { key: 'recenzii.hero.tag', label: 'Recenzii — etichetă', fallback: 'Recenzii pacienti' },
-      { key: 'recenzii.hero.title', label: 'Recenzii — titlu', html: true, fallback: 'Ce spun <em class="ac">pacientii.</em>' },
-      { key: 'recenzii.hero.subtitle', label: 'Recenzii — subtitlu', multiline: true, fallback: 'Recenzii verificate, preluate din profilul Google al clinicilor DentNow.' },
-      { key: 'parteneri.hero.tag', label: 'Parteneri — etichetă', fallback: 'Parteneri DentNow' },
-      { key: 'parteneri.hero.title', label: 'Parteneri — titlu', html: true, fallback: 'Parteneri si <em class="ac">tehnologii.</em>' },
-      { key: 'parteneri.hero.subtitle', label: 'Parteneri — subtitlu', multiline: true, fallback: 'Logourile oficiale se folosesc doar daca exista drept de utilizare. Pana atunci afisam etichete text.' },
-      { key: 'ebook.hero.tag', label: 'E-bookuri — etichetă', fallback: 'Resurse gratuite' },
-      { key: 'ebook.hero.title', label: 'E-bookuri — titlu', html: true, fallback: 'E-bookuri <em class="ac">DentNow.</em>' },
-      { key: 'ebook.hero.subtitle', label: 'E-bookuri — subtitlu', multiline: true, fallback: 'Cere ghidul dorit pe WhatsApp si ti-l trimitem direct. Fara formular online.' },
-      { key: 'urgente.hero.tag', label: 'Urgențe — etichetă', fallback: 'ASISTENȚĂ DENTARĂ RAPIDĂ' },
-      { key: 'urgente.hero.title', label: 'Urgențe — titlu', fallback: 'Urgențe Dentare în București — Scapă Imediat de Durere' },
-      { key: 'urgente.hero.subtitle', label: 'Urgențe — subtitlu', multiline: true, fallback: 'Echipa DentNow este pregătită să preia cazurile urgente: dureri acute, abcese, traume dentare și fracturi.' },
-    ],
-  },
+    "page": "Hero-uri pagini secundare",
+    "items": [
+      {
+        "key": "tratamente.hero.tag",
+        "label": "Tratamente — etichetă"
+      },
+      {
+        "key": "tratamente.hero.title",
+        "label": "Tratamente — titlu",
+        "html": true
+      },
+      {
+        "key": "tratamente.hero.subtitle",
+        "label": "Tratamente — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "oferte.hero.tag",
+        "label": "Oferte — etichetă"
+      },
+      {
+        "key": "oferte.hero.title",
+        "label": "Oferte — titlu",
+        "html": true
+      },
+      {
+        "key": "oferte.hero.subtitle",
+        "label": "Oferte — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "noutati.hero.tag",
+        "label": "Noutăți — etichetă"
+      },
+      {
+        "key": "noutati.hero.title",
+        "label": "Noutăți — titlu",
+        "html": true
+      },
+      {
+        "key": "noutati.hero.subtitle",
+        "label": "Noutăți — subtitlu"
+      },
+      {
+        "key": "articole.hero.tag",
+        "label": "Articole — etichetă"
+      },
+      {
+        "key": "articole.hero.title",
+        "label": "Articole — titlu",
+        "html": true
+      },
+      {
+        "key": "articole.hero.subtitle",
+        "label": "Articole — subtitlu"
+      },
+      {
+        "key": "beforeafter.hero.tag",
+        "label": "Before & After — etichetă"
+      },
+      {
+        "key": "beforeafter.hero.title",
+        "label": "Before & After — titlu",
+        "html": true
+      },
+      {
+        "key": "beforeafter.hero.subtitle",
+        "label": "Before & After — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "recenzii.hero.tag",
+        "label": "Recenzii — etichetă"
+      },
+      {
+        "key": "recenzii.hero.title",
+        "label": "Recenzii — titlu",
+        "html": true
+      },
+      {
+        "key": "recenzii.hero.subtitle",
+        "label": "Recenzii — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "parteneri.hero.tag",
+        "label": "Parteneri — etichetă"
+      },
+      {
+        "key": "parteneri.hero.title",
+        "label": "Parteneri — titlu",
+        "html": true
+      },
+      {
+        "key": "parteneri.hero.subtitle",
+        "label": "Parteneri — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "ebook.hero.tag",
+        "label": "E-bookuri — etichetă"
+      },
+      {
+        "key": "ebook.hero.title",
+        "label": "E-bookuri — titlu",
+        "html": true
+      },
+      {
+        "key": "ebook.hero.subtitle",
+        "label": "E-bookuri — subtitlu",
+        "multiline": true
+      },
+      {
+        "key": "urgente.hero.tag",
+        "label": "Urgențe — etichetă"
+      },
+      {
+        "key": "urgente.hero.title",
+        "label": "Urgențe — titlu"
+      },
+      {
+        "key": "urgente.hero.subtitle",
+        "label": "Urgențe — subtitlu",
+        "multiline": true
+      }
+    ]
+  }
 ];
-
-export const SITE_TEXT_FALLBACKS = Object.fromEntries(
-  SITE_TEXT_GROUPS.flatMap((group) => group.items.map((item) => [item.key, item.fallback])),
-);

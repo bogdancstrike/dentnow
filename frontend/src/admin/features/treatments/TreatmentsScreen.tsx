@@ -23,7 +23,7 @@ export interface TreatmentRow extends ResourceRow {
   homepage_featured?: boolean;
   homepage_label?: string;
   homepage_icon?: string;
-  body_markdown?: string;
+  detail_markdown?: string;
   prices?: Array<Record<string, unknown>>;
 }
 

@@ -1,12 +1,10 @@
 /**
  * Admin editor for public-site copy. The registry (shared with the public bundle)
- * lists every editable key with its compiled-in fallback; this screen shows the
- * effective value and stores ONLY overrides via /v1/admin/site-texts. "Implicit"
- * deletes the override and the site falls back to the built-in text.
+ * lists every editable key and rendering hint; values live only in the backend.
  */
 import { useMemo, useState } from 'react';
 import { App, Button, Card, Input, Skeleton, Space, Tag, Typography } from 'antd';
-import { CheckOutlined, UndoOutlined } from '@ant-design/icons';
+import { CheckOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminClient } from '../../api/adminClient';
 import { SITE_TEXT_GROUPS } from '../../../data/siteTextRegistry';
@@ -21,7 +19,6 @@ interface SiteTextRow {
 interface RegistryItem {
   key: string;
   label: string;
-  fallback: string;
   multiline?: boolean;
   html?: boolean;
 }
@@ -40,7 +37,7 @@ function TextRow({
 }) {
   const { message } = App.useApp();
   const qc = useQueryClient();
-  const effective = override?.value ?? item.fallback;
+  const effective = override?.value ?? '';
   const [draft, setDraft] = useState<string | null>(null);
   const value = draft ?? effective;
   const dirty = draft !== null && draft !== effective;
@@ -60,17 +57,6 @@ function TextRow({
       invalidate();
     },
     onError: (error) => message.error((error as Error).message || 'Eroare la salvare'),
-  });
-
-  const reset = useMutation({
-    mutationFn: async () => {
-      if (override) await client.del(`${ENDPOINT}/${override.id}`, `"${override.version}"`);
-    },
-    onSuccess: () => {
-      message.success('Revenit la textul implicit');
-      invalidate();
-    },
-    onError: (error) => message.error((error as Error).message || 'Eroare la resetare'),
   });
 
   const InputComponent = item.multiline ? Input.TextArea : Input;
@@ -98,15 +84,6 @@ function TextRow({
         >
           Salvează
         </Button>
-        <Button
-          icon={<UndoOutlined />}
-          disabled={!override && !dirty}
-          loading={reset.isPending}
-          title="Revino la textul implicit"
-          onClick={() => (override ? reset.mutate() : setDraft(null))}
-        >
-          Implicit
-        </Button>
       </Space.Compact>
     </div>
   );
@@ -127,8 +104,8 @@ export function SiteTextsScreen({ client }: { client: AdminClient }) {
     <div style={{ maxWidth: 980 }}>
       <Typography.Title level={2} style={{ marginTop: 0 }}>Texte site</Typography.Title>
       <Typography.Paragraph type="secondary">
-        Textele publice care nu vin din alte module (clinici, tratamente, articole…). Ce nu
-        personalizezi aici rămâne textul implicit din aplicație. Simbolurile precum{' '}
+        Textele publice care nu vin din alte module (clinici, tratamente, articole…). Valorile
+        sunt publicate direct din Admin; un câmp gol nu afișează text. Simbolurile precum{' '}
         <code>{'{count}'}</code> și <code>{'{names}'}</code> se completează automat cu datele
         clinicilor publicate.
       </Typography.Paragraph>

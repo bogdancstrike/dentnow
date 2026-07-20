@@ -4,7 +4,6 @@ import { useRevealAll } from '../hooks/useReveal';
 import { useClinicPicker } from '../hooks/useClinicPicker';
 import { useSiteTexts } from '../hooks/useSiteTexts';
 import { whatsappUrlFor } from '../lib/leadCapture';
-import { services } from '../data/content';
 import { useSiteData } from '../public-site/SiteDataProvider';
 import { siteLinkHref } from '../lib/siteContent';
 import { useReviews } from '../hooks/useReviews';
@@ -109,6 +108,7 @@ export default function Home() {
   const email = siteData.links.find((link) => link.kind === 'email');
   const socialLinks = siteData.links.filter((link) => link.kind === 'social');
   const { data: reviews = [] } = useReviews();
+  const homepageServices = siteData.homepage_services || [];
   const trustItems = [1, 2, 3].map((i) => ({
     value: t(`home.trust.${i}.title`),
     accent: '',
@@ -159,29 +159,26 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="services-section" id="servicii">
+      {homepageServices.length > 0 && <section className="services-section" id="servicii">
         <div className="services-header">
           <div className="stag rv">{t('home.services.tag')}</div>
           <h2 className="h2d rv d1">{t('home.services.title')}</h2>
           <p className="lead rv d2">{t('home.services.lead')}</p>
         </div>
         <div className="services-grid">
-          {(siteData.homepage_services && siteData.homepage_services.length > 0
-            ? siteData.homepage_services.map((s) => ({ icon: s.icon, title: s.title, desc: s.description, link: s.link || '/tratamente' }))
-            : services
-          ).map((s, i) => (
-            <Link to={s.link} key={s.title} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
-              <span className="svc-icon">{s.icon}</span>
+          {homepageServices.map((service, i) => (
+            <Link to={service.link || '/tratamente'} key={service.title} className={`service-card rv${i > 0 ? ` d${i % 3}` : ''}`}>
+              {service.icon && <span className="svc-icon">{service.icon}</span>}
               <div className="svc-arrow">↗</div>
-              <h3 className="svc-title">{s.title}</h3>
-              <p className="svc-desc">{s.desc}</p>
+              <h3 className="svc-title">{service.title}</h3>
+              {service.description && <p className="svc-desc">{service.description}</p>}
             </Link>
           ))}
         </div>
         <div className="section-action">
           <Link to="/tratamente" className="btn btn-dark">{t('home.services.cta')}</Link>
         </div>
-      </section>
+      </section>}
 
       <ProofGallery />
       <DoctorTeam />
