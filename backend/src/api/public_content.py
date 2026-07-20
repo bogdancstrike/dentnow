@@ -15,6 +15,7 @@ from src.catalog.models import (
     OfferFeature,
     OfferTreatment,
     Partner,
+    Technology,
     Treatment,
     TreatmentCategory,
     TreatmentPrice,
@@ -32,6 +33,7 @@ from src.core.errors import NotFoundError
 from src.editorial.models import (
     Article,
     CaseStudy,
+    Ebook,
     LegalDocument,
     NewsItem,
     Quiz,
@@ -184,6 +186,41 @@ def _query_partners(session):
     ]
     partners.sort(key=lambda x: (x["position"], x["name"]))
     return partners
+
+
+def _query_technologies(session):
+    technologies = [
+        {
+            "name": technology.name,
+            "description": technology.description,
+            "media_id": str(technology.media_id) if technology.media_id else None,
+            "position": technology.position,
+        }
+        for technology in session.scalars(
+            _live(Technology).where(Technology.active.is_(True))
+        ).all()
+    ]
+    technologies.sort(key=lambda item: (item["position"], item["name"]))
+    return technologies
+
+
+def _query_ebooks(session):
+    ebooks = [
+        {
+            "slug": ebook.slug,
+            "title": ebook.title,
+            "category": ebook.category,
+            "description": ebook.description,
+            "cover_media_id": str(ebook.cover_media_id) if ebook.cover_media_id else None,
+            "download_media_id": str(ebook.download_media_id) if ebook.download_media_id else None,
+            "position": ebook.position,
+        }
+        for ebook in session.scalars(
+            _live(Ebook).where(Ebook.active.is_(True))
+        ).all()
+    ]
+    ebooks.sort(key=lambda item: (item["position"], item["title"]))
+    return ebooks
 
 
 def _query_quiz(session):
@@ -445,6 +482,8 @@ def bootstrap(app, operation, request, **kw):
         treatments_data = _query_treatments(session)
         doctors_data = _query_doctors(session)
         partners_data = _query_partners(session)
+        technologies = _query_technologies(session)
+        ebooks = _query_ebooks(session)
         homepage_services = _query_homepage_services(session)
         gallery = _query_gallery(session)
         decontat_cas = _query_decontat_cas(session)
@@ -460,6 +499,8 @@ def bootstrap(app, operation, request, **kw):
         "clinics": clinics_data,
         "doctors": doctors_data,
         "partners": partners_data,
+        "technologies": technologies,
+        "ebooks": ebooks,
         "homepage_services": homepage_services,
         "gallery": gallery,
         "decontat_cas": decontat_cas,

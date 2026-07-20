@@ -59,6 +59,8 @@ function BootstrapGate({ children }: { children: ReactNode }) {
   const galleryDraft = usePreviewDraft<Record<string, unknown>>('gallery-image');
   const quizDraft = usePreviewDraft<Record<string, unknown>>('quiz');
   const partnerDraft = usePreviewDraft<Record<string, unknown>>('partner');
+  const technologyDraft = usePreviewDraft<Record<string, unknown>>('technology');
+  const ebookDraft = usePreviewDraft<Record<string, unknown>>('ebook');
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: publicQueryKeys.bootstrap,
     queryFn: fetchBootstrap,
@@ -125,6 +127,14 @@ function BootstrapGate({ children }: { children: ReactNode }) {
       data.partners as unknown as Record<string, unknown>[],
       partnerDraft,
     ) as Bootstrap['partners'],
+    technologies: mergePositionedItem(
+      data.technologies as unknown as Record<string, unknown>[],
+      technologyDraft,
+    ) as Bootstrap['technologies'],
+    ebooks: mergePositionedItem(
+      data.ebooks as unknown as Record<string, unknown>[],
+      ebookDraft,
+    ) as Bootstrap['ebooks'],
     quiz: quizDraft ? { ...data.quiz, ...quizDraft } as Bootstrap['quiz'] : data.quiz,
   };
 

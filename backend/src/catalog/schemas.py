@@ -247,15 +247,19 @@ class OfferFeatureUpdate(_Strict):
 class TechnologyCreate(_Strict):
     name: str
     description: Optional[str] = None
+    media_id: Optional[str] = None
     active: bool = True
     position: int = 0
+    _media = field_validator("media_id", mode="before")(classmethod(lambda cls, v: _coerce_optional_uuid(v)))
 
 
 class TechnologyUpdate(_Strict):
     name: Optional[str] = None
     description: Optional[str] = None
+    media_id: Optional[str] = None
     active: Optional[bool] = None
     position: Optional[int] = None
+    _media = field_validator("media_id", mode="before")(classmethod(lambda cls, v: _coerce_optional_uuid(v)))
 
 
 class PartnerCreate(_Strict):
