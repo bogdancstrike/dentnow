@@ -19,7 +19,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.clock import uuid7
 from src.core.db import Base
@@ -159,6 +159,7 @@ class PageSection(WorkspaceRoot, Base):
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     block_type: Mapped[str] = mapped_column(Text, nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    page: Mapped["Page"] = relationship()
 
 
 class PageSeo(WorkspaceRoot, Base):
@@ -176,6 +177,7 @@ class PageSeo(WorkspaceRoot, Base):
     # og_media_id FK to media_assets is added in Task 10; kept nullable for now.
     og_media_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("media_assets.id", ondelete="SET NULL", name="fk_page_seo_og_media_id"), nullable=True)
     structured_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    page: Mapped["Page"] = relationship()
 
 
 class SitePublication(Base):

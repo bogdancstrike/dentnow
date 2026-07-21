@@ -62,6 +62,7 @@ function BootstrapGate({ children }: { children: ReactNode }) {
   const technologyDraft = usePreviewDraft<Record<string, unknown>>('technology');
   const ebookDraft = usePreviewDraft<Record<string, unknown>>('ebook');
   const siteTextDraft = usePreviewDraft<{ key?: string; value?: string }>('site-text');
+  const pageDraft = usePreviewDraft<Bootstrap['pages'][string]>('page');
   const pageSeoDraft = usePreviewDraft<{
     path?: string;
     seo?: Bootstrap['pages'][string]['seo'];
@@ -139,11 +140,28 @@ function BootstrapGate({ children }: { children: ReactNode }) {
   })();
 
   const pagesWithPreviewDrafts: Bootstrap['pages'] = (() => {
+    let pages = pagesWithSectionDraft;
+    
+    // 1. Merge page drafts
+    if (pageDraft?.path) {
+      const existingPage = pages[pageDraft.path];
+      pages = {
+        ...pages,
+        [pageDraft.path]: {
+          ...existingPage,
+          ...pageDraft,
+          sections: existingPage?.sections ?? [],
+          seo: existingPage?.seo ?? null,
+        }
+      };
+    }
+
+    // 2. Merge SEO drafts
     const path = pageSeoDraft?.path;
-    const page = path ? pagesWithSectionDraft[path] : undefined;
-    if (!path || !page) return pagesWithSectionDraft;
+    const page = path ? pages[path] : undefined;
+    if (!path || !page) return pages;
     return {
-      ...pagesWithSectionDraft,
+      ...pages,
       [path]: {
         ...page,
         seo: {

@@ -479,6 +479,8 @@ const pages = makeConfig({
   ],
   defaults: { enabled: true, indexable: true, template_key: 'generic' },
   previewPath: (row, values) => String(values?.path ?? (row as { path?: string } | null)?.path ?? '') || null,
+  previewKind: 'page',
+  toPreviewDraft: (values) => values,
   previewHint: 'Completează adresa URL pentru a vedea pagina publică.',
   form: () => (
     <>
@@ -506,6 +508,7 @@ const pageSections = makeConfig({
     { title: 'Tip bloc', dataIndex: 'block_type' },
     { title: 'Pagină', dataIndex: 'page_id', ellipsis: true },
     { title: 'Ordine', dataIndex: 'position' },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={String((record as any).page_path || '')} disabled={!(record as any).page_path} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { position: 0, payload_json: '{}' },
   previewPath: (_row, values) => String(values?.__preview_path ?? '') || null,
@@ -547,6 +550,7 @@ const pageSeo = makeConfig({
     { title: 'Titlu SEO', dataIndex: 'title', ellipsis: true },
     { title: 'Pagină', dataIndex: 'page_id', ellipsis: true },
     { title: 'Canonical', dataIndex: 'canonical_path' },
+    { title: 'View', render: (_, record) => <Button type="link" icon={<EyeOutlined />} href={String((record as any).page_path || '')} disabled={!(record as any).page_path} target="_blank" rel="noopener noreferrer">Vezi</Button> },
   ],
   defaults: { structured_data_json: '' },
   previewPath: (_row, values) => String(values?.__preview_path ?? '') || null,
