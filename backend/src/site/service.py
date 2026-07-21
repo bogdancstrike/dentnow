@@ -281,7 +281,12 @@ class SectionService(CrudService):
 
     def get_list_query(self):
         from sqlalchemy.orm import joinedload
-        return super().get_list_query().options(joinedload(self.model.page))
+        return (
+            super().get_list_query()
+            .join(Page)
+            .where(Page.deleted_at.is_(None))
+            .options(joinedload(self.model.page))
+        )
 
     def serialize(self, obj: Any) -> dict:
         return serialize_section(obj)
@@ -305,7 +310,12 @@ class SeoService(CrudService):
 
     def get_list_query(self):
         from sqlalchemy.orm import joinedload
-        return super().get_list_query().options(joinedload(self.model.page))
+        return (
+            super().get_list_query()
+            .join(Page)
+            .where(Page.deleted_at.is_(None))
+            .options(joinedload(self.model.page))
+        )
 
     def serialize(self, obj: Any) -> dict:
         return serialize_seo(obj)
